@@ -1,0 +1,4 @@
+- [TypeBlitz userId string migration](typeblitz-userid-string.md) — userId changed from integer to string (MongoDB ObjectId) after MongoDB migration; all frontend hooks use `user?.id ?? ""`
+- [TypeBlitz query options pattern](typeblitz-query-options.md) — every useGet* hook needs explicit `queryKey` in the query options or TS error TS2741 fires
+- [TypeBlitz logout void workaround](typeblitz-logout-void.md) — `logoutMutation.mutate({})` fails type check; use `undefined as unknown as void`
+- [TypeBlitz MongoDB graceful fallback](typeblitz-mongodb-fallback.md) — server starts fine without MONGODB_URI; warns in log and returns empty arrays from DB routes

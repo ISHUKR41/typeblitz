@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { useLogin, useRegister, useLogout, useGetMe } from "@workspace/api-client-react";
+import { useLogin, useRegister, useLogout, useGetMe, getGetMeQueryKey } from "@workspace/api-client-react";
 import type { User } from "@workspace/api-client-react";
 import { setAuthTokenGetter } from "@workspace/api-client-react";
 
@@ -24,6 +24,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const { data: me, isLoading } = useGetMe({
     query: {
+      queryKey: getGetMeQueryKey(),
       enabled: !!token,
       retry: false,
     }
@@ -54,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const handleLogout = () => {
-    logoutMutation.mutate({});
+    logoutMutation.mutate(undefined as unknown as void);
     localStorage.removeItem("token");
     setToken(null);
     setUser(null);

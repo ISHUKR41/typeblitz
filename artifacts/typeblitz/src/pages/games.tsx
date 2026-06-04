@@ -1,73 +1,205 @@
-import { useGetGames } from "@workspace/api-client-react";
+import { useGetGames, getGetGamesQueryKey } from "@workspace/api-client-react";
 import { Link } from "wouter";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { motion } from "framer-motion";
-import { Gamepad2, Zap, Terminal, Target, Flag } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
+import {
+  Zap, AlignLeft, Code2, Target, Timer, Shield, Terminal,
+  ChevronRight, Star, Lock, TrendingUp
+} from "lucide-react";
 
-const iconMap: Record<string, React.ReactNode> = {
-  "word-sprint": <Zap className="w-6 h-6 text-primary" />,
-  "sentence-rush": <Gamepad2 className="w-6 h-6 text-chart-2" />,
-  "code-type": <Terminal className="w-6 h-6 text-chart-3" />,
-  "letter-blaster": <Target className="w-6 h-6 text-chart-4" />,
-  "typing-race": <Flag className="w-6 h-6 text-chart-5" />,
+// ─── Colour tokens per game ───────────────────────────────────────────────
+const GAME_THEME: Record<string, { text: string; bg: string; border: string; shadow: string }> = {
+  "word-sprint":      { text: "text-primary",    bg: "bg-primary/10",    border: "border-primary/30",    shadow: "hover:shadow-primary/15" },
+  "govt-exam-sprint": { text: "text-blue-400",   bg: "bg-blue-400/10",   border: "border-blue-400/30",   shadow: "hover:shadow-blue-400/15" },
+  "sentence-rush":    { text: "text-chart-2",    bg: "bg-chart-2/10",    border: "border-chart-2/30",    shadow: "hover:shadow-chart-2/15" },
+  "code-type":        { text: "text-chart-3",    bg: "bg-chart-3/10",    border: "border-chart-3/30",    shadow: "hover:shadow-chart-3/15" },
+  "code-vocab":       { text: "text-emerald-400",bg: "bg-emerald-400/10",border: "border-emerald-400/30",shadow: "hover:shadow-emerald-400/15" },
+  "letter-blaster":   { text: "text-chart-4",    bg: "bg-chart-4/10",    border: "border-chart-4/30",    shadow: "hover:shadow-chart-4/15" },
+  "typing-race":      { text: "text-yellow-400", bg: "bg-yellow-400/10", border: "border-yellow-400/30", shadow: "hover:shadow-yellow-400/15" },
 };
 
-export default function Games() {
-  const { data: games, isLoading } = useGetGames();
+const GAME_ICONS: Record<string, React.ElementType> = {
+  Zap, AlignLeft, Code: Code2, Code2, Target, Timer, Shield, Terminal,
+};
 
-  if (isLoading) {
-    return <div className="p-8 text-center">Loading games...</div>;
-  }
+const DIFFICULTY: Record<string, { label: string; cls: string }> = {
+  beginner:     { label: "Beginner",     cls: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30" },
+  intermediate: { label: "Intermediate", cls: "bg-yellow-500/15  text-yellow-400  border-yellow-500/30"  },
+  advanced:     { label: "Advanced",     cls: "bg-red-500/15     text-red-400     border-red-500/30"      },
+};
 
-  const gameList = games || [];
+// ─── Category tags shown above game cards ────────────────────────────────
+const CATEGORY_META: Record<string, { label: string; color: string }> = {
+  "word-sprint":      { label: "Speed Training",        color: "text-primary" },
+  "govt-exam-sprint": { label: "Govt Exam Prep",         color: "text-blue-400" },
+  "sentence-rush":    { label: "Fluency Training",       color: "text-chart-2" },
+  "code-type":        { label: "Coding Practice",        color: "text-chart-3" },
+  "code-vocab":       { label: "Developer Vocabulary",   color: "text-emerald-400" },
+  "letter-blaster":   { label: "Reaction Drill",         color: "text-chart-4" },
+  "typing-race":      { label: "Speed Competition",      color: "text-yellow-400" },
+};
+
+// ─── Single game card ────────────────────────────────────────────────────
+function GameCard({ game, index }: { game: any; index: number }) {
+  const [hoveredLevel, setHoveredLevel] = useState<number | null>(null);
+  const theme  = GAME_THEME[game.id]    ?? GAME_THEME["word-sprint"];
+  const diff   = DIFFICULTY[game.difficulty] ?? DIFFICULTY.beginner;
+  const meta   = CATEGORY_META[game.id] ?? { label: "Game", color: "text-muted-foreground" };
+  const Icon   = GAME_ICONS[game.icon]  ?? Zap;
+  const levels: any[] = game.levels ?? [];
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold font-mono tracking-tight mb-2">Game Modes</h1>
-        <p className="text-muted-foreground">Select a game mode to start training.</p>
+    <motion.div
+      initial={{ opacity: 0, y: 28 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.07, duration: 0.45, ease: "easeOut" }}
+      whileHover={{ y: -5, transition: { duration: 0.18 } }}
+      className={`flex flex-col bg-card border ${theme.border} rounded-2xl p-5 group
+                  hover:shadow-xl ${theme.shadow} transition-all duration-300`}
+    >
+      {/* ── Header ── */}
+      <div className="flex items-start justify-between mb-4">
+        <div className={`w-12 h-12 rounded-xl ${theme.bg} border ${theme.border}
+                         flex items-center justify-center ${theme.text}
+                         group-hover:scale-110 transition-transform duration-300`}>
+          <Icon className="w-6 h-6" />
+        </div>
+        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${diff.cls}`}>
+          {diff.label}
+        </span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {gameList.filter(g => g.category === 'game').map((game, i) => (
-          <motion.div
-            key={game.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-          >
-            <Card className="h-full hover:border-primary/50 transition-colors border-border bg-card overflow-hidden group">
-              <CardHeader>
-                <div className="flex justify-between items-start mb-2">
-                  <div className="p-3 rounded-xl bg-muted group-hover:bg-primary/10 transition-colors">
-                    {iconMap[game.id] || <Gamepad2 className="w-6 h-6 text-primary" />}
-                  </div>
-                  <Badge variant={game.difficulty === 'beginner' ? 'default' : game.difficulty === 'intermediate' ? 'secondary' : 'destructive'}>
-                    {game.difficulty}
-                  </Badge>
+      {/* ── Title ── */}
+      <p className={`text-xs font-bold uppercase tracking-widest mb-1 ${meta.color}`}>{meta.label}</p>
+      <h3 className="text-lg font-extrabold mb-2 leading-tight">{game.name}</h3>
+      <p className="text-sm text-muted-foreground leading-relaxed flex-1 mb-4">{game.description}</p>
+
+      {/* ── Level selector ── */}
+      <div>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-2.5">
+          <Star className="w-3 h-3" /> Choose Level
+        </div>
+        <div className="grid grid-cols-5 gap-2">
+          {levels.map((level: any) => (
+            <Link key={level.number} href={`/play/${game.id}/${level.number}`}>
+              <motion.div
+                onHoverStart={() => setHoveredLevel(level.number)}
+                onHoverEnd={() => setHoveredLevel(null)}
+                whileHover={{ scale: 1.12 }}
+                whileTap={{ scale: 0.93 }}
+                className={`relative h-9 rounded-xl flex items-center justify-center
+                            font-mono font-bold text-sm cursor-pointer transition-all duration-150
+                            ${hoveredLevel === level.number
+                              ? `${theme.bg} ${theme.text} border ${theme.border} shadow-md`
+                              : "bg-muted/50 text-muted-foreground border border-transparent hover:border-border"
+                            }`}
+                title={`${level.name} — ${level.targetWpm} WPM target`}
+              >
+                {level.number}
+                {level.number === 1 && (
+                  <span className={`absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full ${theme.bg.replace('/10', '')} animate-ping opacity-75`} />
+                )}
+              </motion.div>
+            </Link>
+          ))}
+        </div>
+
+        {/* Level tooltip */}
+        <AnimatePresence>
+          {hoveredLevel !== null && (() => {
+            const lvl = levels.find((l: any) => l.number === hoveredLevel);
+            return lvl ? (
+              <motion.div
+                key="tooltip"
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.12 }}
+                className={`mt-2 px-3 py-2 ${theme.bg} border ${theme.border} rounded-lg`}
+              >
+                <div className="flex justify-between items-center text-xs">
+                  <span className={`font-bold ${theme.text}`}>{lvl.name}</span>
+                  <span className="text-muted-foreground flex items-center gap-1">
+                    <TrendingUp className="w-3 h-3" /> {lvl.targetWpm} WPM
+                  </span>
                 </div>
-                <CardTitle className="text-2xl">{game.name}</CardTitle>
-                <CardDescription>{game.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <p className="text-sm font-semibold text-muted-foreground mb-3">LEVELS</p>
-                  <div className="grid grid-cols-5 gap-2">
-                    {game.levels?.map((level) => (
-                      <Link key={level.id} href={`/play/${game.id}/${level.number}`}>
-                        <div className="aspect-square flex items-center justify-center rounded-md bg-muted hover:bg-primary hover:text-primary-foreground font-mono font-bold cursor-pointer transition-colors text-sm border border-border">
-                          {level.number}
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
+              </motion.div>
+            ) : null;
+          })()}
+        </AnimatePresence>
       </div>
+
+      {/* ── Quick play CTA ── */}
+      <Link href={`/play/${game.id}/1`} className="mt-4 block">
+        <motion.div
+          whileHover={{ x: 3 }}
+          className={`flex items-center justify-between px-4 py-2.5 rounded-xl
+                      ${theme.bg} border ${theme.border} cursor-pointer group/cta`}
+        >
+          <span className={`text-sm font-bold ${theme.text}`}>Quick Play</span>
+          <ChevronRight className={`w-4 h-4 ${theme.text} group-hover/cta:translate-x-1 transition-transform`} />
+        </motion.div>
+      </Link>
+    </motion.div>
+  );
+}
+
+// ─── Page ────────────────────────────────────────────────────────────────
+export default function Games() {
+  const { data: games, isLoading } = useGetGames({
+    query: { queryKey: getGetGamesQueryKey() }
+  });
+
+  const gameList = (games ?? []).filter((g: any) => g.category === "game");
+
+  return (
+    <div className="p-5 md:p-8 max-w-7xl mx-auto space-y-8">
+
+      {/* Header */}
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Game Modes</h1>
+        <p className="text-muted-foreground mt-1 text-sm md:text-base">
+          7 games · 5 levels each · English, Government Exam & Coding vocabulary
+        </p>
+      </motion.div>
+
+      {/* Category legend */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+        className="flex flex-wrap gap-2"
+      >
+        {Object.entries(CATEGORY_META).map(([id, meta]) => (
+          <span key={id} className={`text-xs font-semibold px-3 py-1 rounded-full bg-muted border border-border ${meta.color}`}>
+            {meta.label}
+          </span>
+        ))}
+      </motion.div>
+
+      {/* Grid */}
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+          {[...Array(7)].map((_, i) => (
+            <div key={i} className="h-80 bg-card border border-border rounded-2xl animate-pulse" />
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+          {gameList.map((game: any, i: number) => (
+            <GameCard key={game.id} game={game} index={i} />
+          ))}
+        </div>
+      )}
+
+      {/* Footer */}
+      <motion.p
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }}
+        className="flex items-center justify-center gap-2 text-xs text-muted-foreground pt-4"
+      >
+        <Lock className="w-3.5 h-3.5" />
+        Progress is saved to your account. Complete each level to unlock the next.
+      </motion.p>
     </div>
   );
 }
