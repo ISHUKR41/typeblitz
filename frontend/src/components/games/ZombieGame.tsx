@@ -183,7 +183,7 @@ export function ZombieGame({
       ctx.stroke();
 
       // Torso
-      ctx.fillStyle = "rgba(34, 197, 9Green)";
+      ctx.fillStyle = "rgba(34, 197, 94, 0.2)";
       ctx.beginPath();
       ctx.roundRect(-8, -10, 14, 18, 2);
       ctx.fill();
