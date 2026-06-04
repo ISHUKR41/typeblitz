@@ -49,13 +49,14 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, onComplete 
       setElapsed(secs);
       const mins = secs / 60;
       if (mins > 0) {
-        const live = Math.round((totalChars / 5) / mins);
+        // WPM counts ONLY correctly-typed characters (standard WPM definition)
+        const live = Math.round((correctChars / 5) / mins);
         setWpm(live);
         setWpmHistory(h => [...h.slice(-29), live]);
       }
     }, 500);
     return () => clearInterval(id);
-  }, [startTime, totalChars]);
+  }, [startTime, correctChars]);
 
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 150);
@@ -86,7 +87,8 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, onComplete 
       if (next >= words.length) {
         const secs = (Date.now() - (startTime ?? Date.now())) / 1000;
         const mins = secs / 60;
-        const finalWpm = Math.round((newTotal / 5) / Math.max(mins, 0.01));
+        // WPM = correct chars only / 5 / minutes (industry standard)
+        const finalWpm = Math.round((newCorrect / 5) / Math.max(mins, 0.01));
         const finalAcc = newTotal > 0 ? Math.round((newCorrect / newTotal) * 100) : 100;
         onComplete(finalWpm, finalAcc, Math.floor(secs));
       } else {

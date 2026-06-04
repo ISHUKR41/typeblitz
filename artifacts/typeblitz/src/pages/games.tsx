@@ -168,7 +168,7 @@ export default function Games() {
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Game Modes</h1>
         <p className="text-muted-foreground mt-1 text-sm md:text-base">
-          7 games · 5 levels each · English, Government Exam & Coding vocabulary
+          11 games · 5 levels each · English, Govt Exam, Coding & Arcade
         </p>
       </motion.div>
 
