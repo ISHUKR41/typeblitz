@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import {
@@ -40,45 +40,84 @@ function StatCard({ label, value, icon: Icon, color }: { label: string; value: s
 
 const ALPHABET = "abcdefghijklmnopqrstuvwxyz".split("");
 
+const HEATMAP_ROWS = [
+  ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
+  ["a", "s", "d", "f", "g", "h", "j", "k", "l"],
+  ["z", "x", "c", "v", "b", "n", "m"]
+];
+
 function LetterHeatmap({ userId }: { userId: string }) {
   const { data: letters } = useGetLetterAccuracy(userId, {
     query: { queryKey: getGetLetterAccuracyQueryKey(userId) }
   });
 
-  const letterMap = new Map((letters ?? []).map(l => [l.letter, l.accuracy]));
+  const letterMap = useMemo(() => {
+    return new Map((letters ?? []).map(l => [l.letter, { accuracy: l.accuracy, attempts: l.attempts, correct: l.correct }]));
+  }, [letters]);
 
-  const getColor = (acc?: number) => {
-    if (acc === undefined) return "bg-muted text-muted-foreground";
-    if (acc >= 95) return "bg-primary/30 text-primary border border-primary/40";
-    if (acc >= 85) return "bg-chart-3/30 text-chart-3 border border-chart-3/40";
-    if (acc >= 70) return "bg-chart-4/30 text-chart-4 border border-chart-4/40";
-    return "bg-destructive/30 text-destructive border border-destructive/40";
+  const getKeycapStyles = (letter: string) => {
+    const data = letterMap.get(letter);
+    if (!data || data.attempts === 0) {
+      return "bg-muted/40 text-muted-foreground border-border border-b-muted/70 shadow-[0_3px_0_rgba(255,255,255,0.05)]";
+    }
+    const acc = data.accuracy;
+    if (acc >= 95) {
+      return "bg-emerald-500/10 text-emerald-400 border-emerald-500/40 border-b-emerald-600/70 shadow-[0_3px_0_rgba(16,185,129,0.25)] hover:shadow-[0_0_8px_rgba(16,185,129,0.3)]";
+    }
+    if (acc >= 85) {
+      return "bg-green-500/10 text-green-300 border-green-500/30 border-b-green-600/70 shadow-[0_3px_0_rgba(34,197,94,0.2)] hover:shadow-[0_0_8px_rgba(34,197,94,0.2)]";
+    }
+    if (acc >= 70) {
+      return "bg-amber-500/10 text-amber-300 border-amber-500/30 border-b-amber-600/70 shadow-[0_3px_0_rgba(245,158,11,0.2)] hover:shadow-[0_0_8px_rgba(245,158,11,0.2)]";
+    }
+    return "bg-red-500/10 text-red-400 border-red-500/40 border-b-red-600/70 shadow-[0_3px_0_rgba(239,68,68,0.25)] hover:shadow-[0_0_8px_rgba(239,68,68,0.3)]";
   };
 
   return (
-    <div className="bg-card border border-card-border rounded-2xl p-6">
-      <h3 className="font-bold text-lg mb-1">Letter Accuracy Heatmap</h3>
-      <p className="text-sm text-muted-foreground mb-5">Problem keys highlighted in red</p>
-      <div className="flex flex-wrap gap-2">
-        {ALPHABET.map(letter => {
-          const acc = letterMap.get(letter);
+    <div className="bg-card border border-card-border rounded-2xl p-6 flex flex-col justify-between">
+      <div>
+        <h3 className="font-bold text-lg mb-1">Mechanical Heatmap</h3>
+        <p className="text-sm text-muted-foreground mb-6">Visual layout of your keys. Red indicates accuracy bottleneck.</p>
+      </div>
+
+      <div className="space-y-2.5 sm:space-y-3.5 my-auto py-2">
+        {HEATMAP_ROWS.map((row, rIdx) => {
+          let indentClass = "";
+          if (rIdx === 1) indentClass = "pl-4 sm:pl-6";
+          if (rIdx === 2) indentClass = "pl-8 sm:pl-12";
+          
           return (
-            <div
-              key={letter}
-              title={acc !== undefined ? `${letter}: ${acc}%` : `${letter}: no data`}
-              className={`w-10 h-10 rounded-lg flex items-center justify-center font-mono font-bold text-sm transition-all cursor-default ${getColor(acc)}`}
-            >
-              {letter}
+            <div key={rIdx} className={`flex gap-1.5 sm:gap-2 ${indentClass}`}>
+              {row.map(letter => {
+                const data = letterMap.get(letter);
+                const tooltipText = data 
+                  ? `${letter.toUpperCase()}: ${data.accuracy}% accuracy (${data.correct}/${data.attempts} correct)`
+                  : `${letter.toUpperCase()}: No stats logged`;
+
+                return (
+                  <div
+                    key={letter}
+                    title={tooltipText}
+                    className={`w-9 h-9 sm:w-11 sm:h-11 rounded-lg flex flex-col items-center justify-center font-mono font-black text-sm uppercase border transition-all duration-150 hover:-translate-y-0.5 cursor-help ${getKeycapStyles(letter)}`}
+                  >
+                    <span className="text-xs sm:text-sm">{letter}</span>
+                    {data && data.attempts > 0 && (
+                      <span className="text-[8px] opacity-65 font-medium -mt-0.5">{Math.round(data.accuracy)}%</span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           );
         })}
       </div>
-      <div className="flex items-center gap-4 mt-4 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-primary/30 inline-block" /> 95%+</span>
-        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-chart-3/30 inline-block" /> 85-95%</span>
-        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-chart-4/30 inline-block" /> 70-85%</span>
-        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-destructive/30 inline-block" /> &lt;70%</span>
-        <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-muted inline-block" /> no data</span>
+
+      <div className="flex flex-wrap items-center gap-4 mt-6 text-xs text-muted-foreground border-t border-border pt-4">
+        <span className="flex items-center gap-1.5"><span className="w-3.5 h-3.5 rounded border border-emerald-500/40 bg-emerald-500/10 inline-block" /> 95%+ Excellent</span>
+        <span className="flex items-center gap-1.5"><span className="w-3.5 h-3.5 rounded border border-green-500/30 bg-green-500/10 inline-block" /> 85-95% Good</span>
+        <span className="flex items-center gap-1.5"><span className="w-3.5 h-3.5 rounded border border-amber-500/30 bg-amber-500/10 inline-block" /> 70-85% Warning</span>
+        <span className="flex items-center gap-1.5"><span className="w-3.5 h-3.5 rounded border border-red-500/40 bg-red-500/10 inline-block" /> &lt;70% Focus Needed</span>
+        <span className="flex items-center gap-1.5"><span className="w-3.5 h-3.5 rounded border border-muted bg-muted/40 inline-block" /> No data</span>
       </div>
     </div>
   );

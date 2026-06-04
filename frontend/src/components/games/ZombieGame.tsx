@@ -136,38 +136,142 @@ export function ZombieGame({
         ctx.translate(Math.random() * 8 - 4, Math.random() * 8 - 4);
       }
 
-      // Draw background (cyber graveyard)
+      // Draw background (atmospheric graveyard)
       const skyGrad = ctx.createLinearGradient(0, 0, 0, h);
-      skyGrad.addColorStop(0, "#080b06");
-      skyGrad.addColorStop(0.6, "#0f160b");
+      skyGrad.addColorStop(0, "#060a04");
+      skyGrad.addColorStop(0.3, "#0a1208");
+      skyGrad.addColorStop(0.6, "#0e170a");
       skyGrad.addColorStop(1, "#030602");
       ctx.fillStyle = skyGrad;
       ctx.fillRect(0, 0, w, h);
 
-      // Moon
-      ctx.fillStyle = "rgba(164, 229, 133, 0.08)";
+      // Stars in night sky
+      for (let s = 0; s < 25; s++) {
+        const sx = (s * 137 + 29) % w;
+        const sy = (s * 41 + 7) % (h * 0.35);
+        const twinkle = 0.15 + Math.abs(Math.sin(Date.now() / (700 + s * 60) + s)) * 0.3;
+        ctx.fillStyle = `rgba(200, 255, 200, ${twinkle})`;
+        ctx.fillRect(sx, sy, 1.2, 1.2);
+      }
+
+      // Blood moon with pulsing glow
+      const moonPulse = 0.06 + Math.abs(Math.sin(Date.now() / 2000)) * 0.04;
+      ctx.fillStyle = `rgba(164, 229, 133, ${moonPulse})`;
       ctx.beginPath();
-      ctx.arc(w * 0.85, 36, 18, 0, Math.PI * 2);
+      ctx.arc(w * 0.85, 32, 30, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "rgba(164, 229, 133, 0.12)";
+      ctx.beginPath();
+      ctx.arc(w * 0.85, 32, 18, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "rgba(200, 255, 200, 0.2)";
+      ctx.beginPath();
+      ctx.arc(w * 0.85, 32, 12, 0, Math.PI * 2);
+      ctx.fill();
+      // Moon craters
+      ctx.fillStyle = "rgba(100, 150, 100, 0.08)";
+      ctx.beginPath();
+      ctx.arc(w * 0.85 - 4, 28, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(w * 0.85 + 5, 35, 2, 0, Math.PI * 2);
       ctx.fill();
 
-      // Ground floor line
-      ctx.strokeStyle = "rgba(74, 222, 128, 0.15)";
+      // Dead tree silhouettes
+      ctx.fillStyle = "#0a1208";
+      ctx.strokeStyle = "rgba(30, 41, 15, 0.6)";
+      ctx.lineWidth = 3;
+      // Tree 1 (left)
+      ctx.beginPath();
+      ctx.moveTo(w * 0.12, h * 0.82);
+      ctx.lineTo(w * 0.12, h * 0.30);
+      ctx.lineTo(w * 0.08, h * 0.15);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(w * 0.12, h * 0.45);
+      ctx.lineTo(w * 0.18, h * 0.25);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(w * 0.12, h * 0.55);
+      ctx.lineTo(w * 0.06, h * 0.38);
+      ctx.stroke();
+      // Tree 2 (right)
+      ctx.beginPath();
+      ctx.moveTo(w * 0.92, h * 0.82);
+      ctx.lineTo(w * 0.92, h * 0.35);
+      ctx.lineTo(w * 0.95, h * 0.20);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(w * 0.92, h * 0.50);
+      ctx.lineTo(w * 0.87, h * 0.32);
+      ctx.stroke();
+
+      // Rolling fog layer (bottom)
+      const fogGrad = ctx.createLinearGradient(0, h * 0.70, 0, h * 0.85);
+      fogGrad.addColorStop(0, "rgba(74, 222, 128, 0)");
+      fogGrad.addColorStop(0.5, "rgba(74, 222, 128, 0.03)");
+      fogGrad.addColorStop(1, "rgba(74, 222, 128, 0)");
+      ctx.fillStyle = fogGrad;
+      ctx.fillRect(0, h * 0.70, w, h * 0.15);
+      // Second fog layer (drifting)
+      const fogOffset = Math.sin(Date.now() / 3000) * 30;
+      ctx.fillStyle = "rgba(74, 222, 128, 0.015)";
+      ctx.beginPath();
+      ctx.ellipse(w * 0.3 + fogOffset, h * 0.78, 120, 8, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(w * 0.7 - fogOffset, h * 0.80, 100, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Ground floor
+      ctx.fillStyle = "#060a04";
+      ctx.fillRect(0, h * 0.82, w, h * 0.18);
+      ctx.strokeStyle = "rgba(74, 222, 128, 0.2)";
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(0, h * 0.82);
       ctx.lineTo(w, h * 0.82);
       ctx.stroke();
 
-      // Graves in background
-      ctx.fillStyle = "rgba(30, 41, 59, 0.4)";
-      ctx.strokeStyle = "rgba(74, 222, 128, 0.05)";
-      [15, 30, 50, 68, 83].forEach((xPos, idx) => {
+      // Graves and crosses in background
+      ctx.fillStyle = "rgba(30, 41, 30, 0.5)";
+      ctx.strokeStyle = "rgba(74, 222, 128, 0.06)";
+      ctx.lineWidth = 1;
+      // Tombstones
+      [15, 33, 52, 71, 88].forEach((xPos, idx) => {
         const gx = w * xPos / 100;
+        const gh = 15 + (idx * 7) % 10;
         ctx.beginPath();
-        ctx.roundRect(gx - 8, h * 0.82 - 20, 16, 20, 3);
+        ctx.roundRect(gx - 7, h * 0.82 - gh, 14, gh, [3, 3, 0, 0]);
         ctx.fill();
         ctx.stroke();
       });
+      // Crosses
+      ctx.strokeStyle = "rgba(74, 222, 128, 0.08)";
+      ctx.lineWidth = 2;
+      [24, 45, 62, 80].forEach((xPos) => {
+        const cx = w * xPos / 100;
+        ctx.beginPath();
+        ctx.moveTo(cx, h * 0.82 - 22);
+        ctx.lineTo(cx, h * 0.82 - 4);
+        ctx.moveTo(cx - 6, h * 0.82 - 16);
+        ctx.lineTo(cx + 6, h * 0.82 - 16);
+        ctx.stroke();
+      });
+
+      // Fireflies / glowing particles
+      for (let f = 0; f < 8; f++) {
+        const fx = (w * 0.2) + (f * 91 + Math.sin(Date.now() / (500 + f * 100) + f) * 20) % (w * 0.6);
+        const fy = h * 0.40 + Math.sin(Date.now() / (400 + f * 80) + f * 3) * 25;
+        const fa = 0.1 + Math.abs(Math.sin(Date.now() / (300 + f * 70) + f)) * 0.25;
+        ctx.fillStyle = `rgba(74, 222, 128, ${fa})`;
+        ctx.shadowColor = "#4ade80";
+        ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.arc(fx, fy, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
 
       // ─── DRAW PLAYER SURVIVOR ───
       ctx.save();

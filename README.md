@@ -107,12 +107,35 @@ TypeBlitz provides **11 progressive games**, each featuring **5 distinct difficu
 
 ## 🔊 Browser-Synthesized Audio System
 
-TypeBlitz integrates a **low-latency Web Audio API synthesizer** to provide high-fidelity audio feedback without downloading heavy sound assets:
-- **Tactile Key Click:** Cherry MX Blue and Brown switches synthesized in real-time.
-- **Typing Error Buzzer:** Low-frequency thuds played instantly on mistyped keys.
-- **Arcade Action Chimes:** Engine revs, tire screeches, sword slashes, gunshots, splats, laser beams, and explosions.
-- **Victory & Defeat Fanfares:** Major/Minor chord sweeps played depending on test success.
-- **Global Sound HUD Toggle:** Easily switch sound on/off directly from the game tray.
+TypeBlitz integrates a **low-latency, asset-free Web Audio API synthesizer** to provide high-fidelity audio feedback across three selectable sound themes:
+- **Mechanical Keyboard (Default):** Synthesizes Cherry MX Blue/Brown tactile switches and deep spacebar thuds.
+- **Vintage Typewriter:** Classic metallic typewriter key strikes, a wooden carriage bar thud for spaces, and a nostalgic **carriage-return bell ring** upon word submission.
+- **Cyber Synth:** High-tech digital clicks and electronic pitch sweeps.
+- **Muted:** Completely silent typing experience.
+
+HUD controls let users swap themes or toggle sound in real-time, with choices persisted in local storage.
+
+---
+
+## ⌨️ Neon Keyboard Visualizer & Mechanical Heatmap
+
+To bridge visual aesthetics with typing pedagogy, TypeBlitz includes two key guides:
+
+### 1. Neon Keyboard Pathfinder
+- Renders an interactive virtual keyboard below the text field.
+- Dynamically highlights the next expected letter in neon cyan.
+- Identifies Shift requirements by highlighting the Left and Right Shift keycaps in glowing orange when capital letters or special symbols are expected.
+- Fully togglable from the HUD for clutter-free typing.
+
+### 2. Dashboard Mechanical QWERTY Heatmap
+- Replaces generic grid maps with a 3D-staggered QWERTY mechanical keycap layout.
+- Integrates interactive 3D keycaps with slanted margins and physical borders that depress on hover.
+- Color codes keycaps by character-accuracy:
+  - **Green (95%+):** Optimal accuracy and muscle memory.
+  - **Yellow/Green (85-95%):** Good.
+  - **Orange (70-85%):** Warning, prone to minor typos.
+  - **Red (<70%):** Bottleneck key, requires target practice.
+- Displays detailed tooltips with correct-versus-attempts stats per key.
 
 ---
 
@@ -311,7 +334,10 @@ $$\text{Accuracy (\%)} = \max\left(0, \frac{\text{Total Keystrokes} - \text{Erro
 ## 🔮 Future Roadmap
 
 - [x] **HTML5 Canvas Arcade Engine:** 60 FPS visual overhaul for arcade games.
-- [x] **Browser Sound Synthesis:** low-latency asset-free Web Audio feedback.
+- [x] **Low-latency Audio & Sound Themes:** Mechanical, Vintage Typewriter (with bell), and Cyber Synth synthesized.
+- [x] **Neon Keyboard Pathfinder:** Highlighting next characters and Shift modifiers.
+- [x] **Dashboard Mechanical Heatmap:** staggered 3D keyboard accuracy metrics.
+- [x] **Typing Speed & WPM Auditor:** verified character-by-character calculations to block cheats.
 - [x] **Govt Mock Simulator:** Official SSC/Railways NTPC rules and evaluation cards.
 - [x] **Page Lazy Loading:** React.lazy chunks for lightning-fast routing.
 - [ ] **Multiplayer Arena:** Real-time WebSockets race tracks.

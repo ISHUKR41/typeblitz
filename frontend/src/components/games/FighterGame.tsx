@@ -198,24 +198,101 @@ export function FighterGame({
 
       // Draw background (cyberpunk dojo/arena)
       const grad = ctx.createLinearGradient(0, 0, 0, h);
-      grad.addColorStop(0, "#130922");
-      grad.addColorStop(0.5, "#0b0514");
-      grad.addColorStop(1, "#07020d");
+      grad.addColorStop(0, "#0e0620");
+      grad.addColorStop(0.35, "#0b0518");
+      grad.addColorStop(0.6, "#0a0415");
+      grad.addColorStop(1, "#050210");
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, w, h);
 
-      // Floor grid line
-      ctx.strokeStyle = "rgba(168, 85, 247, 0.25)";
+      // Background torii gate silhouette (Japanese aesthetic)
+      ctx.fillStyle = "rgba(107, 33, 168, 0.06)";
+      ctx.fillRect(w * 0.42, h * 0.08, w * 0.16, 8); // top crossbar
+      ctx.fillRect(w * 0.40, h * 0.05, w * 0.20, 5); // upper crossbar
+      ctx.fillRect(w * 0.44, h * 0.08, 6, h * 0.70); // left pillar
+      ctx.fillRect(w * 0.54, h * 0.08, 6, h * 0.70); // right pillar
+
+      // Atmospheric floating dust motes
+      for (let d = 0; d < 20; d++) {
+        const dx = (d * 97 + Date.now() / (800 + d * 40)) % w;
+        const dy = (d * 53 + Math.sin(Date.now() / (600 + d * 30) + d) * 15) % (h * 0.75);
+        const da = 0.05 + Math.abs(Math.sin(Date.now() / 1000 + d * 2)) * 0.1;
+        ctx.fillStyle = `rgba(168, 85, 247, ${da})`;
+        ctx.beginPath();
+        ctx.arc(dx, dy, 1 + (d % 3) * 0.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // Arena floor (textured stone with perspective grid)
+      const floorGrad = ctx.createLinearGradient(0, h * 0.75, 0, h);
+      floorGrad.addColorStop(0, "#0c0618");
+      floorGrad.addColorStop(1, "#050210");
+      ctx.fillStyle = floorGrad;
+      ctx.fillRect(0, h * 0.78, w, h * 0.22);
+
+      // Perspective floor grid lines
+      ctx.strokeStyle = "rgba(168, 85, 247, 0.08)";
+      ctx.lineWidth = 1;
+      for (let gx = 0; gx < w; gx += 40) {
+        ctx.beginPath();
+        ctx.moveTo(gx, h * 0.78);
+        ctx.lineTo(w / 2 + (gx - w / 2) * 0.3, h);
+        ctx.stroke();
+      }
+      // Horizontal floor lines
+      for (let gy = 0; gy < 4; gy++) {
+        const lineY = h * 0.78 + gy * (h * 0.055);
+        ctx.beginPath();
+        ctx.moveTo(0, lineY);
+        ctx.lineTo(w, lineY);
+        ctx.stroke();
+      }
+
+      // Main floor line (bright)
+      ctx.strokeStyle = "rgba(168, 85, 247, 0.3)";
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(0, h * 0.78);
       ctx.lineTo(w, h * 0.78);
       ctx.stroke();
 
-      // Dojo pillars
-      ctx.fillStyle = "rgba(107, 33, 168, 0.08)";
-      ctx.fillRect(w * 0.15, 0, 25, h * 0.78);
-      ctx.fillRect(w * 0.82, 0, 25, h * 0.78);
+      // Floor glow reflection under fighters
+      ctx.fillStyle = "rgba(52, 211, 153, 0.04)";
+      ctx.beginPath();
+      ctx.ellipse(250, h * 0.80, 50, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = `${enemy.color}08`;
+      ctx.beginPath();
+      ctx.ellipse(550, h * 0.80, 50, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Dojo pillars with neon brackets
+      ctx.fillStyle = "rgba(107, 33, 168, 0.1)";
+      ctx.fillRect(w * 0.08, 0, 18, h * 0.78);
+      ctx.fillRect(w * 0.88, 0, 18, h * 0.78);
+      // Neon bracket accents on pillars
+      ctx.strokeStyle = "rgba(168, 85, 247, 0.25)";
+      ctx.lineWidth = 2;
+      [h * 0.15, h * 0.35, h * 0.55].forEach(py => {
+        ctx.beginPath();
+        ctx.moveTo(w * 0.08, py);
+        ctx.lineTo(w * 0.08 + 18, py);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(w * 0.88, py);
+        ctx.lineTo(w * 0.88 + 18, py);
+        ctx.stroke();
+      });
+
+      // Arena ropes (top and bottom boundary)
+      ctx.strokeStyle = "rgba(239, 68, 68, 0.12)";
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([8, 6]);
+      ctx.beginPath();
+      ctx.moveTo(w * 0.12, h * 0.12);
+      ctx.lineTo(w * 0.88, h * 0.12);
+      ctx.stroke();
+      ctx.setLineDash([]);
 
       // Character base positions
       const playerIdleY = Math.sin(Date.now() / 150) * 2;

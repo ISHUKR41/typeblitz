@@ -268,24 +268,40 @@ export function RacingGame({
 
       if (ghostYScale > 0.15 && ghostYScale < 0.98) {
         ctx.save();
-        ctx.globalAlpha = 0.5; // Translucent ghost car
-        ctx.fillStyle = "#94a3b8"; // Gray neon outline
+        ctx.globalAlpha = 0.55; // Translucent ghost car
+        ctx.fillStyle = "rgba(30, 41, 59, 0.7)"; 
         ctx.strokeStyle = "#38bdf8";
-        ctx.lineWidth = 2;
-        // Draw ghost car box
+        ctx.shadowColor = "#38bdf8";
+        ctx.shadowBlur = 8;
+        ctx.lineWidth = 1.5;
+        // Draw ghost car outline
         ctx.beginPath();
-        ctx.roundRect(ghostX - ghostSizeW / 2, ghostY - ghostSizeH, ghostSizeW, ghostSizeH, 4);
+        ctx.moveTo(ghostX - ghostSizeW * 0.45, ghostY);
+        ctx.lineTo(ghostX - ghostSizeW * 0.48, ghostY - ghostSizeH * 0.3);
+        ctx.lineTo(ghostX - ghostSizeW * 0.42, ghostY - ghostSizeH * 0.7);
+        ctx.lineTo(ghostX - ghostSizeW * 0.3, ghostY - ghostSizeH * 0.88);
+        ctx.lineTo(ghostX - ghostSizeW * 0.15, ghostY - ghostSizeH * 0.95);
+        ctx.lineTo(ghostX + ghostSizeW * 0.15, ghostY - ghostSizeH * 0.95);
+        ctx.lineTo(ghostX + ghostSizeW * 0.3, ghostY - ghostSizeH * 0.88);
+        ctx.lineTo(ghostX + ghostSizeW * 0.42, ghostY - ghostSizeH * 0.7);
+        ctx.lineTo(ghostX + ghostSizeW * 0.48, ghostY - ghostSizeH * 0.3);
+        ctx.lineTo(ghostX + ghostSizeW * 0.45, ghostY);
+        ctx.closePath();
         ctx.fill();
         ctx.stroke();
-        // Tail lights
+
+        // Ghost Tail lights
         ctx.fillStyle = "#ef4444";
-        ctx.fillRect(ghostX - ghostSizeW / 2 + 3, ghostY - ghostSizeH + 2, 4, 3);
-        ctx.fillRect(ghostX + ghostSizeW / 2 - 7, ghostY - ghostSizeH + 2, 4, 3);
+        ctx.shadowBlur = 4;
+        ctx.fillRect(ghostX - ghostSizeW * 0.4, ghostY - ghostSizeH * 0.55, ghostSizeW * 0.15, 2.5);
+        ctx.fillRect(ghostX + ghostSizeW * 0.25, ghostY - ghostSizeH * 0.55, ghostSizeW * 0.15, 2.5);
+
         // Tag
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "8px monospace";
+        ctx.fillStyle = "#38bdf8";
+        ctx.shadowBlur = 0;
+        ctx.font = "bold 8px monospace";
         ctx.textAlign = "center";
-        ctx.fillText("GHOST", ghostX, ghostY - ghostSizeH - 4);
+        ctx.fillText("OPPONENT", ghostX, ghostY - ghostSizeH - 6);
         ctx.restore();
       }
 

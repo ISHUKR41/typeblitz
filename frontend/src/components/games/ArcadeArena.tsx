@@ -4,6 +4,7 @@ import { FighterGame } from "./FighterGame";
 import { ZombieGame } from "./ZombieGame";
 import { GalaxyGame } from "./GalaxyGame";
 import { soundEffects } from "@/lib/audio";
+import { VirtualKeyboard } from "../VirtualKeyboard";
 
 export interface ArcadeProps {
   words: string[];
@@ -66,8 +67,12 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
         // Calculate correct characters dynamically (completed words + current input)
         let correct = 0;
         for (let i = 0; i < wordIndex; i++) {
-          correct += words[i]?.length ?? 0;
-          correct += 1; // space
+          const w = typedWordsRef.current[i] ?? "";
+          const exp = words[i] ?? "";
+          for (let j = 0; j < Math.min(w.length, exp.length); j++) {
+            if (w[j] === exp[j]) correct++;
+          }
+          if (w === exp) correct++; // space character
         }
         const currExpected = words[wordIndex] ?? "";
         for (let i = 0; i < currentInput.length; i++) {
@@ -150,6 +155,11 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
       typedWordsRef.current = [...typedWordsRef.current, typed];
       correctCharsRef.current += charsOk + (isCorrect ? 1 : 0);
 
+      // Play vintage typewriter bell sound
+      if (soundEffects.getTheme() === "typewriter") {
+        soundEffects.playTypewriterBell();
+      }
+
       setLastWordCorrect(isCorrect);
       setComboStreak(streak => isCorrect ? streak + 1 : 0);
       setSubmissionCount(count => count + 1);
@@ -193,6 +203,8 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
     setLiveAccuracy(acc);
   };
 
+  const showKeyboard = typeof window !== "undefined" && localStorage.getItem("typeblitz.showKeyboard") !== "false";
+
   const props: ArcadeProps = {
     words,
     wordIndex,
@@ -212,7 +224,7 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
   };
 
   return (
-    <div className="w-full h-full" onClick={() => inputRef.current?.focus()}>
+    <div className="w-full h-full space-y-4" onClick={() => inputRef.current?.focus()}>
       <input
         ref={inputRef}
         type="text"
@@ -229,6 +241,12 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
       {gameId === "word-fighter" && <FighterGame {...props} />}
       {gameId === "zombie-hunt"  && <ZombieGame  {...props} />}
       {gameId === "galaxy-blitz" && <GalaxyGame  {...props} />}
+
+      {showKeyboard && (
+        <div className="z-20 relative">
+          <VirtualKeyboard nextChar={words[wordIndex]?.[currentInput.length]} />
+        </div>
+      )}
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Clock, Target, ArrowRight, Zap, RotateCcw, Home, CheckCircle, Volume2, VolumeX } from "lucide-react";
 import { ArcadeArena } from "@/components/games/ArcadeArena";
 import { soundEffects } from "@/lib/audio";
+import { VirtualKeyboard } from "@/components/VirtualKeyboard";
 import {
   isLevelUnlocked,
   isPassingResult,
@@ -187,6 +188,8 @@ export default function Play() {
 
   const [strictMode, setStrictMode] = useState(() => localStorage.getItem("typeblitz.strictMode") === "true");
   const [audioMuted, setAudioMuted] = useState(() => soundEffects.isMuted());
+  const [showKeyboard, setShowKeyboard] = useState(() => localStorage.getItem("typeblitz.showKeyboard") !== "false");
+  const [soundTheme, setSoundTheme] = useState(() => soundEffects.getTheme());
 
   // Industry-standard keystroke accuracy refs (persists even if user backspaces)
   const totalKeystrokesRef = useRef(0);
@@ -537,6 +540,24 @@ export default function Play() {
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <WpmSparkline data={wpmHistory} />
+                {/* Keyboard Visualizer Toggle */}
+                <button
+                  onClick={() => {
+                    setShowKeyboard(prev => {
+                      const next = !prev;
+                      localStorage.setItem("typeblitz.showKeyboard", String(next));
+                      return next;
+                    });
+                  }}
+                  className={`flex items-center gap-1.5 border rounded-xl px-2.5 py-1.5 text-xs font-mono font-bold transition-all ${
+                    showKeyboard
+                      ? "bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
+                      : "bg-muted/50 border-border text-muted-foreground hover:bg-muted"
+                  }`}
+                  title="Toggle keyboard visual helper"
+                >
+                  <span>⌨️ {showKeyboard ? "HELP ON" : "HELP OFF"}</span>
+                </button>
                 {/* Strict Mode Toggle */}
                 <button
                   onClick={toggleStrictMode}
@@ -550,23 +571,41 @@ export default function Play() {
                   <Target className={`w-3.5 h-3.5 ${strictMode ? "text-red-400" : "text-muted-foreground"}`} />
                   <span>{strictMode ? "STRICT ON" : "STRICT OFF"}</span>
                 </button>
-                {/* Audio sound toggle */}
-                <button
-                  onClick={() => {
-                    const next = !audioMuted;
-                    soundEffects.setMuted(next);
-                    setAudioMuted(next);
-                  }}
-                  className={`flex items-center gap-1.5 border rounded-xl px-2.5 py-1.5 text-xs font-mono font-bold transition-all ${
-                    !audioMuted
-                      ? "bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
-                      : "bg-muted/50 border-border text-muted-foreground hover:bg-muted"
-                  }`}
-                  title="Toggle mechanical typing sound effects"
-                >
-                  {audioMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-primary" />}
-                  <span>{audioMuted ? "MUTED" : "SOUND ON"}</span>
-                </button>
+                {/* Sound Theme Selector */}
+                <div className="flex items-center gap-1">
+                  <select
+                    value={soundTheme}
+                    onChange={e => {
+                      const nextTheme = e.target.value as "mechanical" | "typewriter" | "cyber";
+                      soundEffects.setTheme(nextTheme);
+                      setSoundTheme(nextTheme);
+                      if (audioMuted) {
+                        soundEffects.setMuted(false);
+                        setAudioMuted(false);
+                      }
+                      soundEffects.playClick(false);
+                    }}
+                    className="bg-card border border-border rounded-xl px-2.5 py-1.5 text-xs font-mono font-bold focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer hover:bg-muted transition-all"
+                    title="Select sound effects feedback style"
+                  >
+                    <option value="mechanical">🔊 Mechanical</option>
+                    <option value="typewriter">🔊 Typewriter</option>
+                    <option value="cyber">🔊 Cyber Synth</option>
+                  </select>
+                  <button
+                    onClick={() => {
+                      const next = !audioMuted;
+                      soundEffects.setMuted(next);
+                      setAudioMuted(next);
+                    }}
+                    className={`border rounded-xl p-1.5 transition-all ${
+                      !audioMuted ? "bg-primary/10 border-primary/20 text-primary" : "bg-muted/50 border-border text-muted-foreground"
+                    }`}
+                    title="Mute/unmute sounds"
+                  >
+                    {audioMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-primary" />}
+                  </button>
+                </div>
                 {/* WPM */}
                 <div className="flex items-center gap-1 bg-card border border-border rounded-xl px-2.5 py-1.5">
                   <Zap className="w-3.5 h-3.5 text-primary" />
@@ -624,6 +663,13 @@ export default function Play() {
               />
               <TypedText text={text} input={input} />
             </div>
+
+            {/* Visual Keyboard Guide */}
+            {showKeyboard && (
+              <div className="z-10 relative">
+                <VirtualKeyboard nextChar={text[input.length]} />
+              </div>
+            )}
 
             {!startTime && (
               <motion.p

@@ -5,10 +5,12 @@
 
 let audioCtx: AudioContext | null = null;
 let muted = false;
+let theme: "mechanical" | "typewriter" | "cyber" = "mechanical";
 
-// Load mute setting
+// Load mute & theme setting
 if (typeof window !== "undefined") {
   muted = localStorage.getItem("typeblitz.audioMuted") === "true";
+  theme = (localStorage.getItem("typeblitz.soundTheme") as any) || "mechanical";
 }
 
 function getAudioContext(): AudioContext | null {
@@ -40,6 +42,15 @@ export const soundEffects = {
     return muted;
   },
 
+  getTheme() {
+    return theme;
+  },
+
+  setTheme(val: "mechanical" | "typewriter" | "cyber") {
+    theme = val;
+    localStorage.setItem("typeblitz.soundTheme", val);
+  },
+
   playClick(isSpace = false) {
     if (muted) return;
     const ctx = getAudioContext();
@@ -51,25 +62,82 @@ export const soundEffects = {
     osc.connect(gain);
     gain.connect(ctx.destination);
 
-    if (isSpace) {
-      // Spacebar click: lower pitch and slightly wood-tap like
-      osc.type = "sine";
-      osc.frequency.setValueAtTime(140, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.08);
-      gain.gain.setValueAtTime(0.12, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.09);
-    } else {
-      // Standard key click: crisp high-pitch tick
-      osc.type = "triangle";
-      osc.frequency.setValueAtTime(800, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.03);
-      gain.gain.setValueAtTime(0.06, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.03);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.04);
+    if (theme === "mechanical") {
+      if (isSpace) {
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(140, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.09);
+      } else {
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(800, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.03);
+        gain.gain.setValueAtTime(0.06, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.03);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.04);
+      }
+    } else if (theme === "typewriter") {
+      if (isSpace) {
+        // Wooden heavy carriage sound
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(160, ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(60, ctx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.005, ctx.currentTime + 0.12);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.13);
+      } else {
+        // Metallic sharp clack
+        osc.type = "sawtooth";
+        osc.frequency.setValueAtTime(1100, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(220, ctx.currentTime + 0.04);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.002, ctx.currentTime + 0.04);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.05);
+      }
+    } else if (theme === "cyber") {
+      if (isSpace) {
+        // Futuristic pitch sweep
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(300, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.11);
+      } else {
+        // High-tech bubble pop synth
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(600, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.03);
+        gain.gain.setValueAtTime(0.04, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.03);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.04);
+      }
     }
+  },
+
+  playTypewriterBell() {
+    if (muted) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(1550, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1500, ctx.currentTime + 0.35);
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.36);
   },
 
   playError() {
