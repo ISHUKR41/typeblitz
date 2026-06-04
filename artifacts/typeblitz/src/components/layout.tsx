@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import {
   Keyboard, LayoutDashboard, Trophy, Gamepad2,
-  GraduationCap, LogOut, Menu, X, Shield, ChevronRight
+  GraduationCap, LogOut, Menu, X, Shield, ChevronRight, CalendarDays
 } from "lucide-react";
 
 interface NavItem {
@@ -17,6 +17,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/games",     label: "Games",      icon: Gamepad2,       match: p => p.startsWith("/games") || p.startsWith("/play") },
+  { href: "/challenge", label: "Daily Challenge", icon: CalendarDays, match: p => p === "/challenge" },
   { href: "/practice",  label: "Practice",   icon: GraduationCap,  match: p => p.startsWith("/practice") || p.startsWith("/lessons") },
   { href: "/dashboard", label: "Dashboard",  icon: LayoutDashboard, match: p => p === "/dashboard" },
   { href: "/leaderboard", label: "Leaderboard", icon: Trophy,       match: p => p === "/leaderboard" },

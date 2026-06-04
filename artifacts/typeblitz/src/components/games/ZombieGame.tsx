@@ -66,13 +66,13 @@ function ZombieFigure({ color, killed, isTarget }: { color: string; killed: bool
 
 export function ZombieGame({
   words, wordIndex, currentInput, wpm, accuracy,
-  targetWpm, lastWordCorrect, startTime, elapsedSeconds,
+  targetWpm, lastWordCorrect, startTime, elapsedSeconds, comboStreak, mistakeCount, submissionCount,
 }: ArcadeProps) {
   const [playerHp, setPlayerHp] = useState(100);
   const [killedIndices, setKilledIndices] = useState<Set<number>>(new Set());
   const [killFlash, setKillFlash] = useState<number | null>(null);
   const [screenShake, setScreenShake] = useState(false);
-  const prevCorrect = useRef<boolean | null>(null);
+  const prevSubmission = useRef(0);
 
   // Show 5 zombies at a time
   const visibleStart = Math.max(0, wordIndex - 1);
@@ -90,8 +90,8 @@ export function ZombieGame({
 
   useEffect(() => {
     if (lastWordCorrect === null) return;
-    if (lastWordCorrect === prevCorrect.current) return;
-    prevCorrect.current = lastWordCorrect;
+    if (submissionCount === prevSubmission.current) return;
+    prevSubmission.current = submissionCount;
 
     if (lastWordCorrect) {
       setKilledIndices(s => new Set([...s, wordIndex - 1]));
@@ -103,7 +103,7 @@ export function ZombieGame({
       setScreenShake(true);
       setTimeout(() => setScreenShake(false), 350);
     }
-  }, [lastWordCorrect]);
+  }, [lastWordCorrect, submissionCount, targetZombiePressure, wordIndex]);
 
   const currentWord = words[wordIndex] ?? "";
   const progress = (wordIndex / Math.max(words.length, 1)) * 100;
@@ -136,6 +136,12 @@ export function ZombieGame({
         </div>
         <div className="bg-black/60 border border-white/10 rounded-xl px-3 py-1.5">
           <span className="font-mono text-sm text-orange-400 font-bold">WAVE {wave}</span>
+        </div>
+        <div className="bg-yellow-400/15 border border-yellow-400/25 rounded-xl px-3 py-1.5">
+          <span className="font-mono text-sm text-yellow-300 font-bold">{comboStreak}x STREAK</span>
+        </div>
+        <div className="bg-red-500/15 border border-red-500/25 rounded-xl px-3 py-1.5">
+          <span className="font-mono text-sm text-red-300">{mistakeCount} mistakes</span>
         </div>
         <div className="ml-auto flex items-center gap-1.5 bg-black/60 border border-white/10 rounded-xl px-3 py-1.5">
           <Zap className="w-3.5 h-3.5 text-yellow-400" />

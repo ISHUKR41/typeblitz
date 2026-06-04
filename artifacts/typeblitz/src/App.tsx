@@ -14,6 +14,7 @@ import Dashboard from "@/pages/dashboard";
 import Leaderboard from "@/pages/leaderboard";
 import Practice from "@/pages/practice";
 import LessonPage from "@/pages/lesson";
+import ChallengePage from "@/pages/challenge";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ function Router() {
         <Route path="/play/:gameId/:level" component={Play} />
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/leaderboard" component={Leaderboard} />
+        <Route path="/challenge" component={ChallengePage} />
         <Route path="/practice" component={Practice} />
         <Route path="/lessons/:lessonId" component={LessonPage} />
         <Route component={NotFound} />

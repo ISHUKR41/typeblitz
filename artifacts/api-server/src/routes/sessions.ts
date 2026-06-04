@@ -65,16 +65,14 @@ router.post("/analyze", async (req, res) => {
     return;
   }
 
-  const words = typedText.trim().split(/\s+/).length;
-  const wpm = Math.round((words / Math.max(duration, 1)) * 60);
-
   const letterMap: Record<string, { attempts: number; correct: number }> = {};
   let correctChars = 0;
 
-  const minLen = Math.min(originalText.length, typedText.length);
-  for (let i = 0; i < minLen; i++) {
-    const orig = originalText[i].toLowerCase();
-    const typed = typedText[i].toLowerCase();
+  const maxLen = Math.max(originalText.length, typedText.length);
+  for (let i = 0; i < maxLen; i++) {
+    const orig = originalText[i]?.toLowerCase();
+    const typed = typedText[i]?.toLowerCase();
+    if (!orig) continue;
     if (/[a-z]/.test(orig)) {
       if (!letterMap[orig]) letterMap[orig] = { attempts: 0, correct: 0 };
       letterMap[orig].attempts++;
@@ -82,11 +80,14 @@ router.post("/analyze", async (req, res) => {
     } else if (orig === typed) { correctChars++; }
   }
 
-  const accuracy = originalText.length > 0
-    ? Math.round((correctChars / originalText.length) * 1000) / 10
+  const minutes = Math.max(duration, 1) / 60;
+  const wpm = Math.round((correctChars / 5) / minutes);
+  const accuracyBase = Math.max(originalText.length, typedText.length);
+  const accuracy = accuracyBase > 0
+    ? Math.round((correctChars / accuracyBase) * 1000) / 10
     : 100;
 
-  const errorCount = minLen - correctChars + Math.abs(originalText.length - typedText.length);
+  const errorCount = Math.max(accuracyBase - correctChars, 0);
 
   const letterErrors = Object.entries(letterMap)
     .filter(([, v]) => v.attempts > 0)

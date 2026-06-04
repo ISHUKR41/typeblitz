@@ -119,7 +119,7 @@ function AlienShip({ word, isTarget, destroyed, showLaser, color }: {
 
 export function GalaxyGame({
   words, wordIndex, currentInput, wpm, accuracy,
-  targetWpm, lastWordCorrect, elapsedSeconds, startTime,
+  targetWpm, lastWordCorrect, elapsedSeconds, startTime, comboStreak, mistakeCount, submissionCount,
 }: ArcadeProps) {
   const [shieldHp, setShieldHp] = useState(100);
   const [score, setScore] = useState(0);
@@ -127,7 +127,7 @@ export function GalaxyGame({
   const [laserTarget, setLaserTarget] = useState<number | null>(null);
   const [screenFlash, setScreenFlash] = useState(false);
   const [playerLaser, setPlayerLaser] = useState(false);
-  const prevCorrect = useRef<boolean | null>(null);
+  const prevSubmission = useRef(0);
 
   const progress = (wordIndex / Math.max(words.length, 1)) * 100;
 
@@ -162,8 +162,8 @@ export function GalaxyGame({
 
   useEffect(() => {
     if (lastWordCorrect === null) return;
-    if (lastWordCorrect === prevCorrect.current) return;
-    prevCorrect.current = lastWordCorrect;
+    if (submissionCount === prevSubmission.current) return;
+    prevSubmission.current = submissionCount;
 
     if (lastWordCorrect) {
       setScore(s => s + 10);
@@ -180,7 +180,7 @@ export function GalaxyGame({
       setScreenFlash(true);
       setTimeout(() => setScreenFlash(false), 300);
     }
-  }, [lastWordCorrect, wordIndex]);
+  }, [lastWordCorrect, submissionCount, wordIndex]);
 
   const currentWord = words[wordIndex] ?? "";
 
@@ -199,6 +199,12 @@ export function GalaxyGame({
         </div>
         <div className="bg-black/70 border border-white/10 rounded-xl px-3 py-1.5">
           <span className="font-mono text-sm text-white/50">{accuracy}% acc</span>
+        </div>
+        <div className="bg-yellow-400/15 border border-yellow-400/25 rounded-xl px-3 py-1.5">
+          <span className="font-mono text-sm text-yellow-300 font-bold">{comboStreak}x STREAK</span>
+        </div>
+        <div className="bg-red-500/15 border border-red-500/25 rounded-xl px-3 py-1.5">
+          <span className="font-mono text-sm text-red-300">{mistakeCount} mistakes</span>
         </div>
         <div className="ml-auto flex items-center gap-1.5 bg-black/70 border border-white/10 rounded-xl px-3 py-1.5">
           <Zap className="w-3.5 h-3.5 text-yellow-400" />

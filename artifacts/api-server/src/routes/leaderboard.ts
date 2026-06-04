@@ -1,12 +1,18 @@
 import { Router } from "express";
 import mongoose from "mongoose";
 import { Session, User } from "../models/index.js";
+import { getConnectionStatus } from "../lib/db.js";
 
 const router = Router();
 
 router.get("/", async (req, res) => {
   const gameId = typeof req.query.gameId === "string" ? req.query.gameId : undefined;
   const limit = Math.min(parseInt(req.query.limit as string) || 20, 50);
+
+  if (!getConnectionStatus()) {
+    res.json([]);
+    return;
+  }
 
   const matchStage: Record<string, unknown> = {};
   if (gameId) matchStage.gameId = gameId;

@@ -53,6 +53,25 @@ const TIMED_PASSAGES = [
 ];
 
 // ─── Shared typing display ────────────────────────────────────────────────
+function countCorrectChars(expected: string, typed: string): number {
+  let correct = 0;
+  const len = Math.min(expected.length, typed.length);
+  for (let i = 0; i < len; i++) {
+    if (typed[i] === expected[i]) correct++;
+  }
+  return correct;
+}
+
+function calculateWpm(correctChars: number, seconds: number): number {
+  return Math.round((correctChars / 5) / (Math.max(seconds, 1) / 60));
+}
+
+function calculateAccuracy(expected: string, typed: string): number {
+  const correct = countCorrectChars(expected, typed);
+  const denominator = Math.max(expected.length, typed.length);
+  return denominator > 0 ? Math.round((correct / denominator) * 100) : 100;
+}
+
 function TypingDisplay({ text, input }: { text: string; input: string }) {
   return (
     <div className="bg-card border border-border rounded-2xl p-5 font-mono text-base md:text-lg leading-relaxed select-none">
@@ -92,13 +111,13 @@ function TimedTest() {
   const doFinish = () => {
     setFinished(true);
     setInput(curr => {
-      const words = curr.trim().split(/\s+/).filter(Boolean).length;
-      const wpm = Math.round((words / duration) * 60);
-      let correct = 0;
-      const len = Math.min(curr.length, text.length);
-      for (let i = 0; i < len; i++) if (curr[i] === text[i]) correct++;
-      const accuracy = curr.length > 0 ? Math.round((correct / curr.length) * 100) : 100;
-      setResult({ wpm, accuracy, errors: len - correct });
+      const correct = countCorrectChars(text, curr);
+      const denominator = Math.max(curr.length, text.length);
+      setResult({
+        wpm: calculateWpm(correct, duration),
+        accuracy: calculateAccuracy(text, curr),
+        errors: Math.max(denominator - correct, 0),
+      });
       return curr;
     });
   };
@@ -171,18 +190,16 @@ function CustomPractice() {
     const val = e.target.value;
     if (!startTime && val.length > 0) setStartTime(Date.now());
     setInput(val);
-    let correct = 0;
-    for (let i = 0; i < val.length; i++) if (val[i] === customText[i]) correct++;
-    const acc = val.length > 0 ? Math.round((correct / val.length) * 100) : 100;
-    setAccuracy(acc);
+    const correct = countCorrectChars(customText, val);
+    setAccuracy(calculateAccuracy(customText.slice(0, val.length), val));
     const secs = startTime ? (Date.now() - startTime) / 1000 : 1;
-    setWpm(Math.round((val.length / 5) / (secs / 60)));
+    setWpm(calculateWpm(correct, secs));
 
     if (val.length >= customText.length) {
       const dur = Math.floor(secs);
-      const finalWpm = Math.round((val.trim().split(/\s+/).length / Math.max(dur, 1)) * 60);
-      setWpm(finalWpm);
       const result = await analyzeMutation.mutateAsync({ data: { originalText: customText, typedText: val, duration: dur } });
+      setWpm(result.wpm);
+      setAccuracy(Math.round(result.accuracy));
       setAnalysis(result);
       setStep("results");
     }
@@ -299,11 +316,10 @@ function GovtExamPractice() {
     const val = e.target.value;
     if (!startTime && val.length > 0) setStartTime(Date.now());
     setInput(val);
-    let correct = 0;
-    for (let i = 0; i < val.length; i++) if (val[i] === selected.text[i]) correct++;
-    setAccuracy(val.length > 0 ? Math.round((correct / val.length) * 100) : 100);
+    const correct = countCorrectChars(selected.text, val);
+    setAccuracy(calculateAccuracy(selected.text.slice(0, val.length), val));
     const secs = startTime ? (Date.now() - startTime) / 1000 : 1;
-    setWpm(Math.round((val.length / 5) / (secs / 60)));
+    setWpm(calculateWpm(correct, secs));
     if (val.length >= selected.text.length) setFinished(true);
   };
 

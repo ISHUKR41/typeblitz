@@ -9,6 +9,27 @@ import { ArcadeArena } from "@/components/games/ArcadeArena";
 
 const ARCADE_GAME_IDS = new Set(["turbo-race", "word-fighter", "zombie-hunt", "galaxy-blitz"]);
 
+type LetterStatMap = Record<string, { attempts: number; correct: number }>;
+
+function buildLetterStats(expectedText: string, typedText: string): LetterStatMap {
+  const stats: LetterStatMap = {};
+  const maxLen = Math.max(expectedText.length, typedText.length);
+
+  for (let i = 0; i < maxLen; i++) {
+    const expected = expectedText[i]?.toLowerCase();
+    if (!expected || !/[a-z0-9]/.test(expected)) continue;
+
+    stats[expected] ??= { attempts: 0, correct: 0 };
+    stats[expected].attempts++;
+
+    if (typedText[i]?.toLowerCase() === expected) {
+      stats[expected].correct++;
+    }
+  }
+
+  return stats;
+}
+
 // ─── WPM sparkline ────────────────────────────────────────────────────────
 function WpmSparkline({ data }: { data: number[] }) {
   if (data.length < 2) return null;
@@ -203,8 +224,22 @@ export default function Play() {
     return () => document.removeEventListener("click", fn);
   }, [isArcade]);
 
-  const saveSession = useCallback((finalWpm: number, finalAcc: number, finalDuration: number) => {
+  const saveSession = useCallback((
+    finalWpm: number,
+    finalAcc: number,
+    finalDuration: number,
+    typedTextForStats?: string,
+  ) => {
     if (user && gameId) {
+      const sourceText =
+        isArcade
+          ? (levelContent?.words ?? levelContent?.text?.split(/\s+/) ?? []).join(" ")
+          : text;
+      const letterErrors =
+        typedTextForStats && sourceText
+          ? JSON.stringify(buildLetterStats(sourceText, typedTextForStats))
+          : null;
+
       createSession.mutate({
         data: {
           userId: user.id,
@@ -214,10 +249,11 @@ export default function Play() {
           accuracy: finalAcc,
           duration: finalDuration,
           level: levelNumber,
+          letterErrors,
         }
       });
     }
-  }, [user, gameId, levelNumber, createSession]);
+  }, [user, gameId, isArcade, levelContent, levelNumber, text, createSession]);
 
   const finishGame = useCallback((finalInput: string, tStart: number) => {
     const secs = (Date.now() - tStart) / 1000;
@@ -233,7 +269,7 @@ export default function Play() {
     setWpm(finalWpm);
     setAccuracy(finalAcc);
     setDuration(Math.floor(secs));
-    saveSession(finalWpm, finalAcc, Math.floor(secs));
+    saveSession(finalWpm, finalAcc, Math.floor(secs), finalInput);
   }, [text, saveSession]);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -335,12 +371,12 @@ export default function Play() {
                 gameId={gameId ?? ""}
                 levelNumber={levelNumber}
                 targetWpm={targetWpm}
-                onComplete={(finalWpm, finalAcc, finalDuration) => {
+                onComplete={(finalWpm, finalAcc, finalDuration, typedText) => {
                   setWpm(finalWpm);
                   setAccuracy(finalAcc);
                   setDuration(finalDuration);
                   setIsFinished(true);
-                  saveSession(finalWpm, finalAcc, finalDuration);
+                  saveSession(finalWpm, finalAcc, finalDuration, typedText);
                 }}
               />
             </motion.div>

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import {
   Zap, AlignLeft, Code2, Target, Timer, Shield, Terminal,
-  ChevronRight, Star, Lock, TrendingUp, Car, Sword, Skull, Rocket
+  ChevronRight, Star, Lock, TrendingUp, Car, Sword, Skull, Rocket, CalendarDays
 } from "lucide-react";
 
 // ─── Colour tokens per game ───────────────────────────────────────────────
@@ -171,6 +171,31 @@ export default function Games() {
           11 games · 5 levels each · English, Govt Exam, Coding & Arcade
         </p>
       </motion.div>
+
+      <Link href="/challenge">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          whileHover={{ y: -2 }}
+          className="flex flex-col gap-4 rounded-2xl border border-primary/30 bg-primary/10 p-5 shadow-lg shadow-primary/10 md:flex-row md:items-center md:justify-between"
+        >
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-primary/30 bg-primary/15 text-primary">
+              <CalendarDays className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-primary">Daily return challenge</p>
+              <h2 className="mt-1 text-xl font-extrabold">One fresh exam/code typing test every day</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Honest WPM, weak-key feedback, local best score, and streak tracking.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 font-bold text-primary">
+            Play Today <ChevronRight className="h-4 w-4" />
+          </div>
+        </motion.div>
+      </Link>
 
       {/* Category legend */}
       <motion.div

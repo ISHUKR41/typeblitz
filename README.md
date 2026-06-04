@@ -77,6 +77,7 @@ It combines **arcade-style games** with **structured professional training**, tr
 | **Arcade Visuals** | Racing track, fighter arena, zombie field, galaxy shooter — rendered in-browser |
 | **Word-by-Word Mode** | Arcade games use space-separated word submission |
 | **Text-Stream Mode** | Standard games use character-by-character precision tracking |
+| **Daily Challenge** | Rotating exam/code typing challenge with local best score, streak, and weak-key feedback |
 
 ### 📊 Analytics & Dashboard
 | Feature | Detail |
@@ -444,12 +445,12 @@ Accuracy  =  (Correct Characters ÷ Total Characters Typed)  × 100
 - [x] Custom text practice + AI keystroke analysis
 - [x] 3 timed test modes (1 / 2 / 5 minutes)
 - [x] Industry-standard WPM (correct chars only)
+- [x] Daily Challenge with local streak, best score, and weak-key feedback
 - [x] Fully responsive — mobile, tablet, desktop
 - [x] Mobile hamburger navigation
 - [x] HMAC Bearer token authentication
 
 ### 🔜 v1.1 — Next
-- [ ] **Daily Challenge** — same text for all players, 24-hour leaderboard reset
 - [ ] **MongoDB Atlas** — scalable vocabulary management
 - [ ] **Multiplayer Race** — real-time WebSocket race against friends
 - [ ] **Custom Vocabulary Sets** — upload your own word list

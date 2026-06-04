@@ -17,6 +17,9 @@ export interface ArcadeProps {
   startTime: number | null;
   lastWordCorrect: boolean | null;
   elapsedSeconds: number;
+  comboStreak: number;
+  mistakeCount: number;
+  submissionCount: number;
 }
 
 interface ArcadeArenaProps {
@@ -24,7 +27,7 @@ interface ArcadeArenaProps {
   gameId: string;
   levelNumber: number;
   targetWpm: number;
-  onComplete: (wpm: number, accuracy: number, duration: number) => void;
+  onComplete: (wpm: number, accuracy: number, duration: number, typedText: string) => void;
 }
 
 export function ArcadeArena({ words, gameId, levelNumber, targetWpm, onComplete }: ArcadeArenaProps) {
@@ -37,7 +40,11 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, onComplete 
   const [wpmHistory, setWpmHistory] = useState<number[]>([]);
   const [lastWordCorrect, setLastWordCorrect] = useState<boolean | null>(null);
   const [elapsed, setElapsed] = useState(0);
+  const [comboStreak, setComboStreak] = useState(0);
+  const [mistakeCount, setMistakeCount] = useState(0);
+  const [submissionCount, setSubmissionCount] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const typedWordsRef = useRef<string[]>([]);
 
   const progress = words.length > 0 ? (wordIndex / words.length) * 100 : 0;
   const accuracy = totalChars > 0 ? Math.round((correctChars / totalChars) * 100) : 100;
@@ -77,10 +84,14 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, onComplete 
       }
       const newTotal = totalChars + charsTyped;
       const newCorrect = correctChars + charsOk;
+      typedWordsRef.current = [...typedWordsRef.current, typed];
 
       setTotalChars(newTotal);
       setCorrectChars(newCorrect);
       setLastWordCorrect(isCorrect);
+      setComboStreak(streak => isCorrect ? streak + 1 : 0);
+      setSubmissionCount(count => count + 1);
+      if (!isCorrect) setMistakeCount(count => count + 1);
       setCurrentInput("");
 
       const next = wordIndex + 1;
@@ -90,7 +101,7 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, onComplete 
         // WPM = correct chars only / 5 / minutes (industry standard)
         const finalWpm = Math.round((newCorrect / 5) / Math.max(mins, 0.01));
         const finalAcc = newTotal > 0 ? Math.round((newCorrect / newTotal) * 100) : 100;
-        onComplete(finalWpm, finalAcc, Math.floor(secs));
+        onComplete(finalWpm, finalAcc, Math.floor(secs), typedWordsRef.current.join(" "));
       } else {
         setWordIndex(next);
       }
@@ -102,7 +113,7 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, onComplete 
   const props: ArcadeProps = {
     words, wordIndex, currentInput, wpm, wpmHistory,
     accuracy, progress, levelNumber, targetWpm, startTime,
-    lastWordCorrect, elapsedSeconds: elapsed,
+    lastWordCorrect, elapsedSeconds: elapsed, comboStreak, mistakeCount, submissionCount,
   };
 
   return (

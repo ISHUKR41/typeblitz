@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { useGetLesson, getGetLessonQueryKey } from "@workspace/api-client-react";
@@ -20,6 +20,8 @@ export default function Lesson() {
   const [isFinished, setIsFinished] = useState(false);
   const [errors, setErrors] = useState(0);
   const [completedLines, setCompletedLines] = useState(0);
+  const [completedChars, setCompletedChars] = useState(0);
+  const lineMistakesRef = useRef<Set<number>>(new Set());
 
   useEffect(() => {
     setLineIndex(0);
@@ -27,6 +29,8 @@ export default function Lesson() {
     setIsFinished(false);
     setErrors(0);
     setCompletedLines(0);
+    setCompletedChars(0);
+    lineMistakesRef.current = new Set();
   }, [id]);
 
   if (!lesson) {
@@ -40,15 +44,16 @@ export default function Lesson() {
     const val = e.target.value;
     setInput(val);
 
-    // Count errors on current input
-    let errs = 0;
+    // Track mistakes even if the user corrects them before finishing the line.
     for (let i = 0; i < val.length; i++) {
-      if (val[i] !== currentLine[i]) errs++;
+      if (val[i] !== currentLine[i]) lineMistakesRef.current.add(i);
     }
 
     if (val === currentLine) {
-      setErrors(prev => prev + errs);
+      setErrors(prev => prev + lineMistakesRef.current.size);
       setCompletedLines(prev => prev + 1);
+      setCompletedChars(prev => prev + currentLine.length);
+      lineMistakesRef.current = new Set();
       if (lineIndex + 1 >= totalLines) {
         setIsFinished(true);
       } else {
@@ -58,7 +63,9 @@ export default function Lesson() {
     }
   };
 
-  const accuracy = completedLines > 0 ? Math.round(((completedLines * currentLine.length - errors) / (completedLines * currentLine.length)) * 100) : 100;
+  const accuracy = completedChars > 0
+    ? Math.max(0, Math.round(((completedChars - errors) / completedChars) * 100))
+    : 100;
 
   if (isFinished) {
     return (

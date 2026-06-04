@@ -1,10 +1,19 @@
-import { Router } from "express";
+import { Router, type Response } from "express";
 import { User } from "../models/index.js";
 import { hashPassword, verifyPassword, generateToken, verifyToken } from "../lib/auth.js";
+import { getConnectionStatus } from "../lib/db.js";
 
 const router = Router();
 
+function requireDatabase(res: Response): boolean {
+  if (getConnectionStatus()) return true;
+  res.status(503).json({ error: "Database is not configured. Set MONGODB_URI to enable accounts." });
+  return false;
+}
+
 router.post("/register", async (req, res) => {
+  if (!requireDatabase(res)) return;
+
   const { username, password } = req.body ?? {};
   if (!username || typeof username !== "string" || username.length < 3) {
     res.status(400).json({ error: "Username must be at least 3 characters" });
@@ -32,6 +41,8 @@ router.post("/register", async (req, res) => {
 });
 
 router.post("/login", async (req, res) => {
+  if (!requireDatabase(res)) return;
+
   const { username, password } = req.body ?? {};
   if (!username || !password) {
     res.status(400).json({ error: "Username and password required" });
@@ -62,6 +73,8 @@ router.post("/logout", (_req, res) => {
 });
 
 router.get("/me", async (req, res) => {
+  if (!requireDatabase(res)) return;
+
   const authHeader = req.headers.authorization;
   if (!authHeader?.startsWith("Bearer ")) {
     res.status(401).json({ error: "Unauthorized" });

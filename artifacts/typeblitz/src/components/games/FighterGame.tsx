@@ -120,7 +120,7 @@ function Fighter({ side, color, isAttacking, isHit, isDead }: {
 
 export function FighterGame({
   words, wordIndex, currentInput, wpm, accuracy,
-  targetWpm, lastWordCorrect, levelNumber,
+  targetWpm, lastWordCorrect, levelNumber, submissionCount,
 }: ArcadeProps) {
   const enemy = ENEMIES[Math.min(levelNumber - 1, ENEMIES.length - 1)];
   const totalWords = words.length;
@@ -133,12 +133,12 @@ export function FighterGame({
   const [enemyHit, setEnemyHit] = useState(false);
   const [combo, setCombo] = useState(0);
   const [comboLabel, setComboLabel] = useState<string | null>(null);
-  const prevCorrect = useRef<boolean | null>(null);
+  const prevSubmission = useRef(0);
 
   useEffect(() => {
     if (lastWordCorrect === null) return;
-    if (lastWordCorrect === prevCorrect.current) return;
-    prevCorrect.current = lastWordCorrect;
+    if (submissionCount === prevSubmission.current) return;
+    prevSubmission.current = submissionCount;
 
     if (lastWordCorrect) {
       const dmg = Math.round(enemy.hp / totalWords);
@@ -164,7 +164,7 @@ export function FighterGame({
       setCombo(0);
       setComboLabel(null);
     }
-  }, [lastWordCorrect, enemy.hp, totalWords]);
+  }, [lastWordCorrect, submissionCount, enemy.hp, totalWords]);
 
   const currentWord = words[wordIndex] ?? "";
   const nextWords = words.slice(wordIndex + 1, wordIndex + 3);

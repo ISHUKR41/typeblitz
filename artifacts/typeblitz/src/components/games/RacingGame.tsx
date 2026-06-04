@@ -33,12 +33,12 @@ function WordDisplay({ word, input }: { word: string; input: string }) {
 
 export function RacingGame({
   words, wordIndex, currentInput, wpm, accuracy, progress,
-  targetWpm, startTime, lastWordCorrect, elapsedSeconds,
+  targetWpm, startTime, lastWordCorrect, elapsedSeconds, comboStreak, mistakeCount, submissionCount,
 }: ArcadeProps) {
   const carPos = progress;
   const [ghostPos, setGhostPos] = useState(0);
   const [speedLines, setSpeedLines] = useState(false);
-  const prevCorrect = useRef<boolean | null>(null);
+  const prevSubmission = useRef(0);
   const [hitFlash, setHitFlash] = useState<"good" | "bad" | null>(null);
 
   // Total avg chars for ghost estimation
@@ -58,12 +58,12 @@ export function RacingGame({
 
   useEffect(() => {
     if (lastWordCorrect === null) return;
-    if (lastWordCorrect === prevCorrect.current) return;
-    prevCorrect.current = lastWordCorrect;
+    if (submissionCount === prevSubmission.current) return;
+    prevSubmission.current = submissionCount;
     setHitFlash(lastWordCorrect ? "good" : "bad");
     const t = setTimeout(() => setHitFlash(null), 400);
     return () => clearTimeout(t);
-  }, [lastWordCorrect]);
+  }, [lastWordCorrect, submissionCount]);
 
   const currentWord = words[wordIndex] ?? "";
   const nextWords = words.slice(wordIndex + 1, wordIndex + 4);
@@ -82,12 +82,15 @@ export function RacingGame({
           <div className="bg-black/60 border border-white/10 rounded-xl px-4 py-2">
             <span className="font-mono text-sm text-white/70">{accuracy}% acc</span>
           </div>
+          <div className="rounded-xl px-3 py-2 text-xs font-bold font-mono bg-yellow-400/15 text-yellow-300 border border-yellow-400/25">
+            {comboStreak}x STREAK
+          </div>
           <div className={`rounded-xl px-3 py-2 text-xs font-bold font-mono ${isAhead ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-red-500/20 text-red-400 border border-red-500/30"}`}>
             {isAhead ? "▲ AHEAD" : "▼ BEHIND"}
           </div>
         </div>
         <div className="font-mono text-sm text-white/50">
-          {wordIndex} / {words.length} words
+          {wordIndex} / {words.length} words · {mistakeCount} mistakes
         </div>
       </div>
 
