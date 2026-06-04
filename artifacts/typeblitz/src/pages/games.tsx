@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import {
   Zap, AlignLeft, Code2, Target, Timer, Shield, Terminal,
-  ChevronRight, Star, Lock, TrendingUp
+  ChevronRight, Star, Lock, TrendingUp, Car, Sword, Skull, Rocket
 } from "lucide-react";
 
 // ─── Colour tokens per game ───────────────────────────────────────────────
@@ -16,10 +16,15 @@ const GAME_THEME: Record<string, { text: string; bg: string; border: string; sha
   "code-vocab":       { text: "text-emerald-400",bg: "bg-emerald-400/10",border: "border-emerald-400/30",shadow: "hover:shadow-emerald-400/15" },
   "letter-blaster":   { text: "text-chart-4",    bg: "bg-chart-4/10",    border: "border-chart-4/30",    shadow: "hover:shadow-chart-4/15" },
   "typing-race":      { text: "text-yellow-400", bg: "bg-yellow-400/10", border: "border-yellow-400/30", shadow: "hover:shadow-yellow-400/15" },
+  "turbo-race":       { text: "text-orange-400", bg: "bg-orange-400/10", border: "border-orange-400/30", shadow: "hover:shadow-orange-400/15" },
+  "word-fighter":     { text: "text-red-400",    bg: "bg-red-400/10",    border: "border-red-400/30",    shadow: "hover:shadow-red-400/15" },
+  "zombie-hunt":      { text: "text-lime-400",   bg: "bg-lime-400/10",   border: "border-lime-400/30",   shadow: "hover:shadow-lime-400/15" },
+  "galaxy-blitz":     { text: "text-cyan-400",   bg: "bg-cyan-400/10",   border: "border-cyan-400/30",   shadow: "hover:shadow-cyan-400/15" },
 };
 
 const GAME_ICONS: Record<string, React.ElementType> = {
   Zap, AlignLeft, Code: Code2, Code2, Target, Timer, Shield, Terminal,
+  CarFront: Car, Sword, Skull, Rocket,
 };
 
 const DIFFICULTY: Record<string, { label: string; cls: string }> = {
@@ -37,6 +42,10 @@ const CATEGORY_META: Record<string, { label: string; color: string }> = {
   "code-vocab":       { label: "Developer Vocabulary",   color: "text-emerald-400" },
   "letter-blaster":   { label: "Reaction Drill",         color: "text-chart-4" },
   "typing-race":      { label: "Speed Competition",      color: "text-yellow-400" },
+  "turbo-race":       { label: "🏎 Arcade Racing",        color: "text-orange-400" },
+  "word-fighter":     { label: "⚔️ Arcade Fighter",       color: "text-red-400" },
+  "zombie-hunt":      { label: "🧟 Zombie Survival",      color: "text-lime-400" },
+  "galaxy-blitz":     { label: "🚀 Space Shooter",        color: "text-cyan-400" },
 };
 
 // ─── Single game card ────────────────────────────────────────────────────

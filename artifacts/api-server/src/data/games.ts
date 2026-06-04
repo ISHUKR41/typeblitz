@@ -127,7 +127,71 @@ export const GAMES: Game[] = [
       { id: 24, number: 4, name: "Expert Ghost", description: "80 WPM. Only skilled typists can keep up.", targetWpm: 80, targetAccuracy: 92, duration: null, wordCount: null },
       { id: 25, number: 5, name: "Pro Ghost", description: "100 WPM through expert prose. The ultimate test.", targetWpm: 100, targetAccuracy: 95, duration: null, wordCount: null },
     ]
-  }
+  },
+
+  // ──────────────────────────────────────────────────────────────
+  // ARCADE GAMES — Visual typing games
+  // ──────────────────────────────────────────────────────────────
+  {
+    id: "turbo-race",
+    name: "Turbo Race",
+    description: "Type words to accelerate your car! Race the ghost car to the finish line. Faster typing = faster car. Beat the ghost to win.",
+    category: "game",
+    icon: "CarFront",
+    difficulty: "beginner",
+    levels: [
+      { id: 41, number: 1, name: "Rookie Track", description: "Short easy words. Get the feel for the road.", targetWpm: 25, targetAccuracy: 85, duration: 60, wordCount: 30 },
+      { id: 42, number: 2, name: "Street Circuit", description: "Mixed vocabulary at medium pace.", targetWpm: 35, targetAccuracy: 87, duration: 60, wordCount: 35 },
+      { id: 43, number: 3, name: "City Sprint", description: "Govt exam & coding words. Maintain momentum.", targetWpm: 45, targetAccuracy: 89, duration: 60, wordCount: 40 },
+      { id: 44, number: 4, name: "Highway Dash", description: "Professional vocabulary at high speed.", targetWpm: 58, targetAccuracy: 91, duration: 60, wordCount: 45 },
+      { id: 45, number: 5, name: "Grand Prix", description: "Expert words. Beat the champion ghost car.", targetWpm: 70, targetAccuracy: 94, duration: 60, wordCount: 50 },
+    ]
+  },
+  {
+    id: "word-fighter",
+    name: "Word Fighter",
+    description: "Type attack words to defeat your opponent! Each correct word is a combo strike. Miss a word and take damage. Defeat all enemies to win.",
+    category: "game",
+    icon: "Sword",
+    difficulty: "intermediate",
+    levels: [
+      { id: 46, number: 1, name: "Training Dojo", description: "Basic words. Learn the fighting mechanics.", targetWpm: 20, targetAccuracy: 85, duration: 60, wordCount: 25 },
+      { id: 47, number: 2, name: "Street Brawl", description: "Administrative & coding vocabulary.", targetWpm: 30, targetAccuracy: 87, duration: 60, wordCount: 30 },
+      { id: 48, number: 3, name: "Tournament", description: "SSC/Banking level words. Build combos.", targetWpm: 42, targetAccuracy: 90, duration: 60, wordCount: 35 },
+      { id: 49, number: 4, name: "Championship", description: "UPSC level vocabulary. Hit your combos.", targetWpm: 55, targetAccuracy: 92, duration: 60, wordCount: 40 },
+      { id: 50, number: 5, name: "World Final", description: "IAS-level expert vocabulary. Prove mastery.", targetWpm: 65, targetAccuracy: 94, duration: 60, wordCount: 45 },
+    ]
+  },
+  {
+    id: "zombie-hunt",
+    name: "Zombie Hunt",
+    description: "Waves of zombies approach — type their words to eliminate them before they reach you! Mistype and lose HP. Survive all waves to win.",
+    category: "game",
+    icon: "Skull",
+    difficulty: "intermediate",
+    levels: [
+      { id: 51, number: 1, name: "Graveyard", description: "Slow zombies with easy words.", targetWpm: 22, targetAccuracy: 85, duration: 60, wordCount: 20 },
+      { id: 52, number: 2, name: "City Outbreak", description: "More zombies, administrative vocabulary.", targetWpm: 32, targetAccuracy: 87, duration: 60, wordCount: 28 },
+      { id: 53, number: 3, name: "Horde Attack", description: "Fast zombie waves with SSC-level words.", targetWpm: 44, targetAccuracy: 90, duration: 60, wordCount: 35 },
+      { id: 54, number: 4, name: "Apocalypse", description: "Relentless waves. UPSC vocabulary.", targetWpm: 56, targetAccuracy: 92, duration: 60, wordCount: 40 },
+      { id: 55, number: 5, name: "Final Stand", description: "Unstoppable horde. Only experts survive.", targetWpm: 68, targetAccuracy: 94, duration: 60, wordCount: 45 },
+    ]
+  },
+  {
+    id: "galaxy-blitz",
+    name: "Galaxy Blitz",
+    description: "Alien ships descend from space — type their words to fire your laser and destroy them! Miss a shot and your shield takes damage. Defend Earth!",
+    category: "game",
+    icon: "Rocket",
+    difficulty: "advanced",
+    levels: [
+      { id: 56, number: 1, name: "Scout Wave", description: "Small alien scouts with short code keywords.", targetWpm: 25, targetAccuracy: 85, duration: 60, wordCount: 20 },
+      { id: 57, number: 2, name: "Invasion Force", description: "Larger wave. Programming terms.", targetWpm: 35, targetAccuracy: 87, duration: 60, wordCount: 25 },
+      { id: 58, number: 3, name: "Armada", description: "Full fleet. Dev vocabulary + govt terms.", targetWpm: 48, targetAccuracy: 90, duration: 60, wordCount: 30 },
+      { id: 59, number: 4, name: "Mothership", description: "Elite fleet with architecture terms.", targetWpm: 60, targetAccuracy: 92, duration: 60, wordCount: 35 },
+      { id: 60, number: 5, name: "Galactic Boss", description: "The final invasion. Expert-level vocabulary.", targetWpm: 72, targetAccuracy: 94, duration: 60, wordCount: 40 },
+    ]
+  },
 ];
 
 export const getGame = (gameId: string): Game | undefined => GAMES.find(g => g.id === gameId);

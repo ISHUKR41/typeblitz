@@ -5,6 +5,9 @@ import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Clock, Target, ArrowRight, Zap, RotateCcw, BarChart2, Home, CheckCircle } from "lucide-react";
+import { ArcadeArena } from "@/components/games/ArcadeArena";
+
+const ARCADE_GAME_IDS = new Set(["turbo-race", "word-fighter", "zombie-hunt", "galaxy-blitz"]);
 
 // ─── WPM sparkline ────────────────────────────────────────────────────────
 function WpmSparkline({ data }: { data: number[] }) {
@@ -67,7 +70,6 @@ function ResultsScreen({
       transition={{ type: "spring", damping: 22 }}
       className="max-w-lg w-full bg-card border border-border rounded-2xl shadow-2xl overflow-hidden"
     >
-      {/* Top banner */}
       <div className="bg-primary/10 border-b border-primary/20 px-6 py-5 flex items-center gap-4">
         <div className="w-14 h-14 bg-primary/20 rounded-2xl flex items-center justify-center text-primary">
           <Trophy className="w-7 h-7" />
@@ -79,7 +81,6 @@ function ResultsScreen({
         <div className={`ml-auto text-5xl font-black font-mono ${gradeColor}`}>{grade}</div>
       </div>
 
-      {/* Stats grid */}
       <div className="p-6 space-y-4">
         <div className="grid grid-cols-3 gap-3">
           {[
@@ -95,7 +96,6 @@ function ResultsScreen({
           ))}
         </div>
 
-        {/* Next level hint */}
         <div className="flex items-center gap-2 bg-muted/40 rounded-xl px-4 py-2.5 text-sm">
           <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
           <span className="text-muted-foreground">
@@ -105,7 +105,6 @@ function ResultsScreen({
           </span>
         </div>
 
-        {/* CTA buttons */}
         <div className="grid grid-cols-3 gap-2 pt-1">
           <Button variant="outline" size="sm" onClick={onMenu} className="gap-1.5">
             <Home className="w-3.5 h-3.5" /> Menu
@@ -129,12 +128,15 @@ export default function Play() {
   const [, setLocation] = useLocation();
   const { user } = useAuth();
 
+  const isArcade = ARCADE_GAME_IDS.has(gameId ?? "");
+
   const { data: game } = useGetGame(gameId || "");
   const { data: levelContent } = useGetLevelWords(gameId || "", levelNumber, {
     query: { queryKey: getGetLevelWordsQueryKey(gameId || "", levelNumber), enabled: !!gameId && !!levelNumber }
   });
   const createSession = useCreateSession();
 
+  // ── Standard game state ──────────────────────────────────────────────────
   const [text, setText] = useState("");
   const [input, setInput] = useState("");
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -143,22 +145,26 @@ export default function Play() {
   const [accuracy, setAccuracy] = useState(100);
   const [duration, setDuration] = useState(0);
   const [wpmHistory, setWpmHistory] = useState<number[]>([]);
-
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Load text
+  // ── Arcade / standard shared reset key ──────────────────────────────────
+  const [resetKey, setResetKey] = useState(0);
+
   useEffect(() => {
-    if (levelContent) {
+    if (levelContent && !isArcade) {
       setText(levelContent.text ? levelContent.text : (levelContent.words ?? []).join(" "));
       setInput(""); setIsFinished(false); setStartTime(null);
       setWpm(0); setAccuracy(100); setDuration(0); setWpmHistory([]);
       setTimeout(() => inputRef.current?.focus(), 100);
     }
-  }, [levelContent]);
+    if (levelContent && isArcade) {
+      setIsFinished(false);
+      setResetKey(k => k + 1);
+    }
+  }, [levelContent, isArcade]);
 
-  // Live WPM ticker
   useEffect(() => {
-    if (isFinished || !startTime) return;
+    if (isFinished || !startTime || isArcade) return;
     const id = setInterval(() => {
       const secs = (Date.now() - startTime) / 1000;
       const mins = secs / 60;
@@ -170,28 +176,16 @@ export default function Play() {
       }
     }, 1000);
     return () => clearInterval(id);
-  }, [isFinished, startTime, input.length]);
+  }, [isFinished, startTime, input.length, isArcade]);
 
-  // Focus on click
   useEffect(() => {
+    if (isArcade) return;
     const fn = () => inputRef.current?.focus();
     document.addEventListener("click", fn);
     return () => document.removeEventListener("click", fn);
-  }, []);
+  }, [isArcade]);
 
-  const finishGame = useCallback((finalInput: string, finalTime: number) => {
-    const secs = (Date.now() - finalTime) / 1000;
-    const mins = secs / 60;
-    const finalWpm = Math.round((finalInput.length / 5) / Math.max(mins, 0.01));
-    let correct = 0;
-    for (let i = 0; i < finalInput.length; i++) if (finalInput[i] === text[i]) correct++;
-    const finalAcc = finalInput.length > 0 ? Math.round((correct / finalInput.length) * 100) : 100;
-
-    setIsFinished(true);
-    setWpm(finalWpm);
-    setAccuracy(finalAcc);
-    setDuration(Math.floor(secs));
-
+  const saveSession = useCallback((finalWpm: number, finalAcc: number, finalDuration: number) => {
     if (user && gameId) {
       createSession.mutate({
         data: {
@@ -200,30 +194,41 @@ export default function Play() {
           gameMode: gameId,
           wpm: finalWpm,
           accuracy: finalAcc,
-          duration: Math.floor(secs),
+          duration: finalDuration,
           level: levelNumber,
         }
       });
     }
-  }, [text, user, gameId, levelNumber, createSession]);
+  }, [user, gameId, levelNumber, createSession]);
+
+  const finishGame = useCallback((finalInput: string, finalTime: number) => {
+    const secs = (Date.now() - finalTime) / 1000;
+    const mins = secs / 60;
+    const finalWpm = Math.round((finalInput.length / 5) / Math.max(mins, 0.01));
+    let correct = 0;
+    for (let i = 0; i < finalInput.length; i++) if (finalInput[i] === text[i]) correct++;
+    const finalAcc = finalInput.length > 0 ? Math.round((correct / finalInput.length) * 100) : 100;
+    setIsFinished(true);
+    setWpm(finalWpm);
+    setAccuracy(finalAcc);
+    setDuration(Math.floor(secs));
+    saveSession(finalWpm, finalAcc, Math.floor(secs));
+  }, [text, saveSession]);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     if (!startTime && val.length > 0) setStartTime(Date.now());
     setInput(val);
-
-    // Live accuracy
     let correct = 0;
     for (let i = 0; i < val.length; i++) if (val[i] === text[i]) correct++;
     setAccuracy(val.length > 0 ? Math.round((correct / val.length) * 100) : 100);
-
-    // Check completion
     if (val.length >= text.length) finishGame(val, startTime ?? Date.now());
   };
 
   const handleRetry = () => {
     setInput(""); setIsFinished(false); setStartTime(null);
     setWpm(0); setAccuracy(100); setDuration(0); setWpmHistory([]);
+    setResetKey(k => k + 1);
     setTimeout(() => inputRef.current?.focus(), 100);
   };
 
@@ -240,9 +245,88 @@ export default function Play() {
     );
   }
 
+  const targetWpm = game.levels?.find((l: any) => l.number === levelNumber)?.targetWpm ?? 40;
+
+  // ── ARCADE games ──────────────────────────────────────────────────────────
+  if (isArcade) {
+    const words = levelContent.words ?? levelContent.text?.split(" ") ?? [];
+    return (
+      <div className="min-h-full flex flex-col items-center justify-center p-4 md:p-6 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-primary/4 rounded-full blur-[120px]" />
+        </div>
+
+        <AnimatePresence mode="wait">
+          {!isFinished ? (
+            <motion.div
+              key={`arcade-${resetKey}`}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              className="w-full z-10"
+            >
+              {/* Mini HUD header */}
+              <div className="max-w-4xl mx-auto mb-3 flex items-center justify-between px-2">
+                <div>
+                  <p className="text-xs font-mono font-bold text-primary uppercase tracking-widest">
+                    {game.name} · Level {levelNumber}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {game.levels?.find((l: any) => l.number === levelNumber)?.name}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setLocation("/games")}
+                  className="text-xs gap-1 text-muted-foreground"
+                >
+                  <Home className="w-3.5 h-3.5" /> Exit
+                </Button>
+              </div>
+
+              <ArcadeArena
+                key={resetKey}
+                words={words}
+                gameId={gameId ?? ""}
+                levelNumber={levelNumber}
+                targetWpm={targetWpm}
+                onComplete={(finalWpm, finalAcc, finalDuration) => {
+                  setWpm(finalWpm);
+                  setAccuracy(finalAcc);
+                  setDuration(finalDuration);
+                  setIsFinished(true);
+                  saveSession(finalWpm, finalAcc, finalDuration);
+                }}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="arcade-results"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="z-10 flex items-center justify-center w-full"
+            >
+              <ResultsScreen
+                wpm={wpm}
+                accuracy={accuracy}
+                duration={duration}
+                gameId={gameId ?? ""}
+                levelNumber={levelNumber}
+                onRetry={handleRetry}
+                onNext={() => setLocation(`/play/${gameId}/${Math.min(levelNumber + 1, 5)}`)}
+                onMenu={() => setLocation("/games")}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  }
+
+  // ── STANDARD text-stream games ────────────────────────────────────────────
   return (
     <div className="min-h-full flex flex-col items-center justify-center p-4 md:p-8 relative overflow-hidden">
-      {/* Background glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-primary/5 rounded-full blur-[100px]" />
       </div>
@@ -256,9 +340,7 @@ export default function Play() {
             exit={{ opacity: 0, y: -16 }}
             className="w-full max-w-4xl space-y-5 z-10"
           >
-            {/* HUD */}
             <div className="flex items-center justify-between flex-wrap gap-3">
-              {/* Game title */}
               <div>
                 <p className="text-xs font-mono font-bold text-primary uppercase tracking-widest">
                   {game.name} · Level {levelNumber}
@@ -267,7 +349,6 @@ export default function Play() {
                   {game.levels?.find((l: any) => l.number === levelNumber)?.name}
                 </p>
               </div>
-              {/* Live stats */}
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
                   <WpmSparkline data={wpmHistory} />
@@ -290,7 +371,6 @@ export default function Play() {
               </div>
             </div>
 
-            {/* Progress bar */}
             <div className="relative h-1.5 bg-muted rounded-full overflow-hidden">
               <motion.div
                 className="absolute left-0 top-0 h-full bg-primary rounded-full"
@@ -299,7 +379,6 @@ export default function Play() {
               />
             </div>
 
-            {/* Typing arena */}
             <div
               className="relative p-5 md:p-8 bg-card border border-border rounded-2xl shadow-xl cursor-text"
               onClick={() => inputRef.current?.focus()}
@@ -316,7 +395,6 @@ export default function Play() {
               <TypedText text={text} input={input} />
             </div>
 
-            {/* Hint */}
             {!startTime && (
               <motion.p
                 initial={{ opacity: 0 }}
@@ -327,7 +405,6 @@ export default function Play() {
               </motion.p>
             )}
 
-            {/* Progress label */}
             <div className="flex justify-between text-xs text-muted-foreground font-mono px-1">
               <span>{input.length} / {text.length} chars</span>
               <span>{Math.round(progress)}% complete</span>
