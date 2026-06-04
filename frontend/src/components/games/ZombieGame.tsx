@@ -277,23 +277,61 @@ export function ZombieGame({
       ctx.save();
       ctx.translate(45, h * 0.82 - 32);
 
-      // Survivor Head
-      ctx.fillStyle = "rgba(34, 197, 94, 0.2)";
+      // Neon glow
+      ctx.shadowColor = "#22c55e";
+      ctx.shadowBlur = 10;
+
+      // Legs/Combat boots
+      ctx.strokeStyle = "#22c55e";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(-4, 10);
+      ctx.lineTo(-5, 26);
+      ctx.moveTo(3, 10);
+      ctx.lineTo(4, 26);
+      ctx.stroke();
+
+      // Heavy Body Armor Torso
+      ctx.fillStyle = "rgba(15, 23, 42, 0.95)";
       ctx.strokeStyle = "#22c55e";
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(0, -18, 8, 0, Math.PI * 2);
+      ctx.roundRect(-8, -10, 16, 20, 3);
       ctx.fill();
       ctx.stroke();
-
-      // Torso
-      ctx.fillStyle = "rgba(34, 197, 94, 0.2)";
+      
+      // Armor plate lines
+      ctx.strokeStyle = "#22c55e";
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
-      ctx.roundRect(-8, -10, 14, 18, 2);
-      ctx.fill();
+      ctx.moveTo(-8, -2);
+      ctx.lineTo(8, -2);
+      ctx.moveTo(-8, 4);
+      ctx.lineTo(8, 4);
       ctx.stroke();
 
-      // Laser gun base rotation
+      // Commander Helmet with tactical visor
+      ctx.fillStyle = "rgba(15, 23, 42, 0.95)";
+      ctx.strokeStyle = "#22c55e";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, -20, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      
+      // Visor glow
+      ctx.strokeStyle = "#ffffff";
+      ctx.shadowColor = "#ffffff";
+      ctx.shadowBlur = 4;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(-2, -21);
+      ctx.lineTo(6, -20);
+      ctx.stroke();
+      ctx.shadowColor = "#22c55e";
+      ctx.shadowBlur = 10;
+
+      // Gun aiming logic
       const currentZombieIdx = wordIndex - visibleStart;
       const targetZombieX = w * (zombieXPositions[currentZombieIdx] ?? 80) / 100;
       const angle = Math.atan2(0, targetZombieX - 45); // horizontal aim
@@ -301,16 +339,37 @@ export function ZombieGame({
       ctx.save();
       ctx.translate(2, -4);
       ctx.rotate(angle);
-      // Drawing rifle
+      
+      // Heavy Plasma Rifle Stock & Battery Pack
+      ctx.fillStyle = "rgba(15, 23, 42, 0.95)";
+      ctx.strokeStyle = "#22c55e";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(-8, -2, 10, 5, 1);
+      ctx.fill();
+      ctx.stroke();
+      
+      // Barrel
       ctx.strokeStyle = "#22c55e";
       ctx.lineWidth = 3.5;
       ctx.beginPath();
       ctx.moveTo(0, 0);
-      ctx.lineTo(18, 0);
+      ctx.lineTo(22, 0);
       ctx.stroke();
-      // Gun light muzzle
+      
+      // Scope
+      ctx.fillStyle = "#22c55e";
+      ctx.fillRect(4, -4, 6, 2);
+      
+      // Underbarrel battery glow
       ctx.fillStyle = "#ffffff";
-      ctx.fillRect(18, -1.5, 2, 3);
+      ctx.shadowColor = "#22c55e";
+      ctx.shadowBlur = 6;
+      ctx.fillRect(10, 1, 8, 2);
+      
+      // Muzzle tip
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(22, -1.5, 2.5, 3);
       ctx.restore();
 
       ctx.restore();
@@ -333,48 +392,76 @@ export function ZombieGame({
 
         // Zombie silhouette
         const color = ZOMBIE_COLORS[absIdx % ZOMBIE_COLORS.length];
-        ctx.fillStyle = `${color}25`;
+        
+        ctx.shadowColor = color;
+        ctx.shadowBlur = isTarget ? 12 : 4;
+        
+        // Decaying zombie legs
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.2;
+        ctx.beginPath();
+        ctx.moveTo(-4, -6);
+        ctx.lineTo(-7, 6);
+        ctx.moveTo(4, -6);
+        ctx.lineTo(1, 6);
+        ctx.stroke();
+        
+        // Ragged clothes torso
+        ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
         ctx.strokeStyle = color;
         ctx.lineWidth = 2;
-        ctx.shadowColor = color;
-        ctx.shadowBlur = isTarget ? 8 : 0;
+        ctx.beginPath();
+        ctx.moveTo(-7, -22);
+        ctx.lineTo(7, -22);
+        ctx.lineTo(5, -6);
+        ctx.lineTo(-5, -6);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        
+        // Rib cage decay detail
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(-4, -14);
+        ctx.lineTo(4, -14);
+        ctx.moveTo(-3, -10);
+        ctx.lineTo(3, -10);
+        ctx.stroke();
 
-        // Head
+        // Decay skull head
+        ctx.fillStyle = `${color}20`;
         ctx.beginPath();
         ctx.arc(0, -32, 9, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
-        // Eyes
-        ctx.fillStyle = isTarget ? "#ff0000" : color;
+        // Hollow glowing eyes
+        ctx.fillStyle = isTarget ? "#ff3333" : "#00ff00";
+        ctx.shadowBlur = 6;
         ctx.beginPath();
-        ctx.arc(-3, -33, 1.5, 0, Math.PI * 2);
-        ctx.arc(3, -33, 1.5, 0, Math.PI * 2);
+        ctx.arc(-3, -33, 1.8, 0, Math.PI * 2);
+        ctx.arc(3, -33, 1.8, 0, Math.PI * 2);
         ctx.fill();
+        ctx.shadowBlur = isTarget ? 12 : 4;
 
-        // Arms outstretched
+        // Ragged outstretched claw arms
         ctx.strokeStyle = color;
         ctx.lineWidth = 2.5;
+        ctx.lineJoin = "round";
+        
+        // Left arm
         ctx.beginPath();
         ctx.moveTo(-6, -18);
         ctx.lineTo(-18, -16);
+        ctx.lineTo(-24, -20); // claw tip
+        ctx.stroke();
+        
+        // Right arm
+        ctx.beginPath();
         ctx.moveTo(6, -18);
-        ctx.lineTo(-14, -13);
-        ctx.stroke();
-
-        // Torso
-        ctx.fillStyle = `${color}15`;
-        ctx.beginPath();
-        ctx.roundRect(-8, -23, 16, 16, 2);
-        ctx.fill();
-        ctx.stroke();
-
-        // Legs
-        ctx.beginPath();
-        ctx.moveTo(-4, -7);
-        ctx.lineTo(-6, 0);
-        ctx.moveTo(4, -7);
-        ctx.lineTo(2, 0);
+        ctx.lineTo(-12, -12);
+        ctx.lineTo(-18, -7); // claw tip
         ctx.stroke();
 
         // Draw text tag

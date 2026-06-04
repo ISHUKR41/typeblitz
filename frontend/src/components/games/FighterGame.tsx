@@ -48,6 +48,160 @@ function HealthBar({ value, max, color }: { value: number; max: number; color: s
   );
 }
 
+function drawFighter(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  isPlayer: boolean,
+  color: string,
+  attacking: boolean,
+  idleY: number
+) {
+  ctx.save();
+  ctx.translate(x, y + idleY);
+  if (!isPlayer) {
+    ctx.scale(-1, 1);
+  }
+
+  // Neon body glow
+  ctx.shadowColor = color;
+  ctx.shadowBlur = attacking ? 18 : 8;
+
+  // 1. Thrusters on back
+  ctx.fillStyle = attacking ? "#ff0055" : color;
+  ctx.beginPath();
+  ctx.arc(-14, -28, 3.5, 0, Math.PI * 2);
+  ctx.arc(-14, -18, 3.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 2. Cyberpunk Stance Legs
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 3.5;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  
+  // Front leg (bent forward)
+  ctx.beginPath();
+  ctx.moveTo(4, -10);
+  ctx.lineTo(14, -2);
+  ctx.lineTo(10, 8);
+  ctx.stroke();
+
+  // Back leg (straightened)
+  ctx.beginPath();
+  ctx.moveTo(-6, -10);
+  ctx.lineTo(-14, -4);
+  ctx.lineTo(-11, 8);
+  ctx.stroke();
+
+  // 3. Armored Torso with neon outline & gradient plates
+  const armorGrad = ctx.createLinearGradient(-15, -40, 15, -10);
+  armorGrad.addColorStop(0, "rgba(15, 23, 42, 0.95)");
+  armorGrad.addColorStop(1, `${color}35`);
+  ctx.fillStyle = armorGrad;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.5;
+  
+  ctx.beginPath();
+  ctx.moveTo(-12, -40);
+  ctx.lineTo(12, -40);
+  ctx.lineTo(7, -10);
+  ctx.lineTo(-7, -10);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Glowing chest core reactor
+  ctx.fillStyle = "#ffffff";
+  ctx.shadowBlur = 12;
+  ctx.beginPath();
+  ctx.arc(0, -26, 4.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowBlur = attacking ? 18 : 8;
+
+  // 4. Staggered helmet with glowing visor
+  ctx.fillStyle = "rgba(15, 23, 42, 0.95)";
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(-11, -58);
+  ctx.lineTo(10, -58);
+  ctx.lineTo(14, -44);
+  ctx.lineTo(-7, -42);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  // Visor glow line
+  ctx.strokeStyle = "#ffffff";
+  ctx.shadowColor = "#ffffff";
+  ctx.shadowBlur = 6;
+  ctx.lineWidth = 1.8;
+  ctx.beginPath();
+  ctx.moveTo(1, -51);
+  ctx.lineTo(12, -49);
+  ctx.stroke();
+  ctx.shadowColor = color;
+  ctx.shadowBlur = attacking ? 18 : 8;
+
+  // 5. Shoulder guards & Arms
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.arc(-11, -36, 4.5, 0, Math.PI * 2); // left shoulder
+  ctx.arc(9, -36, 4.5, 0, Math.PI * 2);  // right shoulder
+  ctx.fill();
+
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 3.2;
+  ctx.beginPath();
+  if (attacking) {
+    // Thrust arm
+    ctx.moveTo(9, -34);
+    ctx.lineTo(28, -30);
+    ctx.lineTo(34, -36);
+  } else {
+    // Defense block pose
+    ctx.moveTo(9, -34);
+    ctx.lineTo(21, -23);
+    ctx.lineTo(17, -14);
+  }
+  ctx.stroke();
+
+  // 6. Neon Katana Blade
+  ctx.save();
+  if (attacking) {
+    ctx.translate(34, -36);
+    ctx.rotate(-Math.PI / 4);
+  } else {
+    ctx.translate(17, -14);
+    ctx.rotate(Math.PI / 5);
+  }
+
+  // Draw neon katana blade
+  const bladeGrad = ctx.createLinearGradient(0, 0, 42, -14);
+  bladeGrad.addColorStop(0, "#ffffff");
+  bladeGrad.addColorStop(1, color);
+  ctx.strokeStyle = bladeGrad;
+  ctx.lineWidth = 4;
+  ctx.shadowColor = color;
+  ctx.shadowBlur = 15;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.lineTo(42, -14);
+  ctx.stroke();
+
+  // Hand guard disc
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  ctx.moveTo(-4, -4);
+  ctx.lineTo(4, 4);
+  ctx.stroke();
+
+  ctx.restore();
+  ctx.restore();
+}
+
 export function FighterGame({
   words,
   wordIndex,
@@ -303,150 +457,15 @@ export function FighterGame({
 
       // ─── PLAYER DRAWING ───
       if (playerHp > 0) {
-        ctx.save();
-        ctx.translate(pBaseX, h * 0.75 + playerIdleY);
-
-        // Attack sword trail
-        if (playerAttacking) {
-          ctx.strokeStyle = "rgba(52, 211, 153, 0.4)";
-          ctx.lineWidth = 14;
-          ctx.beginPath();
-          ctx.arc(30, -25, 30, -Math.PI / 3, Math.PI / 3);
-          ctx.stroke();
-        }
-
-        // Body glow shadow
-        ctx.shadowColor = "#34d399";
-        ctx.shadowBlur = 10;
-
-        // Player Head
-        ctx.fillStyle = "rgba(52, 211, 153, 0.2)";
-        ctx.strokeStyle = "#34d399";
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.arc(0, -50, 14, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        // Eyes
-        ctx.fillStyle = "#34d399";
-        ctx.shadowBlur = 4;
-        ctx.beginPath();
-        ctx.arc(4, -53, 2, 0, Math.PI * 2);
-        ctx.arc(10, -53, 2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Torso
-        ctx.shadowBlur = 10;
-        ctx.fillStyle = "rgba(52, 211, 153, 0.15)";
-        ctx.beginPath();
-        ctx.roundRect(-12, -36, 22, 26, 4);
-        ctx.fill();
-        ctx.stroke();
-
-        // Arms (holding neon katana)
-        ctx.beginPath();
-        ctx.moveTo(8, -25);
-        ctx.lineTo(24, -20);
-        ctx.stroke();
-
-        // Katana blade
-        ctx.strokeStyle = "#ffffff";
-        ctx.shadowColor = "#34d399";
-        ctx.shadowBlur = 8;
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(24, -20);
-        ctx.lineTo(44, -38);
-        ctx.stroke();
-
-        // Legs
-        ctx.shadowBlur = 0;
-        ctx.strokeStyle = "#34d399";
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.moveTo(-6, -10);
-        ctx.lineTo(-8, 5);
-        ctx.moveTo(4, -10);
-        ctx.lineTo(6, 5);
-        ctx.stroke();
-
-        ctx.restore();
+        drawFighter(ctx, pBaseX, h * 0.75, true, "#34d399", playerAttacking, playerIdleY);
       }
 
       // ─── ENEMY DRAWING ───
       if (enemyHp > 0) {
-        ctx.save();
-        ctx.translate(eBaseX, h * 0.75 + enemyIdleY);
-
-        // Enemy scale left-facing
-        ctx.scale(-1, 1);
-
-        // Red slash trail
-        if (enemyAttacking) {
-          ctx.strokeStyle = `${enemy.color}60`;
-          ctx.lineWidth = 14;
-          ctx.beginPath();
-          ctx.arc(30, -25, 30, -Math.PI / 3, Math.PI / 3);
-          ctx.stroke();
-        }
-
-        ctx.shadowColor = enemy.color;
-        ctx.shadowBlur = 10;
-
-        // Enemy Head
-        ctx.fillStyle = `${enemy.color}25`;
-        ctx.strokeStyle = enemy.color;
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.arc(0, -50, 14, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.stroke();
-
-        // Eyes
-        ctx.fillStyle = enemy.color;
-        ctx.shadowBlur = 4;
-        ctx.beginPath();
-        ctx.arc(4, -53, 2, 0, Math.PI * 2);
-        ctx.arc(10, -53, 2, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Torso
-        ctx.shadowBlur = 10;
-        ctx.fillStyle = `${enemy.color}15`;
-        ctx.beginPath();
-        ctx.roundRect(-12, -36, 22, 26, 4);
-        ctx.fill();
-        ctx.stroke();
-
-        // Weapon
-        ctx.beginPath();
-        ctx.moveTo(8, -25);
-        ctx.lineTo(24, -20);
-        ctx.stroke();
-
-        ctx.strokeStyle = "#ffffff";
-        ctx.shadowColor = enemy.color;
-        ctx.shadowBlur = 8;
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(24, -20);
-        ctx.lineTo(44, -38);
-        ctx.stroke();
-
-        // Legs
-        ctx.shadowBlur = 0;
-        ctx.strokeStyle = enemy.color;
-        ctx.lineWidth = 2.5;
-        ctx.beginPath();
-        ctx.moveTo(-6, -10);
-        ctx.lineTo(-8, 5);
-        ctx.moveTo(4, -10);
-        ctx.lineTo(6, 5);
-        ctx.stroke();
-
-        ctx.restore();
+        drawFighter(ctx, eBaseX, h * 0.75, false, enemy.color, enemyAttacking, enemyIdleY);
       }
+      
+      ctx.restore();
 
       // ─── PARTICLES SYSTEM ───
       particlesRef.current.forEach(p => {

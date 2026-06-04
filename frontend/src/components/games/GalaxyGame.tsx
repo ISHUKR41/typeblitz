@@ -197,29 +197,42 @@ export function GalaxyGame({
 
         // Draw saucer body
         ctx.shadowColor = color;
-        ctx.shadowBlur = isTarget ? 12 : 0;
-        ctx.fillStyle = `${color}25`;
+        ctx.shadowBlur = isTarget ? 14 : 4;
+        
+        // Detailed outer ring
+        ctx.fillStyle = "rgba(15, 23, 42, 0.9)";
         ctx.strokeStyle = color;
-        ctx.lineWidth = 1.5;
-
-        // Dome
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(0, -2, 7, Math.PI, 0);
+        ctx.ellipse(0, 2, 18, 5, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.stroke();
 
-        // Saucer disk
+        // Dome cockpit
+        ctx.fillStyle = `${color}40`;
         ctx.beginPath();
-        ctx.ellipse(0, 1, 16, 4, 0, 0, Math.PI * 2);
+        ctx.arc(0, -2, 8, Math.PI, 0);
         ctx.fill();
         ctx.stroke();
-
-        // Lights
+        
+        // Inner glowing core
         ctx.fillStyle = "#ffffff";
+        ctx.shadowBlur = 8;
         ctx.beginPath();
-        ctx.arc(-8, 1, 1.5, 0, Math.PI * 2);
-        ctx.arc(0, 1, 1.5, 0, Math.PI * 2);
-        ctx.arc(8, 1, 1.5, 0, Math.PI * 2);
+        ctx.arc(0, 1, 3.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = isTarget ? 14 : 4;
+
+        // Rotating outer neon indicators
+        ctx.fillStyle = "#ffffff";
+        const rotateOffset = (Date.now() / 250) + col;
+        const lx1 = Math.cos(rotateOffset) * 13;
+        const ly1 = Math.sin(rotateOffset) * 2 + 2;
+        const lx2 = Math.cos(rotateOffset + Math.PI) * 13;
+        const ly2 = Math.sin(rotateOffset + Math.PI) * 2 + 2;
+        ctx.beginPath();
+        ctx.arc(lx1, ly1, 2, 0, Math.PI * 2);
+        ctx.arc(lx2, ly2, 2, 0, Math.PI * 2);
         ctx.fill();
 
         // Target bounding glow
@@ -276,33 +289,54 @@ export function GalaxyGame({
       ctx.save();
       ctx.translate(400, 155);
 
-      // Engine thruster glow fire
-      const flameH = 6 + Math.random() * 8;
-      const thrusterGrad = ctx.createLinearGradient(0, 0, 0, flameH);
-      thrusterGrad.addColorStop(0, "#22d3ee");
-      thrusterGrad.addColorStop(1, "rgba(34, 211, 238, 0)");
-      ctx.fillStyle = thrusterGrad;
-      ctx.fillRect(-4, 4, 8, flameH);
+      // Engine thrusters (Dual left and right wings)
+      const flameH1 = 8 + Math.random() * 10;
+      const flameH2 = 8 + Math.random() * 10;
+      const thrusterGrad1 = ctx.createLinearGradient(-8, 2, -8, flameH1);
+      thrusterGrad1.addColorStop(0, "#22d3ee");
+      thrusterGrad1.addColorStop(1, "rgba(34, 211, 238, 0)");
+      ctx.fillStyle = thrusterGrad1;
+      ctx.fillRect(-10, 1, 4, flameH1);
+      
+      const thrusterGrad2 = ctx.createLinearGradient(8, 2, 8, flameH2);
+      thrusterGrad2.addColorStop(0, "#22d3ee");
+      thrusterGrad2.addColorStop(1, "rgba(34, 211, 238, 0)");
+      ctx.fillStyle = thrusterGrad2;
+      ctx.fillRect(6, 1, 4, flameH2);
 
-      // Ship body (Neon Vector style)
+      // Ship body (Detailed cyberpunk space fighter)
       ctx.strokeStyle = "#22d3ee";
-      ctx.fillStyle = "rgba(8, 47, 73, 0.85)";
-      ctx.lineWidth = 2;
+      ctx.fillStyle = "rgba(15, 23, 42, 0.95)";
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = "#22d3ee";
+      ctx.lineWidth = 2.2;
+      
       ctx.beginPath();
-      ctx.moveTo(0, -18); // nose
-      ctx.lineTo(12, 4);  // right wing
-      ctx.lineTo(6, 0);
-      ctx.lineTo(-6, 0);
-      ctx.lineTo(-12, 4); // left wing
+      ctx.moveTo(0, -22); // Nose cone tip
+      ctx.lineTo(4, -12); // nose side right
+      ctx.lineTo(16, 2);   // wingtip right
+      ctx.lineTo(8, -1);   // wing inner notch right
+      ctx.lineTo(5, 1);    // thruster edge right
+      ctx.lineTo(-5, 1);   // thruster edge left
+      ctx.lineTo(-8, -1);  // wing inner notch left
+      ctx.lineTo(-16, 2);  // wingtip left
+      ctx.lineTo(-4, -12); // nose side left
       ctx.closePath();
       ctx.fill();
       ctx.stroke();
 
-      // Cockpit
-      ctx.fillStyle = "#ffffff";
+      // Cockpit shield cover (neon white/cyan visor)
+      ctx.fillStyle = "rgba(34, 211, 238, 0.45)";
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 1.2;
       ctx.beginPath();
-      ctx.arc(0, -4, 3, 0, Math.PI * 2);
+      ctx.moveTo(-3, -11);
+      ctx.lineTo(3, -11);
+      ctx.lineTo(4, -4);
+      ctx.lineTo(-4, -4);
+      ctx.closePath();
       ctx.fill();
+      ctx.stroke();
 
       // Shield dome ripple overlay
       if (screenFlash) {
