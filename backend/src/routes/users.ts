@@ -19,10 +19,30 @@ router.get("/:userId/stats", async (req, res) => {
   const sessions = await Session.find({ userId: new mongoose.Types.ObjectId(userId) }).lean();
 
   const totalSessions = sessions.length;
-  const averageWpm = totalSessions > 0 ? sessions.reduce((s, r) => s + r.wpm, 0) / totalSessions : 0;
-  const bestWpm = totalSessions > 0 ? Math.max(...sessions.map(s => s.wpm)) : 0;
+  const validSessions = sessions.filter(s => s.accuracy >= 90);
+  const validSessionsCount = validSessions.length;
+  const averageWpm = validSessionsCount > 0 ? validSessions.reduce((s, r) => s + r.wpm, 0) / validSessionsCount : 0;
+  const bestWpm = validSessionsCount > 0 ? Math.max(...validSessions.map(s => s.wpm)) : 0;
   const totalTimeMinutes = sessions.reduce((s, r) => s + r.duration, 0) / 60;
   const averageAccuracy = totalSessions > 0 ? sessions.reduce((s, r) => s + r.accuracy, 0) / totalSessions : 0;
+
+  // rank calculation
+  let rank: number | null = null;
+  if (bestWpm > 0) {
+    try {
+      const rankResult = await Session.aggregate([
+        { $match: { accuracy: { $gte: 90 } } },
+        { $group: { _id: "$userId", maxWpm: { $max: "$wpm" } } },
+        { $match: { maxWpm: { $gte: bestWpm } } },
+        { $count: "count" }
+      ]);
+      if (rankResult.length > 0) {
+        rank = rankResult[0].count;
+      }
+    } catch (err) {
+      // fallback
+    }
+  }
 
   // streak calculation
   let currentStreak = 0;
@@ -53,7 +73,7 @@ router.get("/:userId/stats", async (req, res) => {
     averageAccuracy: Math.round(averageAccuracy * 10) / 10,
     currentStreak,
     wordsTyped,
-    rank: null,
+    rank,
   });
 });
 
@@ -133,7 +153,8 @@ router.get("/:userId/level-progress", async (req, res) => {
   const result = GAMES.map(game => {
     const gameSessions = sessions.filter(s => s.gameId === game.id);
     const maxLevel = gameSessions.length > 0 ? Math.max(...gameSessions.map(s => s.level)) : 0;
-    const bestWpm = gameSessions.length > 0 ? Math.max(...gameSessions.map(s => s.wpm)) : null;
+    const validGameSessions = gameSessions.filter(s => s.accuracy >= 90);
+    const bestWpm = validGameSessions.length > 0 ? Math.max(...validGameSessions.map(s => s.wpm)) : null;
     return {
       gameId: game.id,
       gameName: game.name,

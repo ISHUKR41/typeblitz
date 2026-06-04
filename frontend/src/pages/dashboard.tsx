@@ -129,10 +129,11 @@ export default function Dashboard() {
         </Link>
       </motion.div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="Average WPM" value={stats?.averageWpm ?? "—"} icon={Zap} color="bg-primary/20 text-primary" />
-        <StatCard label="Best WPM" value={stats?.bestWpm ?? "—"} icon={Trophy} color="bg-chart-2/20 text-chart-2" />
-        <StatCard label="Total Sessions" value={stats?.totalSessions ?? "—"} icon={BarChart2} color="bg-chart-3/20 text-chart-3" />
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <StatCard label="Global Rank" value={stats?.rank ? `#${stats.rank}` : "—"} icon={Trophy} color="bg-yellow-500/20 text-yellow-500" />
+        <StatCard label="Best WPM" value={stats?.bestWpm ?? "—"} icon={Zap} color="bg-primary/20 text-primary" />
+        <StatCard label="Average WPM" value={stats?.averageWpm ?? "—"} icon={BarChart2} color="bg-chart-2/20 text-chart-2" />
+        <StatCard label="Total Sessions" value={stats?.totalSessions ?? "—"} icon={Clock} color="bg-chart-3/20 text-chart-3" />
         <StatCard label="Day Streak" value={stats?.currentStreak ?? "—"} icon={Flame} color="bg-chart-4/20 text-chart-4" />
       </div>
 

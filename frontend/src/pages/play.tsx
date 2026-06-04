@@ -6,6 +6,12 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Clock, Target, ArrowRight, Zap, RotateCcw, Home, CheckCircle } from "lucide-react";
 import { ArcadeArena } from "@/components/games/ArcadeArena";
+import {
+  isLevelUnlocked,
+  isPassingResult,
+  MIN_PASSING_ACCURACY,
+  recordLevelResult,
+} from "@/lib/progress";
 
 const ARCADE_GAME_IDS = new Set(["turbo-race", "word-fighter", "zombie-hunt", "galaxy-blitz"]);
 
@@ -74,10 +80,11 @@ function TypedText({ text, input }: { text: string; input: string }) {
 
 // ─── Results screen ───────────────────────────────────────────────────────
 function ResultsScreen({
-  wpm, accuracy, duration, levelNumber,
+  wpm, accuracy, duration, levelNumber, targetWpm, passed, nextLevelUnlocked,
   onRetry, onNext, onMenu,
 }: {
-  wpm: number; accuracy: number; duration: number; levelNumber: number;
+  wpm: number; accuracy: number; duration: number; levelNumber: number; targetWpm: number;
+  passed: boolean; nextLevelUnlocked: boolean;
   onRetry: () => void; onNext: () => void; onMenu: () => void;
 }) {
   const grade = wpm >= 80 ? "S" : wpm >= 60 ? "A" : wpm >= 40 ? "B" : wpm >= 25 ? "C" : "D";
@@ -90,13 +97,13 @@ function ResultsScreen({
       transition={{ type: "spring", damping: 22 }}
       className="max-w-lg w-full bg-card border border-border rounded-2xl shadow-2xl overflow-hidden mx-4"
     >
-      <div className="bg-primary/10 border-b border-primary/20 px-5 py-4 flex items-center gap-3">
-        <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center text-primary flex-shrink-0">
+      <div className={`${passed ? "bg-primary/10 border-primary/20" : "bg-destructive/10 border-destructive/20"} border-b px-5 py-4 flex items-center gap-3`}>
+        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${passed ? "bg-primary/20 text-primary" : "bg-destructive/20 text-destructive"}`}>
           <Trophy className="w-6 h-6" />
         </div>
         <div className="flex-1 min-w-0">
-          <h2 className="text-xl font-extrabold font-mono">LEVEL CLEARED</h2>
-          <p className="text-xs text-muted-foreground">Level {levelNumber} complete!</p>
+          <h2 className="text-xl font-extrabold font-mono">{passed ? "LEVEL CLEARED" : "KEEP TRAINING"}</h2>
+          <p className="text-xs text-muted-foreground">Target: {targetWpm} WPM + {MIN_PASSING_ACCURACY}% accuracy</p>
         </div>
         <div className={`text-4xl font-black font-mono ${gradeColor}`}>{grade}</div>
       </div>
@@ -119,9 +126,13 @@ function ResultsScreen({
         <div className="flex items-start gap-2 bg-muted/40 rounded-xl px-3 py-2.5 text-xs">
           <CheckCircle className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
           <span className="text-muted-foreground">
-            {accuracy < 95
+            {!passed
+              ? `Reach ${targetWpm} WPM with ${MIN_PASSING_ACCURACY}%+ accuracy to unlock the next level.`
+              : accuracy < 95
               ? `Focus on accuracy first — aim for 95%+ before pushing speed.`
-              : levelNumber < 5
+              : nextLevelUnlocked
+                ? `Level ${levelNumber + 1} unlocked. Keep the streak alive.`
+                : levelNumber < 5
                 ? `Level ${levelNumber + 1} unlocked — push for ${wpm + 10}+ WPM next!`
                 : "All levels complete — challenge your score again!"}
           </span>
@@ -134,7 +145,7 @@ function ResultsScreen({
           <Button variant="outline" size="sm" onClick={onRetry} className="gap-1.5 text-xs">
             <RotateCcw className="w-3 h-3" /> Retry
           </Button>
-          <Button size="sm" onClick={onNext} className="gap-1.5 text-xs" disabled={levelNumber >= 5}>
+          <Button size="sm" onClick={onNext} className="gap-1.5 text-xs" disabled={!passed || levelNumber >= 5}>
             Next <ArrowRight className="w-3 h-3" />
           </Button>
         </div>
@@ -157,6 +168,9 @@ export default function Play() {
     query: { queryKey: getGetLevelWordsQueryKey(gameId || "", levelNumber), enabled: !!gameId && !!levelNumber }
   });
   const createSession = useCreateSession();
+  const currentLevel = game?.levels?.find((l: any) => l.number === levelNumber);
+  const targetWpm = currentLevel?.targetWpm ?? 40;
+  const levelName = currentLevel?.name ?? "";
 
   // ── Standard game state ──────────────────────────────────────────────────
   const [text, setText] = useState("");
@@ -167,7 +181,20 @@ export default function Play() {
   const [accuracy, setAccuracy] = useState(100);
   const [duration, setDuration] = useState(0);
   const [wpmHistory, setWpmHistory] = useState<number[]>([]);
+  const [levelResult, setLevelResult] = useState<{ passed: boolean; nextLevelUnlocked: boolean } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const [strictMode, setStrictMode] = useState(() => localStorage.getItem("typeblitz.strictMode") === "true");
+  const [extraMistakes, setExtraMistakes] = useState(0);
+  const extraMistakesRef = useRef(0);
+
+  const toggleStrictMode = () => {
+    setStrictMode(prev => {
+      const next = !prev;
+      localStorage.setItem("typeblitz.strictMode", String(next));
+      return next;
+    });
+  };
 
   // Ref-based correct chars so the interval always reads the latest value
   // (closures in setInterval would otherwise read stale state)
@@ -189,11 +216,15 @@ export default function Play() {
       setAccuracy(100);
       setDuration(0);
       setWpmHistory([]);
+      setLevelResult(null);
       correctCharsRef.current = 0;
+      extraMistakesRef.current = 0;
+      setExtraMistakes(0);
       setTimeout(() => inputRef.current?.focus(), 100);
     }
     if (levelContent && isArcade) {
       setIsFinished(false);
+      setLevelResult(null);
       setResetKey(k => k + 1);
     }
   }, [levelContent, isArcade]);
@@ -264,13 +295,18 @@ export default function Play() {
       if (finalInput[i] === text[i]) correct++;
     }
     const finalWpm = Math.round((correct / 5) / Math.max(mins, 0.01));
-    const finalAcc = finalInput.length > 0 ? Math.round((correct / finalInput.length) * 100) : 100;
+    const totalTyped = finalInput.length + extraMistakesRef.current;
+    const finalAcc = totalTyped > 0 ? Math.round((correct / totalTyped) * 100) : 100;
+    const progressResult = gameId
+      ? recordLevelResult({ gameId, level: levelNumber, wpm: finalWpm, accuracy: finalAcc, targetWpm })
+      : { passed: isPassingResult(finalWpm, finalAcc, targetWpm), nextLevelUnlocked: false };
     setIsFinished(true);
+    setLevelResult({ passed: progressResult.passed, nextLevelUnlocked: progressResult.nextLevelUnlocked });
     setWpm(finalWpm);
     setAccuracy(finalAcc);
     setDuration(Math.floor(secs));
     saveSession(finalWpm, finalAcc, Math.floor(secs), finalInput);
-  }, [text, saveSession]);
+  }, [gameId, levelNumber, targetWpm, text, saveSession]);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -282,6 +318,23 @@ export default function Play() {
       setStartTime(now);
     }
 
+    // Strict Mode: Block on Error
+    if (strictMode && val.length > input.length) {
+      const idx = val.length - 1;
+      if (val[idx] !== text[idx]) {
+        extraMistakesRef.current += 1;
+        setExtraMistakes(extraMistakesRef.current);
+        
+        let tempCorrect = 0;
+        for (let i = 0; i < input.length; i++) {
+          if (input[i] === text[i]) tempCorrect++;
+        }
+        const totalTyped = input.length + extraMistakesRef.current;
+        setAccuracy(totalTyped > 0 ? Math.round((tempCorrect / totalTyped) * 100) : 100);
+        return;
+      }
+    }
+
     // Count correct chars in real-time (for live WPM via ref)
     let correct = 0;
     for (let i = 0; i < val.length; i++) {
@@ -290,7 +343,8 @@ export default function Play() {
     correctCharsRef.current = correct;
 
     // Accuracy: correct / total typed
-    setAccuracy(val.length > 0 ? Math.round((correct / val.length) * 100) : 100);
+    const totalTyped = val.length + extraMistakesRef.current;
+    setAccuracy(totalTyped > 0 ? Math.round((correct / totalTyped) * 100) : 100);
     setInput(val);
 
     // Check completion
@@ -308,7 +362,10 @@ export default function Play() {
     setAccuracy(100);
     setDuration(0);
     setWpmHistory([]);
+    setLevelResult(null);
     correctCharsRef.current = 0;
+    extraMistakesRef.current = 0;
+    setExtraMistakes(0);
     setResetKey(k => k + 1);
     setTimeout(() => inputRef.current?.focus(), 100);
   };
@@ -326,10 +383,33 @@ export default function Play() {
     );
   }
 
-  const targetWpm = game.levels?.find((l: any) => l.number === levelNumber)?.targetWpm ?? 40;
-  const levelName = game.levels?.find((l: any) => l.number === levelNumber)?.name ?? "";
-
   // ── ARCADE games ──────────────────────────────────────────────────────────
+  if (gameId && !isLevelUnlocked(gameId, levelNumber)) {
+    return (
+      <div className="min-h-full flex items-center justify-center p-6">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.96 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="max-w-md w-full bg-card border border-border rounded-2xl p-6 text-center space-y-5"
+        >
+          <div className="w-14 h-14 bg-muted rounded-2xl flex items-center justify-center mx-auto text-muted-foreground">
+            <Target className="w-7 h-7" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-extrabold">Level Locked</h2>
+            <p className="text-sm text-muted-foreground mt-2">
+              Clear level {levelNumber - 1} with target WPM and {MIN_PASSING_ACCURACY}%+ accuracy to unlock this task.
+            </p>
+          </div>
+          <Button onClick={() => setLocation("/games")} className="w-full gap-2">
+            <Home className="w-4 h-4" />
+            Back to Games
+          </Button>
+        </motion.div>
+      </div>
+    );
+  }
+
   if (isArcade) {
     const words = levelContent.words ?? levelContent.text?.split(" ") ?? [];
     return (
@@ -371,10 +451,15 @@ export default function Play() {
                 gameId={gameId ?? ""}
                 levelNumber={levelNumber}
                 targetWpm={targetWpm}
+                strictMode={strictMode}
                 onComplete={(finalWpm, finalAcc, finalDuration, typedText) => {
+                  const progressResult = gameId
+                    ? recordLevelResult({ gameId, level: levelNumber, wpm: finalWpm, accuracy: finalAcc, targetWpm })
+                    : { passed: isPassingResult(finalWpm, finalAcc, targetWpm), nextLevelUnlocked: false };
                   setWpm(finalWpm);
                   setAccuracy(finalAcc);
                   setDuration(finalDuration);
+                  setLevelResult({ passed: progressResult.passed, nextLevelUnlocked: progressResult.nextLevelUnlocked });
                   setIsFinished(true);
                   saveSession(finalWpm, finalAcc, finalDuration, typedText);
                 }}
@@ -392,6 +477,9 @@ export default function Play() {
                 accuracy={accuracy}
                 duration={duration}
                 levelNumber={levelNumber}
+                targetWpm={targetWpm}
+                passed={levelResult?.passed ?? isPassingResult(wpm, accuracy, targetWpm)}
+                nextLevelUnlocked={levelResult?.nextLevelUnlocked ?? false}
                 onRetry={handleRetry}
                 onNext={() => setLocation(`/play/${gameId}/${Math.min(levelNumber + 1, 5)}`)}
                 onMenu={() => setLocation("/games")}
@@ -429,6 +517,19 @@ export default function Play() {
               </div>
               <div className="flex items-center gap-2 flex-wrap">
                 <WpmSparkline data={wpmHistory} />
+                {/* Strict Mode Toggle */}
+                <button
+                  onClick={toggleStrictMode}
+                  className={`flex items-center gap-1.5 border rounded-xl px-2.5 py-1.5 text-xs font-mono font-bold transition-all ${
+                    strictMode
+                      ? "bg-red-500/15 border-red-500/30 text-red-400 hover:bg-red-500/20 shadow-md shadow-red-500/5 animate-pulse"
+                      : "bg-muted/50 border-border text-muted-foreground hover:bg-muted"
+                  }`}
+                  title="Strict Mode blocks wrong keys and requires immediate correction"
+                >
+                  <Target className={`w-3.5 h-3.5 ${strictMode ? "text-red-400" : "text-muted-foreground"}`} />
+                  <span>{strictMode ? "STRICT ON" : "STRICT OFF"}</span>
+                </button>
                 {/* WPM */}
                 <div className="flex items-center gap-1 bg-card border border-border rounded-xl px-2.5 py-1.5">
                   <Zap className="w-3.5 h-3.5 text-primary" />
@@ -515,6 +616,9 @@ export default function Play() {
               accuracy={accuracy}
               duration={duration}
               levelNumber={levelNumber}
+              targetWpm={targetWpm}
+              passed={levelResult?.passed ?? isPassingResult(wpm, accuracy, targetWpm)}
+              nextLevelUnlocked={levelResult?.nextLevelUnlocked ?? false}
               onRetry={handleRetry}
               onNext={() => setLocation(`/play/${gameId}/${Math.min(levelNumber + 1, 5)}`)}
               onMenu={() => setLocation("/games")}

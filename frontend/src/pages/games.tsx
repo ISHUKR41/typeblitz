@@ -6,6 +6,7 @@ import {
   Zap, AlignLeft, Code2, Target, Timer, Shield, Terminal,
   ChevronRight, Star, Lock, TrendingUp, Car, Sword, Skull, Rocket, CalendarDays
 } from "lucide-react";
+import { getGameProgress, isLevelUnlocked } from "@/lib/progress";
 
 // ─── Colour tokens per game ───────────────────────────────────────────────
 const GAME_THEME: Record<string, { text: string; bg: string; border: string; shadow: string }> = {
@@ -33,6 +34,14 @@ const DIFFICULTY: Record<string, { label: string; cls: string }> = {
   advanced:     { label: "Advanced",     cls: "bg-red-500/15     text-red-400     border-red-500/30"      },
 };
 
+function CheckMarkDot({ className = "" }: { className?: string }) {
+  return (
+    <span className={`flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-black text-primary-foreground ${className}`}>
+      ✓
+    </span>
+  );
+}
+
 // ─── Category tags shown above game cards ────────────────────────────────
 const CATEGORY_META: Record<string, { label: string; color: string }> = {
   "word-sprint":      { label: "Speed Training",        color: "text-primary" },
@@ -56,6 +65,9 @@ function GameCard({ game, index }: { game: any; index: number }) {
   const meta   = CATEGORY_META[game.id] ?? { label: "Game", color: "text-muted-foreground" };
   const Icon   = GAME_ICONS[game.icon]  ?? Zap;
   const levels: any[] = game.levels ?? [];
+  const progress = getGameProgress(game.id);
+  const unlockedLevel = progress.unlockedLevel;
+  const completedCount = levels.filter(level => progress.levels[level.number]?.passed).length;
 
   return (
     <motion.div
@@ -83,13 +95,29 @@ function GameCard({ game, index }: { game: any; index: number }) {
       <h3 className="text-lg font-extrabold mb-2 leading-tight">{game.name}</h3>
       <p className="text-sm text-muted-foreground leading-relaxed flex-1 mb-4">{game.description}</p>
 
+      <div className="mb-4 rounded-xl border border-border bg-background/60 p-3">
+        <div className="mb-2 flex items-center justify-between text-xs font-semibold">
+          <span className="text-muted-foreground">Local progress</span>
+          <span className={theme.text}>{completedCount}/5 cleared · L{unlockedLevel} unlocked</span>
+        </div>
+        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full bg-primary transition-all"
+            style={{ width: `${(completedCount / Math.max(levels.length, 1)) * 100}%` }}
+          />
+        </div>
+      </div>
+
       {/* ── Level selector ── */}
       <div>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-2.5">
           <Star className="w-3 h-3" /> Choose Level
         </div>
         <div className="grid grid-cols-5 gap-2">
-          {levels.map((level: any) => (
+          {levels.map((level: any) => {
+            const unlocked = isLevelUnlocked(game.id, level.number);
+            const passed = Boolean(progress.levels[level.number]?.passed);
+            return unlocked ? (
             <Link key={level.number} href={`/play/${game.id}/${level.number}`}>
               <motion.div
                 onHoverStart={() => setHoveredLevel(level.number)}
@@ -103,14 +131,26 @@ function GameCard({ game, index }: { game: any; index: number }) {
                               : "bg-muted/50 text-muted-foreground border border-transparent hover:border-border"
                             }`}
                 title={`${level.name} — ${level.targetWpm} WPM target`}
-              >
+                >
                 {level.number}
-                {level.number === 1 && (
+                {passed && (
+                  <CheckMarkDot className="absolute -right-1 -top-1" />
+                )}
+                {!passed && level.number === unlockedLevel && (
                   <span className={`absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full ${theme.bg.replace('/10', '')} animate-ping opacity-75`} />
                 )}
               </motion.div>
             </Link>
-          ))}
+            ) : (
+              <div
+                key={level.number}
+                className="relative flex h-9 cursor-not-allowed items-center justify-center rounded-xl border border-border/60 bg-muted/25 font-mono text-sm font-bold text-muted-foreground/40"
+                title={`Clear level ${level.number - 1} to unlock`}
+              >
+                <Lock className="h-3.5 w-3.5" />
+              </div>
+            );
+          })}
         </div>
 
         {/* Level tooltip */}
@@ -232,7 +272,7 @@ export default function Games() {
         className="flex items-center justify-center gap-2 text-xs text-muted-foreground pt-4"
       >
         <Lock className="w-3.5 h-3.5" />
-        Progress is saved to your account. Complete each level to unlock the next.
+        Progress is saved locally now and can sync to your account when MongoDB is configured. Clear each level to unlock the next.
       </motion.p>
     </div>
   );

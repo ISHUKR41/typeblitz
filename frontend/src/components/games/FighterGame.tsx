@@ -59,12 +59,12 @@ function Fighter({ side, color, isAttacking, isHit, isDead }: {
       className="relative select-none"
       style={{ transform: flip }}
       animate={
-        isHit ? { x: side === "left" ? -12 : 12, opacity: [1, 0.5, 1] }
-        : isAttacking ? { x: side === "left" ? 14 : -14 }
+        isHit ? { x: side === "left" ? [-10, 5, -5, 0] : [10, -5, 5, 0], scale: [1, 0.9, 1.05, 1] }
+        : isAttacking ? { x: side === "left" ? [0, 24, 0] : [0, -24, 0], y: [0, -6, 0] }
         : isDead ? { opacity: 0, y: 20 }
-        : { x: 0 }
+        : { x: 0, scale: 1 }
       }
-      transition={{ duration: 0.2 }}
+      transition={{ duration: 0.25, ease: "easeInOut" }}
     >
       {/* Body */}
       <div className="relative w-16 h-20">
@@ -187,7 +187,12 @@ export function FighterGame({
       </div>
 
       {/* Arena */}
-      <div className="relative rounded-2xl overflow-hidden border border-white/10" style={{ height: 220 }}>
+      <motion.div
+        className="relative rounded-2xl overflow-hidden border border-white/10"
+        style={{ height: 220 }}
+        animate={playerHit ? { x: [0, -8, 8, -5, 5, 0], y: [0, -4, 4, -2, 2, 0] } : {}}
+        transition={{ duration: 0.3 }}
+      >
         {/* Background */}
         <div className="absolute inset-0" style={{
           background: "linear-gradient(to bottom, #1a0a2e 0%, #160520 50%, #0d0d0d 100%)"
@@ -303,7 +308,7 @@ export function FighterGame({
             animate={{ width: `${progress}%` }}
           />
         </div>
-      </div>
+      </motion.div>
 
       {/* Typing panel */}
       <div className="bg-gray-900/80 border border-white/10 rounded-2xl p-5 space-y-3">

@@ -27,10 +27,11 @@ interface ArcadeArenaProps {
   gameId: string;
   levelNumber: number;
   targetWpm: number;
+  strictMode?: boolean;
   onComplete: (wpm: number, accuracy: number, duration: number, typedText: string) => void;
 }
 
-export function ArcadeArena({ words, gameId, levelNumber, targetWpm, onComplete }: ArcadeArenaProps) {
+export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode, onComplete }: ArcadeArenaProps) {
   const [wordIndex, setWordIndex] = useState(0);
   const [currentInput, setCurrentInput] = useState("");
   const [startTime, setStartTime] = useState<number | null>(null);
@@ -72,6 +73,23 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, onComplete 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     if (!startTime && val.length > 0) setStartTime(Date.now());
+
+    // Strict Mode: Block on Error
+    if (strictMode && val.length > currentInput.length) {
+      const expected = words[wordIndex] ?? "";
+      if (val.endsWith(" ")) {
+        if (val.trim() !== expected) {
+          setTotalChars(prev => prev + 1);
+          return;
+        }
+      } else {
+        const idx = val.length - 1;
+        if (val[idx] !== expected[idx]) {
+          setTotalChars(prev => prev + 1);
+          return;
+        }
+      }
+    }
 
     if (val.endsWith(" ")) {
       const typed = val.trim();

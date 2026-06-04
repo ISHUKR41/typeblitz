@@ -14,7 +14,9 @@ router.get("/", async (req, res) => {
     return;
   }
 
-  const matchStage: Record<string, unknown> = {};
+  const matchStage: Record<string, any> = {
+    accuracy: { $gte: 90 }
+  };
   if (gameId) matchStage.gameId = gameId;
 
   // Get best session per user (or per user+game if filtered)
