@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ArcadeProps } from "./ArcadeArena";
 import { Sword, Shield, Zap } from "lucide-react";
+import { soundEffects } from "@/lib/audio";
 
 const ENEMIES = [
   { name: "Scribe",     color: "#a78bfa", hp: 100 },
@@ -11,142 +12,119 @@ const ENEMIES = [
   { name: "Champion",   color: "#ef4444", hp: 250 },
 ];
 
+interface CanvasParticle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  color: string;
+  alpha: number;
+  life: number;
+  maxLife: number;
+}
+
+interface DamageNumber {
+  x: number;
+  y: number;
+  text: string;
+  color: string;
+  alpha: number;
+  life: number;
+  maxLife: number;
+}
+
 function HealthBar({ value, max, color }: { value: number; max: number; color: string }) {
   const pct = Math.max((value / max) * 100, 0);
   return (
-    <div className="h-3 bg-black/50 rounded-full overflow-hidden border border-white/10">
+    <div className="h-3 bg-black/60 rounded-full overflow-hidden border border-white/10 shadow-inner">
       <motion.div
         className="h-full rounded-full"
         style={{ background: color }}
         animate={{ width: `${pct}%` }}
-        transition={{ type: "spring", stiffness: 80, damping: 15 }}
+        transition={{ type: "spring", stiffness: 85, damping: 14 }}
       />
     </div>
   );
 }
 
-function WordDisplay({ word, input }: { word: string; input: string }) {
-  return (
-    <div className="flex items-center justify-center gap-1 font-mono text-2xl md:text-3xl font-bold tracking-widest">
-      {word.split("").map((ch, i) => {
-        let cls = "text-white/30";
-        if (i < input.length) {
-          cls = input[i] === ch ? "text-emerald-400 drop-shadow-[0_0_8px_#34d399]" : "text-red-400 bg-red-500/20 rounded";
-        } else if (i === input.length) {
-          cls = "text-white border-b-2 border-yellow-400";
-        }
-        return (
-          <span key={i} className={`transition-all duration-75 ${cls}`}>
-            {ch}
-          </span>
-        );
-      })}
-    </div>
-  );
-}
-
-// CSS fighter character
-function Fighter({ side, color, isAttacking, isHit, isDead }: {
-  side: "left" | "right";
-  color: string;
-  isAttacking: boolean;
-  isHit: boolean;
-  isDead: boolean;
-}) {
-  const flip = side === "right" ? "scaleX(-1)" : "";
-  return (
-    <motion.div
-      className="relative select-none"
-      style={{ transform: flip }}
-      animate={
-        isHit ? { x: side === "left" ? [-10, 5, -5, 0] : [10, -5, 5, 0], scale: [1, 0.9, 1.05, 1] }
-        : isAttacking ? { x: side === "left" ? [0, 24, 0] : [0, -24, 0], y: [0, -6, 0] }
-        : isDead ? { opacity: 0, y: 20 }
-        : { x: 0, scale: 1 }
-      }
-      transition={{ duration: 0.25, ease: "easeInOut" }}
-    >
-      {/* Body */}
-      <div className="relative w-16 h-20">
-        {/* Head */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-8 rounded-full border-2"
-          style={{ background: color + "30", borderColor: color }}
-        >
-          {/* Eyes */}
-          <div className="absolute top-2.5 left-2 w-1.5 h-1.5 rounded-full" style={{ background: color }} />
-          <div className="absolute top-2.5 right-2 w-1.5 h-1.5 rounded-full" style={{ background: color }} />
-          {/* Mouth */}
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-3 h-0.5 rounded" style={{ background: color }} />
-        </div>
-        {/* Torso */}
-        <div className="absolute top-9 left-1/2 -translate-x-1/2 w-7 h-7 rounded-md border-2"
-          style={{ background: color + "20", borderColor: color }}
-        />
-        {/* Arms */}
-        <div className="absolute top-10 left-0 w-3 h-2 rounded border" style={{ borderColor: color, background: color + "20" }} />
-        <div className="absolute top-10 right-0 w-3 h-2 rounded border" style={{ borderColor: color, background: color + "20" }} />
-        {/* Weapon */}
-        <motion.div
-          className="absolute top-9 -right-3 w-5 h-1 rounded"
-          style={{ background: color, boxShadow: `0 0 6px ${color}` }}
-          animate={isAttacking ? { scaleX: [1, 1.4, 1], opacity: [1, 0.7, 1] } : {}}
-          transition={{ duration: 0.2 }}
-        />
-        {/* Legs */}
-        <div className="absolute bottom-0 left-2 w-2.5 h-5 rounded-b-md border-l-2 border-b-2"
-          style={{ borderColor: color, background: color + "15" }}
-        />
-        <div className="absolute bottom-0 right-2 w-2.5 h-5 rounded-b-md border-r-2 border-b-2"
-          style={{ borderColor: color, background: color + "15" }}
-        />
-      </div>
-
-      {/* Glow ring when attacking */}
-      <AnimatePresence>
-        {isAttacking && (
-          <motion.div
-            initial={{ opacity: 0.8, scale: 0.5 }}
-            animate={{ opacity: 0, scale: 2 }}
-            exit={{}}
-            transition={{ duration: 0.4 }}
-            className="absolute inset-0 rounded-full"
-            style={{ background: `radial-gradient(circle, ${color}40 0%, transparent 70%)` }}
-          />
-        )}
-      </AnimatePresence>
-    </motion.div>
-  );
-}
-
 export function FighterGame({
-  words, wordIndex, currentInput, wpm, accuracy,
-  targetWpm, lastWordCorrect, levelNumber, submissionCount,
+  words,
+  wordIndex,
+  currentInput,
+  wpm,
+  accuracy,
+  targetWpm,
+  lastWordCorrect,
+  levelNumber,
+  submissionCount,
 }: ArcadeProps) {
-  const enemy = ENEMIES[Math.min(levelNumber - 1, ENEMIES.length - 1)];
+  const enemy = ENEMIES[Math.min(levelNumber - 1, ENEMIES.length - 1)] ?? ENEMIES[0];
   const totalWords = words.length;
 
   const [playerHp, setPlayerHp] = useState(100);
   const [enemyHp, setEnemyHp] = useState(enemy.hp);
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const prevSubmissionRef = useRef(submissionCount);
+  
+  // Animation state triggers
   const [playerAttacking, setPlayerAttacking] = useState(false);
   const [enemyAttacking, setEnemyAttacking] = useState(false);
   const [playerHit, setPlayerHit] = useState(false);
   const [enemyHit, setEnemyHit] = useState(false);
   const [combo, setCombo] = useState(0);
   const [comboLabel, setComboLabel] = useState<string | null>(null);
-  const prevSubmission = useRef(0);
+
+  // Floating messages and particles refs
+  const particlesRef = useRef<CanvasParticle[]>([]);
+  const damagesRef = useRef<DamageNumber[]>([]);
 
   useEffect(() => {
     if (lastWordCorrect === null) return;
-    if (submissionCount === prevSubmission.current) return;
-    prevSubmission.current = submissionCount;
+    if (submissionCount === prevSubmissionRef.current) return;
+    prevSubmissionRef.current = submissionCount;
 
     if (lastWordCorrect) {
-      const dmg = Math.round(enemy.hp / totalWords);
+      // Player attacks
+      const dmg = Math.round(enemy.hp / totalWords) || 12;
       setEnemyHp(h => Math.max(h - dmg, 0));
       setPlayerAttacking(true);
-      setTimeout(() => setPlayerAttacking(false), 250);
       setEnemyHit(true);
-      setTimeout(() => setEnemyHit(false), 250);
+      soundEffects.playSlash();
+      setTimeout(() => soundEffects.playImpact(), 80);
+
+      // Add damage popup
+      damagesRef.current.push({
+        x: 550 + (Math.random() * 20 - 10),
+        y: 110 + (Math.random() * 20 - 10),
+        text: `-${dmg} HP`,
+        color: "#facc15",
+        alpha: 1,
+        life: 0,
+        maxLife: 35,
+      });
+
+      // Hit particles
+      for (let k = 0; k < 15; k++) {
+        particlesRef.current.push({
+          x: 550,
+          y: 120,
+          vx: (Math.random() * 8 - 4) * 1.5,
+          vy: (Math.random() * 8 - 6) * 1.5,
+          size: Math.random() * 3 + 2,
+          color: enemy.color,
+          alpha: 1,
+          life: 0,
+          maxLife: 20 + Math.random() * 15,
+        });
+      }
+
+      setTimeout(() => {
+        setPlayerAttacking(false);
+        setEnemyHit(false);
+      }, 250);
+
       setCombo(c => {
         const next = c + 1;
         if (next >= 5) setComboLabel("ULTRA COMBO!");
@@ -155,16 +133,288 @@ export function FighterGame({
         return next;
       });
     } else {
-      const dmg = 8;
+      // Enemy attacks
+      const dmg = 10;
       setPlayerHp(h => Math.max(h - dmg, 0));
       setEnemyAttacking(true);
-      setTimeout(() => setEnemyAttacking(false), 250);
       setPlayerHit(true);
-      setTimeout(() => setPlayerHit(false), 250);
+      soundEffects.playSlash();
+      setTimeout(() => soundEffects.playImpact(), 80);
+
+      damagesRef.current.push({
+        x: 250 + (Math.random() * 20 - 10),
+        y: 110 + (Math.random() * 20 - 10),
+        text: `-${dmg} HP`,
+        color: "#f87171",
+        alpha: 1,
+        life: 0,
+        maxLife: 35,
+      });
+
+      for (let k = 0; k < 12; k++) {
+        particlesRef.current.push({
+          x: 250,
+          y: 120,
+          vx: (Math.random() * 8 - 4) * 1.5,
+          vy: (Math.random() * 8 - 6) * 1.5,
+          size: Math.random() * 3 + 2,
+          color: "#34d399",
+          alpha: 1,
+          life: 0,
+          maxLife: 20 + Math.random() * 15,
+        });
+      }
+
+      setTimeout(() => {
+        setEnemyAttacking(false);
+        setPlayerHit(false);
+      }, 250);
+
       setCombo(0);
       setComboLabel(null);
     }
-  }, [lastWordCorrect, submissionCount, enemy.hp, totalWords]);
+  }, [lastWordCorrect, submissionCount, enemy.hp, totalWords, enemy.color]);
+
+  // Canvas render loop
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animId: number;
+
+    const render = () => {
+      const w = canvas.width;
+      const h = canvas.height;
+
+      // Screen Shake offset if hit
+      ctx.save();
+      if (playerHit || enemyHit) {
+        const shakeX = Math.random() * 10 - 5;
+        const shakeY = Math.random() * 8 - 4;
+        ctx.translate(shakeX, shakeY);
+      }
+
+      // Draw background (cyberpunk dojo/arena)
+      const grad = ctx.createLinearGradient(0, 0, 0, h);
+      grad.addColorStop(0, "#130922");
+      grad.addColorStop(0.5, "#0b0514");
+      grad.addColorStop(1, "#07020d");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
+
+      // Floor grid line
+      ctx.strokeStyle = "rgba(168, 85, 247, 0.25)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, h * 0.78);
+      ctx.lineTo(w, h * 0.78);
+      ctx.stroke();
+
+      // Dojo pillars
+      ctx.fillStyle = "rgba(107, 33, 168, 0.08)";
+      ctx.fillRect(w * 0.15, 0, 25, h * 0.78);
+      ctx.fillRect(w * 0.82, 0, 25, h * 0.78);
+
+      // Character base positions
+      const playerIdleY = Math.sin(Date.now() / 150) * 2;
+      const enemyIdleY = Math.cos(Date.now() / 150) * 1.8;
+
+      const pBaseX = 250 + (playerAttacking ? 120 : 0);
+      const eBaseX = 550 - (enemyAttacking ? 120 : 0);
+
+      // ─── PLAYER DRAWING ───
+      if (playerHp > 0) {
+        ctx.save();
+        ctx.translate(pBaseX, h * 0.75 + playerIdleY);
+
+        // Attack sword trail
+        if (playerAttacking) {
+          ctx.strokeStyle = "rgba(52, 211, 153, 0.4)";
+          ctx.lineWidth = 14;
+          ctx.beginPath();
+          ctx.arc(30, -25, 30, -Math.PI / 3, Math.PI / 3);
+          ctx.stroke();
+        }
+
+        // Body glow shadow
+        ctx.shadowColor = "#34d399";
+        ctx.shadowBlur = 10;
+
+        // Player Head
+        ctx.fillStyle = "rgba(52, 211, 153, 0.2)";
+        ctx.strokeStyle = "#34d399";
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(0, -50, 14, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Eyes
+        ctx.fillStyle = "#34d399";
+        ctx.shadowBlur = 4;
+        ctx.beginPath();
+        ctx.arc(4, -53, 2, 0, Math.PI * 2);
+        ctx.arc(10, -53, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Torso
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = "rgba(52, 211, 153, 0.15)";
+        ctx.beginPath();
+        ctx.roundRect(-12, -36, 22, 26, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        // Arms (holding neon katana)
+        ctx.beginPath();
+        ctx.moveTo(8, -25);
+        ctx.lineTo(24, -20);
+        ctx.stroke();
+
+        // Katana blade
+        ctx.strokeStyle = "#ffffff";
+        ctx.shadowColor = "#34d399";
+        ctx.shadowBlur = 8;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(24, -20);
+        ctx.lineTo(44, -38);
+        ctx.stroke();
+
+        // Legs
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = "#34d399";
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(-6, -10);
+        ctx.lineTo(-8, 5);
+        ctx.moveTo(4, -10);
+        ctx.lineTo(6, 5);
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // ─── ENEMY DRAWING ───
+      if (enemyHp > 0) {
+        ctx.save();
+        ctx.translate(eBaseX, h * 0.75 + enemyIdleY);
+
+        // Enemy scale left-facing
+        ctx.scale(-1, 1);
+
+        // Red slash trail
+        if (enemyAttacking) {
+          ctx.strokeStyle = `${enemy.color}60`;
+          ctx.lineWidth = 14;
+          ctx.beginPath();
+          ctx.arc(30, -25, 30, -Math.PI / 3, Math.PI / 3);
+          ctx.stroke();
+        }
+
+        ctx.shadowColor = enemy.color;
+        ctx.shadowBlur = 10;
+
+        // Enemy Head
+        ctx.fillStyle = `${enemy.color}25`;
+        ctx.strokeStyle = enemy.color;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(0, -50, 14, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Eyes
+        ctx.fillStyle = enemy.color;
+        ctx.shadowBlur = 4;
+        ctx.beginPath();
+        ctx.arc(4, -53, 2, 0, Math.PI * 2);
+        ctx.arc(10, -53, 2, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Torso
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = `${enemy.color}15`;
+        ctx.beginPath();
+        ctx.roundRect(-12, -36, 22, 26, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        // Weapon
+        ctx.beginPath();
+        ctx.moveTo(8, -25);
+        ctx.lineTo(24, -20);
+        ctx.stroke();
+
+        ctx.strokeStyle = "#ffffff";
+        ctx.shadowColor = enemy.color;
+        ctx.shadowBlur = 8;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(24, -20);
+        ctx.lineTo(44, -38);
+        ctx.stroke();
+
+        // Legs
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = enemy.color;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(-6, -10);
+        ctx.lineTo(-8, 5);
+        ctx.moveTo(4, -10);
+        ctx.lineTo(6, 5);
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // ─── PARTICLES SYSTEM ───
+      particlesRef.current.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.15; // gravity
+        p.life++;
+        p.alpha = 1 - (p.life / p.maxLife);
+
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+      particlesRef.current = particlesRef.current.filter(p => p.life < p.maxLife);
+
+      // ─── FLOATING DAMAGE NUMBERS ───
+      damagesRef.current.forEach(d => {
+        d.y -= 1.2;
+        d.life++;
+        d.alpha = 1 - (d.life / d.maxLife);
+
+        ctx.save();
+        ctx.globalAlpha = d.alpha;
+        ctx.fillStyle = d.color;
+        ctx.font = "bold 14px monospace";
+        ctx.textAlign = "center";
+        ctx.shadowColor = "#000";
+        ctx.shadowBlur = 3;
+        ctx.fillText(d.text, d.x, d.y);
+        ctx.restore();
+      });
+      damagesRef.current = damagesRef.current.filter(d => d.life < d.maxLife);
+
+      ctx.restore(); // end screen shake translation
+      animId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => cancelAnimationFrame(animId);
+  }, [playerHp, enemyHp, playerAttacking, enemyAttacking, playerHit, enemyHit, enemy.color]);
 
   const currentWord = words[wordIndex] ?? "";
   const nextWords = words.slice(wordIndex + 1, wordIndex + 3);
@@ -172,7 +422,7 @@ export function FighterGame({
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-4 px-2 select-none">
-      {/* HUD */}
+      {/* HUD metrics */}
       <div className="flex items-center gap-3">
         <div className="bg-black/50 border border-white/10 rounded-xl px-3 py-1.5 flex items-center gap-1.5">
           <Zap className="w-3.5 h-3.5 text-yellow-400" />
@@ -182,157 +432,98 @@ export function FighterGame({
           <span className="font-mono text-sm text-white/60">{accuracy}% acc</span>
         </div>
         <div className="ml-auto font-mono text-sm text-white/40">
-          {wordIndex} / {words.length}
+          {wordIndex} / {words.length} words
         </div>
       </div>
 
-      {/* Arena */}
-      <motion.div
-        className="relative rounded-2xl overflow-hidden border border-white/10"
-        style={{ height: 220 }}
-        animate={playerHit ? { x: [0, -8, 8, -5, 5, 0], y: [0, -4, 4, -2, 2, 0] } : {}}
-        transition={{ duration: 0.3 }}
-      >
-        {/* Background */}
-        <div className="absolute inset-0" style={{
-          background: "linear-gradient(to bottom, #1a0a2e 0%, #160520 50%, #0d0d0d 100%)"
-        }} />
-
-        {/* Floor */}
-        <div className="absolute bottom-0 left-0 right-0 h-10"
-          style={{ background: "linear-gradient(to top, #1a1a2e, transparent)" }}
+      {/* Fight arena wrapper */}
+      <div className="relative rounded-2xl overflow-hidden border border-white/10">
+        <canvas
+          ref={canvasRef}
+          width={800}
+          height={220}
+          className="w-full h-[220px] block"
         />
-        {/* Floor line */}
-        <div className="absolute bottom-8 left-0 right-0 h-px bg-white/10" />
-
-        {/* Crowd silhouettes */}
-        <div className="absolute top-0 left-0 right-0 h-10 flex items-end justify-around opacity-20">
-          {[...Array(16)].map((_, i) => (
-            <div key={i} className="w-4 rounded-t-full bg-purple-900"
-              style={{ height: `${20 + (i % 3) * 8}px` }}
-            />
-          ))}
-        </div>
 
         {/* Player HP */}
-        <div className="absolute top-12 left-4 w-32 space-y-1">
+        <div className="absolute top-4 left-4 w-36 space-y-1 z-10 bg-black/30 backdrop-blur-sm p-2 rounded-lg border border-white/5">
           <div className="flex items-center gap-1">
             <Shield className="w-3 h-3 text-emerald-400" />
             <span className="text-xs font-mono font-bold text-emerald-400">YOU</span>
             <span className="text-xs font-mono text-white/50 ml-auto">{playerHp}/100</span>
           </div>
-          <HealthBar value={playerHp} max={100} color="#34d399" />
+          <HealthBar value={playerHp} max={100} color="linear-gradient(to right, #34d399, #10b981)" />
         </div>
 
         {/* Enemy HP */}
-        <div className="absolute top-12 right-4 w-32 space-y-1">
+        <div className="absolute top-4 right-4 w-36 space-y-1 z-10 bg-black/30 backdrop-blur-sm p-2 rounded-lg border border-white/5">
           <div className="flex items-center gap-1 justify-end">
-            <span className="text-xs font-mono text-white/50">{Math.max(enemyHp, 0)}/{enemy.hp}</span>
-            <span className="text-xs font-mono font-bold" style={{ color: enemy.color }}>
+            <span className="text-xs font-mono text-white/50">{enemyHp}/{enemy.hp}</span>
+            <span className="text-xs font-mono font-bold ml-1" style={{ color: enemy.color }}>
               {enemy.name.toUpperCase()}
             </span>
-            <Sword className="w-3 h-3" style={{ color: enemy.color }} />
+            <Sword className="w-3 h-3 ml-1" style={{ color: enemy.color }} />
           </div>
           <HealthBar value={enemyHp} max={enemy.hp} color={enemy.color} />
         </div>
 
-        {/* VS in center */}
-        <div className="absolute top-12 left-1/2 -translate-x-1/2 text-white/20 font-black text-lg font-mono">
+        {/* VS emblem */}
+        <div className="absolute top-6 left-1/2 -translate-x-1/2 text-white/20 font-black text-2xl font-mono select-none pointer-events-none">
           VS
         </div>
 
-        {/* Combo label */}
+        {/* Combo indicator label */}
         <AnimatePresence>
           {comboLabel && (
             <motion.div
               key={comboLabel + combo}
-              initial={{ opacity: 1, y: 0, scale: 0.8 }}
-              animate={{ opacity: 0, y: -30, scale: 1.2 }}
-              exit={{}}
+              initial={{ opacity: 1, y: 30, scale: 0.8 }}
+              animate={{ opacity: 0, y: -20, scale: 1.4 }}
               transition={{ duration: 0.8 }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-yellow-400 font-black text-lg font-mono z-10 pointer-events-none drop-shadow-lg"
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-yellow-400 font-black text-xl font-mono z-10 pointer-events-none drop-shadow-[0_0_8px_rgba(234,179,8,0.5)]"
             >
               {comboLabel}
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Attack effect */}
-        <AnimatePresence>
-          {playerAttacking && (
-            <motion.div
-              initial={{ opacity: 0.8, scaleX: 0 }}
-              animate={{ opacity: 0, scaleX: 1 }}
-              exit={{}}
-              className="absolute top-1/2 left-1/4 right-1/4 h-px origin-left"
-              style={{ background: "linear-gradient(to right, #34d399, transparent)" }}
-            />
-          )}
-          {enemyAttacking && (
-            <motion.div
-              initial={{ opacity: 0.8, scaleX: 0 }}
-              animate={{ opacity: 0, scaleX: 1 }}
-              exit={{}}
-              className="absolute top-1/2 left-1/4 right-1/4 h-px origin-right"
-              style={{ background: "linear-gradient(to left, #f87171, transparent)" }}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Player character */}
-        <div className="absolute left-8 bottom-8">
-          <Fighter
-            side="left"
-            color="#34d399"
-            isAttacking={playerAttacking}
-            isHit={playerHit}
-            isDead={playerHp <= 0}
-          />
-        </div>
-
-        {/* Enemy character */}
-        <div className="absolute right-8 bottom-8">
-          <Fighter
-            side="right"
-            color={enemy.color}
-            isAttacking={enemyAttacking}
-            isHit={enemyHit}
-            isDead={enemyHp <= 0}
-          />
-        </div>
-
         {/* Progress bar */}
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40">
+        <div className="absolute bottom-0 left-0 right-0 h-1.5 bg-black/40">
           <motion.div
-            className="h-full bg-primary/60"
+            className="h-full bg-primary"
             animate={{ width: `${progress}%` }}
+            transition={{ duration: 0.2 }}
           />
         </div>
-      </motion.div>
+      </div>
 
-      {/* Typing panel */}
-      <div className="bg-gray-900/80 border border-white/10 rounded-2xl p-5 space-y-3">
+      {/* Typing box */}
+      <div className="bg-gray-900/80 border border-white/10 rounded-2xl p-5 space-y-3 shadow-lg">
         <div className="flex items-center gap-2 text-xs text-white/40 font-mono">
           <Sword className="w-3 h-3 text-yellow-400" />
-          <span className="text-yellow-400">ATTACK MOVE</span>
-          {combo > 1 && <span className="ml-auto text-yellow-400 font-bold">{combo}x COMBO</span>}
+          <span className="text-yellow-400">COMBAT DRILL — type attack moves!</span>
+          {combo > 1 && <span className="ml-auto text-yellow-400 font-bold">{combo}x COMBO ACTIVE</span>}
         </div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={wordIndex}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            transition={{ duration: 0.12 }}
-          >
-            <WordDisplay word={currentWord} input={currentInput} />
-          </motion.div>
-        </AnimatePresence>
+        <div className="flex items-center justify-center gap-1 font-mono text-2xl md:text-3xl font-bold tracking-widest select-none py-1">
+          {currentWord.split("").map((ch, i) => {
+            let cls = "text-white/25";
+            if (i < currentInput.length) {
+              cls = currentInput[i] === ch ? "text-emerald-400 drop-shadow-[0_0_6px_#34d399]" : "text-red-400 bg-red-500/20 rounded";
+            } else if (i === currentInput.length) {
+              cls = "text-white border-b-2 border-yellow-400 animate-pulse";
+            }
+            return (
+              <span key={i} className={`transition-all duration-75 ${cls}`}>
+                {ch}
+              </span>
+            );
+          })}
+        </div>
 
         <div className="flex justify-center gap-4 pt-1">
           {nextWords.map((w, i) => (
-            <span key={i} className="font-mono text-xs text-white/20">{w}</span>
+            <span key={i} className="font-mono text-xs text-white/25">{w}</span>
           ))}
         </div>
       </div>

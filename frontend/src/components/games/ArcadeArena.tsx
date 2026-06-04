@@ -3,6 +3,7 @@ import { RacingGame } from "./RacingGame";
 import { FighterGame } from "./FighterGame";
 import { ZombieGame } from "./ZombieGame";
 import { GalaxyGame } from "./GalaxyGame";
+import { soundEffects } from "@/lib/audio";
 
 export interface ArcadeProps {
   words: string[];
@@ -35,8 +36,6 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
   const [wordIndex, setWordIndex] = useState(0);
   const [currentInput, setCurrentInput] = useState("");
   const [startTime, setStartTime] = useState<number | null>(null);
-  const [totalChars, setTotalChars] = useState(0);
-  const [correctChars, setCorrectChars] = useState(0);
   const [wpm, setWpm] = useState(0);
   const [wpmHistory, setWpmHistory] = useState<number[]>([]);
   const [lastWordCorrect, setLastWordCorrect] = useState<boolean | null>(null);
@@ -47,8 +46,15 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
   const inputRef = useRef<HTMLInputElement>(null);
   const typedWordsRef = useRef<string[]>([]);
 
+  // Keystroke metrics
+  const totalKeystrokesRef = useRef(0);
+  const errorKeystrokesRef = useRef(0);
+  const correctCharsRef = useRef(0);
+
   const progress = words.length > 0 ? (wordIndex / words.length) * 100 : 0;
-  const accuracy = totalChars > 0 ? Math.round((correctChars / totalChars) * 100) : 100;
+
+  // Live real-time accuracy percentage
+  const [liveAccuracy, setLiveAccuracy] = useState(100);
 
   useEffect(() => {
     if (!startTime) return;
@@ -57,14 +63,26 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
       setElapsed(secs);
       const mins = secs / 60;
       if (mins > 0) {
-        // WPM counts ONLY correctly-typed characters (standard WPM definition)
-        const live = Math.round((correctChars / 5) / mins);
+        // Calculate correct characters dynamically (completed words + current input)
+        let correct = 0;
+        for (let i = 0; i < wordIndex; i++) {
+          correct += words[i]?.length ?? 0;
+          correct += 1; // space
+        }
+        const currExpected = words[wordIndex] ?? "";
+        for (let i = 0; i < currentInput.length; i++) {
+          if (currentInput[i] === currExpected[i]) correct++;
+        }
+        correctCharsRef.current = correct;
+
+        // WPM = correct chars / 5 / minutes
+        const live = Math.round((correct / 5) / mins);
         setWpm(live);
         setWpmHistory(h => [...h.slice(-29), live]);
       }
-    }, 500);
+    }, 400);
     return () => clearInterval(id);
-  }, [startTime, correctChars]);
+  }, [startTime, wordIndex, currentInput, words]);
 
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 150);
@@ -74,38 +92,64 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
     const val = e.target.value;
     if (!startTime && val.length > 0) setStartTime(Date.now());
 
-    // Strict Mode: Block on Error
-    if (strictMode && val.length > currentInput.length) {
-      const expected = words[wordIndex] ?? "";
+    if (val.length > currentInput.length) {
+      // Key pressed
+      totalKeystrokesRef.current += 1;
+      const expectedWord = words[wordIndex] ?? "";
+
       if (val.endsWith(" ")) {
-        if (val.trim() !== expected) {
-          setTotalChars(prev => prev + 1);
-          return;
+        // User typed space to submit word
+        const typedWord = val.trim();
+        if (typedWord === expectedWord) {
+          soundEffects.playClick(true);
+        } else {
+          errorKeystrokesRef.current += 1;
+          soundEffects.playError();
+          if (strictMode) {
+            // Block spacebar in strict mode
+            updateAccuracyState();
+            return;
+          }
         }
       } else {
+        // Typing character in the current word
         const idx = val.length - 1;
-        if (val[idx] !== expected[idx]) {
-          setTotalChars(prev => prev + 1);
-          return;
+        const typedChar = val[idx];
+        const expectedChar = expectedWord[idx];
+
+        if (typedChar === expectedChar) {
+          soundEffects.playClick(false);
+        } else {
+          errorKeystrokesRef.current += 1;
+          soundEffects.playError();
+          if (strictMode) {
+            // Block wrong character in strict mode
+            updateAccuracyState();
+            return;
+          }
         }
       }
+    } else if (val.length < currentInput.length) {
+      // Backspace typed
+      soundEffects.playClick(false);
     }
+
+    updateAccuracyState();
 
     if (val.endsWith(" ")) {
       const typed = val.trim();
       const expected = words[wordIndex] ?? "";
       const isCorrect = typed === expected;
-      const charsTyped = typed.length;
+      
+      // Calculate how many characters in this word were actually typed correctly
       let charsOk = 0;
       for (let i = 0; i < Math.min(typed.length, expected.length); i++) {
         if (typed[i] === expected[i]) charsOk++;
       }
-      const newTotal = totalChars + charsTyped;
-      const newCorrect = correctChars + charsOk;
+      
       typedWordsRef.current = [...typedWordsRef.current, typed];
+      correctCharsRef.current += charsOk + (isCorrect ? 1 : 0);
 
-      setTotalChars(newTotal);
-      setCorrectChars(newCorrect);
       setLastWordCorrect(isCorrect);
       setComboStreak(streak => isCorrect ? streak + 1 : 0);
       setSubmissionCount(count => count + 1);
@@ -116,10 +160,24 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
       if (next >= words.length) {
         const secs = (Date.now() - (startTime ?? Date.now())) / 1000;
         const mins = secs / 60;
-        // WPM = correct chars only / 5 / minutes (industry standard)
-        const finalWpm = Math.round((newCorrect / 5) / Math.max(mins, 0.01));
-        const finalAcc = newTotal > 0 ? Math.round((newCorrect / newTotal) * 100) : 100;
-        onComplete(finalWpm, finalAcc, Math.floor(secs), typedWordsRef.current.join(" "));
+        
+        // Final correct characters calculation
+        let finalCorrect = 0;
+        for (let i = 0; i < words.length; i++) {
+          const w = typedWordsRef.current[i] ?? "";
+          const exp = words[i] ?? "";
+          for (let j = 0; j < Math.min(w.length, exp.length); j++) {
+            if (w[j] === exp[j]) finalCorrect++;
+          }
+          if (i < words.length - 1 && w === exp) finalCorrect++; // space character
+        }
+        
+        const finalWpm = Math.round((finalCorrect / 5) / Math.max(mins, 0.01));
+        const totalK = totalKeystrokesRef.current;
+        const errorK = errorKeystrokesRef.current;
+        const finalAcc = totalK > 0 ? Math.max(0, Math.min(100, Math.round(((totalK - errorK) / totalK) * 100))) : 100;
+        
+        onComplete(finalWpm, finalAcc, Math.max(1, Math.floor(secs)), typedWordsRef.current.join(" "));
       } else {
         setWordIndex(next);
       }
@@ -128,10 +186,29 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
     }
   };
 
+  const updateAccuracyState = () => {
+    const totalK = totalKeystrokesRef.current;
+    const errorK = errorKeystrokesRef.current;
+    const acc = totalK > 0 ? Math.max(0, Math.min(100, Math.round(((totalK - errorK) / totalK) * 100))) : 100;
+    setLiveAccuracy(acc);
+  };
+
   const props: ArcadeProps = {
-    words, wordIndex, currentInput, wpm, wpmHistory,
-    accuracy, progress, levelNumber, targetWpm, startTime,
-    lastWordCorrect, elapsedSeconds: elapsed, comboStreak, mistakeCount, submissionCount,
+    words,
+    wordIndex,
+    currentInput,
+    wpm,
+    wpmHistory,
+    accuracy: liveAccuracy,
+    progress,
+    levelNumber,
+    targetWpm,
+    startTime,
+    lastWordCorrect,
+    elapsedSeconds: elapsed,
+    comboStreak,
+    mistakeCount,
+    submissionCount,
   };
 
   return (

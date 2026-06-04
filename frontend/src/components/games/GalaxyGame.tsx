@@ -2,164 +2,106 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ArcadeProps } from "./ArcadeArena";
 import { Zap, Shield, Star } from "lucide-react";
+import { soundEffects } from "@/lib/audio";
 
-// Pre-calculated star field so it's stable
-const STARS = Array.from({ length: 40 }, (_, i) => ({
-  x: ((i * 73 + 17) % 100),
-  y: ((i * 37 + 11) % 100),
-  size: (i % 3) + 1,
-  opacity: 0.1 + (i % 5) * 0.1,
-}));
-
-// Pre-calculated ship grid positions
 const SHIP_COLS = 5;
 const SHIP_ROWS = 2;
+const ALIEN_COLORS = ["#67e8f9", "#a78bfa", "#86efac", "#fb923c", "#f472b6"];
 
-function WordDisplay({ word, input }: { word: string; input: string }) {
-  return (
-    <div className="flex items-center justify-center gap-0.5 font-mono text-2xl md:text-3xl font-bold tracking-widest">
-      {word.split("").map((ch, i) => {
-        let cls = "text-white/30";
-        if (i < input.length) {
-          cls = input[i] === ch ? "text-cyan-300 drop-shadow-[0_0_6px_#67e8f9]" : "text-red-400 bg-red-500/20 rounded";
-        } else if (i === input.length) {
-          cls = "text-white border-b-2 border-cyan-400";
-        }
-        return (
-          <span key={i} className={`transition-colors duration-75 ${cls}`}>
-            {ch}
-          </span>
-        );
-      })}
-    </div>
-  );
+interface StarData {
+  x: number;
+  y: number;
+  size: number;
+  speed: number;
 }
 
-function AlienShip({ word, isTarget, destroyed, showLaser, color }: {
-  word: string;
-  isTarget: boolean;
-  destroyed: boolean;
-  showLaser: boolean;
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
   color: string;
-}) {
-  return (
-    <div className="relative flex flex-col items-center">
-      <AnimatePresence>
-        {!destroyed ? (
-          <motion.div
-            initial={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 2 }}
-            transition={{ duration: 0.3 }}
-            className="flex flex-col items-center"
-          >
-            {/* UFO body */}
-            <div className="relative">
-              {/* Dome */}
-              <div className="w-6 h-3 rounded-t-full border-t border-x"
-                style={{ borderColor: color, background: color + "20" }}
-              >
-                <div className="w-2 h-1.5 rounded-t-full mx-auto mt-0.5 border-t"
-                  style={{ borderColor: color + "80", background: color + "30" }}
-                />
-              </div>
-              {/* Saucer */}
-              <div className="w-10 h-3 rounded-full -mt-0.5 flex items-center justify-between px-1"
-                style={{ background: color + "30", borderTop: `1px solid ${color}60`, borderBottom: `1px solid ${color}60` }}
-              >
-                <div className="w-1 h-1 rounded-full" style={{ background: color }} />
-                <div className="w-1 h-1 rounded-full" style={{ background: color }} />
-                <div className="w-1 h-1 rounded-full" style={{ background: color }} />
-              </div>
-              {/* Glow */}
-              {isTarget && (
-                <motion.div
-                  className="absolute inset-0 rounded-full"
-                  style={{ background: `radial-gradient(circle, ${color}30 0%, transparent 70%)` }}
-                  animate={{ opacity: [0.5, 1, 0.5] }}
-                  transition={{ repeat: Infinity, duration: 0.8 }}
-                />
-              )}
-              {/* Laser beam when destroyed */}
-              {showLaser && (
-                <motion.div
-                  initial={{ scaleY: 0, opacity: 1 }}
-                  animate={{ scaleY: 1, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="absolute top-full left-1/2 -translate-x-1/2 w-0.5 h-20 origin-top"
-                  style={{ background: `linear-gradient(to bottom, ${color}, transparent)` }}
-                />
-              )}
-            </div>
+  alpha: number;
+  life: number;
+  maxLife: number;
+}
 
-            {/* Word tag */}
-            <div className={`mt-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold truncate max-w-[80px] text-center ${
-              isTarget
-                ? "border text-cyan-300"
-                : "text-white/30 border border-white/10"
-            }`}
-              style={isTarget ? { borderColor: color, background: color + "20" } : {}}
-            >
-              {word}
-            </div>
-          </motion.div>
-        ) : (
-          <motion.div
-            initial={{ opacity: 1, scale: 1 }}
-            animate={{ opacity: 0, scale: 2 }}
-            transition={{ duration: 0.4 }}
-            className="text-base"
-          >
-            💥
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+interface LaserBolt {
+  x: number;
+  y: number;
+  vy: number;
+  color: string;
+  life: number;
+  maxLife: number;
 }
 
 export function GalaxyGame({
-  words, wordIndex, currentInput, wpm, accuracy,
-  targetWpm, lastWordCorrect, elapsedSeconds, startTime, comboStreak, mistakeCount, submissionCount,
+  words,
+  wordIndex,
+  currentInput,
+  wpm,
+  accuracy,
+  targetWpm,
+  lastWordCorrect,
+  elapsedSeconds,
+  startTime,
+  comboStreak,
+  mistakeCount,
+  submissionCount,
 }: ArcadeProps) {
   const [shieldHp, setShieldHp] = useState(100);
   const [score, setScore] = useState(0);
-  const [destroyedSet, setDestroyedSet] = useState<Set<number>>(new Set());
-  const [laserTarget, setLaserTarget] = useState<number | null>(null);
   const [screenFlash, setScreenFlash] = useState(false);
-  const [playerLaser, setPlayerLaser] = useState(false);
-  const prevSubmission = useRef(0);
+  const prevSubmission = useRef(submissionCount);
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const starsRef = useRef<StarData[]>([]);
+  const particlesRef = useRef<Particle[]>([]);
+  const lasersRef = useRef<LaserBolt[]>([]);
 
   const progress = (wordIndex / Math.max(words.length, 1)) * 100;
 
-  // Ship grid — show SHIP_COLS * SHIP_ROWS ships at a time
+  // Ship grid calculations
   const gridSize = SHIP_COLS * SHIP_ROWS;
   const gridStart = Math.floor(wordIndex / gridSize) * gridSize;
   const gridWords = words.slice(gridStart, gridStart + gridSize);
 
-  // Ship descent — ships move down slightly as time passes
-  const avgWordLen = words.reduce((s, w) => s + w.length, 0) / Math.max(words.length, 1);
-  const totalChars = words.length * (avgWordLen + 1);
-  const targetSeconds = (totalChars / (targetWpm * 5)) * 60;
-  const timeRatio = startTime ? Math.min(elapsedSeconds / targetSeconds, 1) : 0;
-  const descentPct = timeRatio * 30; // ships descend 0–30% of arena height
+  const timeRatio = startTime ? Math.min(elapsedSeconds / targetSeconds(), 1) : 0;
+  const descentPct = timeRatio * 26; // alien descent limit (0-26% Y position)
 
-  // Pre-calculated ship grid layout
+  function targetSeconds() {
+    const avgLen = words.reduce((s, w) => s + w.length, 0) / Math.max(words.length, 1);
+    const chars = words.length * (avgLen + 1);
+    return (chars / (targetWpm * 5)) * 60;
+  }
+
   const shipLayout = useMemo(() =>
     gridWords.map((word, i) => ({
       word,
       absIdx: gridStart + i,
       col: i % SHIP_COLS,
       row: Math.floor(i / SHIP_COLS),
-      color: ["#67e8f9", "#a78bfa", "#86efac", "#fb923c", "#f472b6"][i % 5],
+      color: ALIEN_COLORS[i % ALIEN_COLORS.length],
     })),
     [gridStart, gridWords.join(",")]
   );
 
-  const currentAbsIdx = wordIndex;
-  const shipInGrid = currentAbsIdx - gridStart;
+  // Initialize stars once
+  useEffect(() => {
+    const stars: StarData[] = [];
+    for (let i = 0; i < 45; i++) {
+      stars.push({
+        x: Math.random() * 800,
+        y: Math.random() * 180,
+        size: Math.random() * 2 + 0.5,
+        speed: Math.random() * 1.5 + 0.5,
+      });
+    }
+    starsRef.current = stars;
+  }, []);
 
-  const ALIEN_COLORS = ["#67e8f9", "#a78bfa", "#86efac", "#fb923c", "#f472b6"];
-
+  // Handle combat triggers
   useEffect(() => {
     if (lastWordCorrect === null) return;
     if (submissionCount === prevSubmission.current) return;
@@ -167,26 +109,225 @@ export function GalaxyGame({
 
     if (lastWordCorrect) {
       setScore(s => s + 10);
-      setDestroyedSet(d => new Set([...d, wordIndex - 1]));
-      setLaserTarget(wordIndex - 1);
-      setPlayerLaser(true);
-      setTimeout(() => {
-        setLaserTarget(null);
-        setPlayerLaser(false);
-      }, 400);
+      soundEffects.playLaser();
+      setTimeout(() => soundEffects.playExplosion(), 120);
+
+      // Find alien position for explosion coordinates
+      const currentAbsIdx = wordIndex - 1;
+      const shipInGrid = currentAbsIdx - gridStart;
+      if (shipInGrid >= 0 && shipInGrid < gridSize) {
+        const col = shipInGrid % SHIP_COLS;
+        const row = Math.floor(shipInGrid / SHIP_COLS);
+        const alienX = 800 * ((col + 0.5) / SHIP_COLS);
+        const alienY = 20 + descentPct + (row * 35);
+
+        // Fire dual lasers from ship at (400, 155) to target (alienX, alienY)
+        lasersRef.current.push({ x: 388, y: 155, vy: -7, color: "#67e8f9", life: 0, maxLife: 30 });
+        lasersRef.current.push({ x: 412, y: 155, vy: -7, color: "#67e8f9", life: 0, maxLife: 30 });
+
+        // Giant explosion particles
+        for (let k = 0; k < 20; k++) {
+          particlesRef.current.push({
+            x: alienX,
+            y: alienY + 10,
+            vx: (Math.random() * 8 - 4) * 1.2,
+            vy: (Math.random() * 8 - 4) * 1.2,
+            size: Math.random() * 4 + 2,
+            color: ALIEN_COLORS[currentAbsIdx % ALIEN_COLORS.length],
+            alpha: 1,
+            life: 0,
+            maxLife: 25 + Math.random() * 15,
+          });
+        }
+      }
     } else {
       const dmg = 8;
       setShieldHp(h => Math.max(h - dmg, 0));
       setScreenFlash(true);
-      setTimeout(() => setScreenFlash(false), 300);
+      soundEffects.playError();
+      setTimeout(() => setScreenFlash(false), 250);
     }
-  }, [lastWordCorrect, submissionCount, wordIndex]);
+  }, [lastWordCorrect, submissionCount, wordIndex, gridStart, descentPct, gridSize]);
+
+  // Canvas loop
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animId: number;
+
+    const render = () => {
+      const w = canvas.width;
+      const h = canvas.height;
+
+      // Draw space sky
+      ctx.fillStyle = "#04040e";
+      ctx.fillRect(0, 0, w, h);
+
+      // Draw & Scroll Stars
+      ctx.fillStyle = "#ffffff";
+      starsRef.current.forEach(star => {
+        star.y = (star.y + star.speed) % h;
+        ctx.fillRect(star.x, star.y, star.size, star.size);
+      });
+
+      // Screen Flash overlay
+      if (screenFlash) {
+        ctx.fillStyle = "rgba(239, 68, 68, 0.25)";
+        ctx.fillRect(0, 0, w, h);
+      }
+
+      // ─── DRAW ALIEN SHIPS ───
+      const currentAbsIdx = wordIndex;
+
+      shipLayout.forEach(({ word, absIdx, col, row, color }) => {
+        const isTarget = absIdx === currentAbsIdx;
+        const isDestroyed = absIdx < currentAbsIdx;
+
+        if (isDestroyed) return; // don't draw blown up ships
+
+        const alienX = w * ((col + 0.5) / SHIP_COLS);
+        const alienY = 20 + descentPct + (row * 35);
+        const floatOffset = Math.sin(Date.now() / 200 + col) * 1.5;
+
+        ctx.save();
+        ctx.translate(alienX, alienY + floatOffset);
+
+        // Draw saucer body
+        ctx.shadowColor = color;
+        ctx.shadowBlur = isTarget ? 12 : 0;
+        ctx.fillStyle = `${color}25`;
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+
+        // Dome
+        ctx.beginPath();
+        ctx.arc(0, -2, 7, Math.PI, 0);
+        ctx.fill();
+        ctx.stroke();
+
+        // Saucer disk
+        ctx.beginPath();
+        ctx.ellipse(0, 1, 16, 4, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Lights
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(-8, 1, 1.5, 0, Math.PI * 2);
+        ctx.arc(0, 1, 1.5, 0, Math.PI * 2);
+        ctx.arc(8, 1, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Target bounding glow
+        if (isTarget) {
+          ctx.strokeStyle = "rgba(103, 232, 249, 0.4)";
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(0, 0, 22, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+
+        // Draw alien word tag
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = isTarget ? "#67e8f9" : "rgba(255, 255, 255, 0.25)";
+        ctx.font = "bold 9px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText(isTarget ? currentInput + (word.slice(currentInput.length) ? "_" : "") : word, 0, 14);
+
+        ctx.restore();
+      });
+
+      // ─── DRAW LASERS ───
+      ctx.lineWidth = 2.5;
+      lasersRef.current.forEach(l => {
+        l.y += l.vy;
+        l.life++;
+
+        ctx.strokeStyle = l.color;
+        ctx.beginPath();
+        ctx.moveTo(l.x, l.y);
+        ctx.lineTo(l.x, l.y - 12);
+        ctx.stroke();
+      });
+      lasersRef.current = lasersRef.current.filter(l => l.life < l.maxLife && l.y > 0);
+
+      // ─── EXPLOSION PARTICLES ───
+      particlesRef.current.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life++;
+        p.alpha = 1 - (p.life / p.maxLife);
+
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+      particlesRef.current = particlesRef.current.filter(p => p.life < p.maxLife);
+
+      // ─── DRAW PLAYER SPACESHIP ───
+      ctx.save();
+      ctx.translate(400, 155);
+
+      // Engine thruster glow fire
+      const flameH = 6 + Math.random() * 8;
+      const thrusterGrad = ctx.createLinearGradient(0, 0, 0, flameH);
+      thrusterGrad.addColorStop(0, "#22d3ee");
+      thrusterGrad.addColorStop(1, "rgba(34, 211, 238, 0)");
+      ctx.fillStyle = thrusterGrad;
+      ctx.fillRect(-4, 4, 8, flameH);
+
+      // Ship body (Neon Vector style)
+      ctx.strokeStyle = "#22d3ee";
+      ctx.fillStyle = "rgba(8, 47, 73, 0.85)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, -18); // nose
+      ctx.lineTo(12, 4);  // right wing
+      ctx.lineTo(6, 0);
+      ctx.lineTo(-6, 0);
+      ctx.lineTo(-12, 4); // left wing
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Cockpit
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(0, -4, 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Shield dome ripple overlay
+      if (screenFlash) {
+        ctx.strokeStyle = "rgba(34, 211, 238, 0.6)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, -3, 24, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+
+      animId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => cancelAnimationFrame(animId);
+  }, [wordIndex, currentInput, shipLayout, descentPct, screenFlash]);
 
   const currentWord = words[wordIndex] ?? "";
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-4 px-2 select-none">
-      {/* HUD */}
+      {/* HUD Metrics */}
       <div className="flex items-center gap-3 flex-wrap">
         <div className="flex items-center gap-1.5 bg-black/70 border border-cyan-500/30 rounded-xl px-3 py-1.5">
           <Shield className="w-4 h-4 text-cyan-400" />
@@ -204,19 +345,18 @@ export function GalaxyGame({
           <span className="font-mono text-sm text-yellow-300 font-bold">{comboStreak}x STREAK</span>
         </div>
         <div className="bg-red-500/15 border border-red-500/25 rounded-xl px-3 py-1.5">
-          <span className="font-mono text-sm text-red-300">{mistakeCount} mistakes</span>
+          <span className="font-mono text-sm text-red-300">{mistakeCount} errors</span>
         </div>
         <div className="ml-auto flex items-center gap-1.5 bg-black/70 border border-white/10 rounded-xl px-3 py-1.5">
           <Zap className="w-3.5 h-3.5 text-yellow-400" />
-          <span className="font-mono font-bold text-white">{wpm}</span>
-          <span className="text-xs text-white/40">WPM</span>
+          <span className="font-mono font-bold text-white">{wpm} WPM</span>
         </div>
       </div>
 
-      {/* Shield bar */}
+      {/* Shield Bar */}
       <div className="flex items-center gap-2">
         <span className="text-xs font-mono text-cyan-400">SHIELD</span>
-        <div className="flex-1 h-1.5 bg-black/50 rounded-full overflow-hidden border border-white/10">
+        <div className="flex-1 h-2 bg-black/50 rounded-full overflow-hidden border border-white/10">
           <motion.div
             className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500"
             animate={{ width: `${shieldHp}%` }}
@@ -226,139 +366,46 @@ export function GalaxyGame({
         <span className="text-xs font-mono text-white/30">{shieldHp}/100</span>
       </div>
 
-      {/* Space arena */}
-      <motion.div
-        className="relative rounded-2xl overflow-hidden border border-white/10"
-        style={{ height: 180 }}
-        animate={screenFlash ? { opacity: [1, 0.4, 1] } : {}}
-        transition={{ duration: 0.3 }}
-      >
-        {/* Starfield */}
-        <div className="absolute inset-0 bg-[#050510]">
-          {STARS.map((star, i) => (
-            <div key={i} className="absolute rounded-full bg-white"
-              style={{
-                left: `${star.x}%`, top: `${star.y}%`,
-                width: star.size, height: star.size,
-                opacity: star.opacity,
-              }}
-            />
-          ))}
+      {/* Space Canvas */}
+      <div className="relative rounded-2xl overflow-hidden border border-white/10">
+        <canvas
+          ref={canvasRef}
+          width={800}
+          height={180}
+          className="w-full h-[180px] block"
+        />
+
+        {/* Fleet landing warning alert bar */}
+        {descentPct > 15 && (
+          <div className="absolute top-0 left-0 right-0 bg-red-500/20 border-b border-red-500/30 text-red-400 text-center font-mono text-[9px] py-0.5 animate-pulse select-none z-10">
+            ⚠️ WARNING: ALIEN FLEET APPROACHING DEFENSE LINE ⚠️
+          </div>
+        )}
+      </div>
+
+      {/* Typing box */}
+      <div className="bg-[#050518]/90 border border-cyan-500/20 rounded-2xl p-5 space-y-3 shadow-inner">
+        <div className="flex items-center gap-2 text-xs font-mono text-cyan-400/60">
+          <Zap className="w-3 h-3" />
+          <span>FIRE SEQUENCE — type to shoot energy bolts!</span>
+          <span className="ml-auto text-white/25">{words.length - wordIndex} fleet targets left</span>
         </div>
 
-        {/* Screen flash on hit */}
-        <AnimatePresence>
-          {screenFlash && (
-            <motion.div
-              initial={{ opacity: 0.3 }}
-              animate={{ opacity: 0 }}
-              exit={{}}
-              transition={{ duration: 0.3 }}
-              className="absolute inset-0 bg-red-500 pointer-events-none z-20"
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Alien ships grid */}
-        <div
-          className="absolute left-4 right-4 grid gap-x-2 gap-y-4 transition-all duration-1000"
-          style={{
-            top: `${6 + descentPct}%`,
-            gridTemplateColumns: `repeat(${SHIP_COLS}, 1fr)`,
-          }}
-        >
-          {shipLayout.map(({ word, absIdx, color }) => {
-            const isTarget = absIdx === currentAbsIdx;
-            const isDestroyed = destroyedSet.has(absIdx) || absIdx < currentAbsIdx;
+        <div className="flex items-center justify-center gap-0.5 font-mono text-2xl md:text-3xl font-bold tracking-widest select-none py-1">
+          {currentWord.split("").map((ch: string, i: number) => {
+            let cls = "text-white/20";
+            if (i < currentInput.length) {
+              cls = currentInput[i] === ch ? "text-cyan-300 drop-shadow-[0_0_6px_#67e8f9]" : "text-red-400 bg-red-500/20 rounded";
+            } else if (i === currentInput.length) {
+              cls = "text-white border-b-2 border-cyan-400 animate-pulse";
+            }
             return (
-              <div key={absIdx} className="flex justify-center">
-                <AlienShip
-                  word={word}
-                  isTarget={isTarget}
-                  destroyed={isDestroyed}
-                  showLaser={laserTarget === absIdx}
-                  color={color}
-                />
-              </div>
+              <span key={i} className={`transition-colors duration-75 ${cls}`}>
+                {ch}
+              </span>
             );
           })}
         </div>
-
-        {/* Player laser beam */}
-        <AnimatePresence>
-          {playerLaser && shipInGrid >= 0 && shipInGrid < gridSize && (
-            <motion.div
-              initial={{ scaleY: 0, opacity: 1 }}
-              animate={{ scaleY: 1, opacity: 0 }}
-              exit={{}}
-              transition={{ duration: 0.25 }}
-              className="absolute bottom-6 w-0.5 origin-bottom"
-              style={{
-                left: `calc(${(((shipInGrid % SHIP_COLS) + 0.5) / SHIP_COLS) * 100}% - 1px)`,
-                height: "80%",
-                background: "linear-gradient(to top, #67e8f9, transparent)",
-                boxShadow: "0 0 4px #67e8f9",
-              }}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Player ship at bottom */}
-        <div className="absolute bottom-2 left-1/2 -translate-x-1/2">
-          <motion.div
-            animate={playerLaser ? { y: [0, -4, 0] } : {}}
-            transition={{ duration: 0.2 }}
-          >
-            {/* Spaceship */}
-            <div className="relative w-10 h-8">
-              {/* Main body */}
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-5 bg-cyan-900/80 border border-cyan-500/40 rounded-t-xl" />
-              {/* Wings */}
-              <div className="absolute bottom-1 left-0 w-3 h-2 bg-cyan-900/60 border border-cyan-500/30 rounded-l-full" />
-              <div className="absolute bottom-1 right-0 w-3 h-2 bg-cyan-900/60 border border-cyan-500/30 rounded-r-full" />
-              {/* Cockpit */}
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-cyan-400/40 border border-cyan-400/60" />
-              {/* Engine glow */}
-              <motion.div
-                className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3 h-1 rounded-full"
-                style={{ background: "#67e8f9", boxShadow: "0 0 6px #67e8f9" }}
-                animate={{ opacity: [0.6, 1, 0.6], scaleX: [0.8, 1.2, 0.8] }}
-                transition={{ repeat: Infinity, duration: 0.4 }}
-              />
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Progress bar */}
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40">
-          <motion.div className="h-full bg-cyan-500/50" animate={{ width: `${progress}%` }} />
-        </div>
-      </motion.div>
-
-      {/* Typing panel */}
-      <div className="bg-[#050518]/90 border border-cyan-500/20 rounded-2xl p-5 space-y-3">
-        <div className="flex items-center gap-2 text-xs font-mono text-cyan-400/60">
-          <Zap className="w-3 h-3" />
-          <span>FIRE SEQUENCE — type to shoot!</span>
-          <span className="ml-auto text-white/25">{words.length - wordIndex} ships remaining</span>
-        </div>
-
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={wordIndex}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.12 }}
-          >
-            <WordDisplay word={currentWord} input={currentInput} />
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      <div className="flex justify-between text-xs text-white/25 font-mono px-1">
-        <span>Target: {targetWpm} WPM</span>
-        <span>{Math.round(progress)}% fleet destroyed</span>
       </div>
     </div>
   );

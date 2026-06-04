@@ -4,8 +4,9 @@ import { useGetGame, useGetLevelWords, useCreateSession, getGetLevelWordsQueryKe
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
-import { Trophy, Clock, Target, ArrowRight, Zap, RotateCcw, Home, CheckCircle } from "lucide-react";
+import { Trophy, Clock, Target, ArrowRight, Zap, RotateCcw, Home, CheckCircle, Volume2, VolumeX } from "lucide-react";
 import { ArcadeArena } from "@/components/games/ArcadeArena";
+import { soundEffects } from "@/lib/audio";
 import {
   isLevelUnlocked,
   isPassingResult,
@@ -185,8 +186,11 @@ export default function Play() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [strictMode, setStrictMode] = useState(() => localStorage.getItem("typeblitz.strictMode") === "true");
-  const [extraMistakes, setExtraMistakes] = useState(0);
-  const extraMistakesRef = useRef(0);
+  const [audioMuted, setAudioMuted] = useState(() => soundEffects.isMuted());
+
+  // Industry-standard keystroke accuracy refs (persists even if user backspaces)
+  const totalKeystrokesRef = useRef(0);
+  const errorKeystrokesRef = useRef(0);
 
   const toggleStrictMode = () => {
     setStrictMode(prev => {
@@ -218,8 +222,8 @@ export default function Play() {
       setWpmHistory([]);
       setLevelResult(null);
       correctCharsRef.current = 0;
-      extraMistakesRef.current = 0;
-      setExtraMistakes(0);
+      totalKeystrokesRef.current = 0;
+      errorKeystrokesRef.current = 0;
       setTimeout(() => inputRef.current?.focus(), 100);
     }
     if (levelContent && isArcade) {
@@ -295,11 +299,20 @@ export default function Play() {
       if (finalInput[i] === text[i]) correct++;
     }
     const finalWpm = Math.round((correct / 5) / Math.max(mins, 0.01));
-    const totalTyped = finalInput.length + extraMistakesRef.current;
-    const finalAcc = totalTyped > 0 ? Math.round((correct / totalTyped) * 100) : 100;
+    const totalK = totalKeystrokesRef.current;
+    const errorK = errorKeystrokesRef.current;
+    const finalAcc = totalK > 0 ? Math.max(0, Math.min(100, Math.round(((totalK - errorK) / totalK) * 100))) : 100;
+    
     const progressResult = gameId
       ? recordLevelResult({ gameId, level: levelNumber, wpm: finalWpm, accuracy: finalAcc, targetWpm })
       : { passed: isPassingResult(finalWpm, finalAcc, targetWpm), nextLevelUnlocked: false };
+    
+    if (progressResult.passed) {
+      soundEffects.playVictory();
+    } else {
+      soundEffects.playDefeat();
+    }
+
     setIsFinished(true);
     setLevelResult({ passed: progressResult.passed, nextLevelUnlocked: progressResult.nextLevelUnlocked });
     setWpm(finalWpm);
@@ -318,21 +331,27 @@ export default function Play() {
       setStartTime(now);
     }
 
-    // Strict Mode: Block on Error
-    if (strictMode && val.length > input.length) {
-      const idx = val.length - 1;
-      if (val[idx] !== text[idx]) {
-        extraMistakesRef.current += 1;
-        setExtraMistakes(extraMistakesRef.current);
-        
-        let tempCorrect = 0;
-        for (let i = 0; i < input.length; i++) {
-          if (input[i] === text[i]) tempCorrect++;
+    if (val.length > input.length) {
+      // Keystroke typed
+      totalKeystrokesRef.current += 1;
+      const typedChar = val[val.length - 1];
+      const expectedChar = text[val.length - 1];
+      if (typedChar === expectedChar) {
+        soundEffects.playClick(typedChar === " ");
+      } else {
+        errorKeystrokesRef.current += 1;
+        soundEffects.playError();
+        if (strictMode) {
+          // Block input in strict mode
+          const totalK = totalKeystrokesRef.current;
+          const errorK = errorKeystrokesRef.current;
+          setAccuracy(totalK > 0 ? Math.max(0, Math.min(100, Math.round(((totalK - errorK) / totalK) * 100))) : 100);
+          return;
         }
-        const totalTyped = input.length + extraMistakesRef.current;
-        setAccuracy(totalTyped > 0 ? Math.round((tempCorrect / totalTyped) * 100) : 100);
-        return;
       }
+    } else if (val.length < input.length) {
+      // Backspace pressed
+      soundEffects.playClick(false);
     }
 
     // Count correct chars in real-time (for live WPM via ref)
@@ -342,9 +361,10 @@ export default function Play() {
     }
     correctCharsRef.current = correct;
 
-    // Accuracy: correct / total typed
-    const totalTyped = val.length + extraMistakesRef.current;
-    setAccuracy(totalTyped > 0 ? Math.round((correct / totalTyped) * 100) : 100);
+    // Real-time Keystroke accuracy
+    const totalK = totalKeystrokesRef.current;
+    const errorK = errorKeystrokesRef.current;
+    setAccuracy(totalK > 0 ? Math.max(0, Math.min(100, Math.round(((totalK - errorK) / totalK) * 100))) : 100);
     setInput(val);
 
     // Check completion
@@ -364,8 +384,8 @@ export default function Play() {
     setWpmHistory([]);
     setLevelResult(null);
     correctCharsRef.current = 0;
-    extraMistakesRef.current = 0;
-    setExtraMistakes(0);
+    totalKeystrokesRef.current = 0;
+    errorKeystrokesRef.current = 0;
     setResetKey(k => k + 1);
     setTimeout(() => inputRef.current?.focus(), 100);
   };
@@ -529,6 +549,23 @@ export default function Play() {
                 >
                   <Target className={`w-3.5 h-3.5 ${strictMode ? "text-red-400" : "text-muted-foreground"}`} />
                   <span>{strictMode ? "STRICT ON" : "STRICT OFF"}</span>
+                </button>
+                {/* Audio sound toggle */}
+                <button
+                  onClick={() => {
+                    const next = !audioMuted;
+                    soundEffects.setMuted(next);
+                    setAudioMuted(next);
+                  }}
+                  className={`flex items-center gap-1.5 border rounded-xl px-2.5 py-1.5 text-xs font-mono font-bold transition-all ${
+                    !audioMuted
+                      ? "bg-primary/10 border-primary/20 text-primary hover:bg-primary/20"
+                      : "bg-muted/50 border-border text-muted-foreground hover:bg-muted"
+                  }`}
+                  title="Toggle mechanical typing sound effects"
+                >
+                  {audioMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-primary" />}
+                  <span>{audioMuted ? "MUTED" : "SOUND ON"}</span>
                 </button>
                 {/* WPM */}
                 <div className="flex items-center gap-1 bg-card border border-border rounded-xl px-2.5 py-1.5">

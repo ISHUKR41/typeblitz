@@ -1,47 +1,44 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ArcadeProps } from "./ArcadeArena";
-import { Zap, Flag, Trophy } from "lucide-react";
+import { Zap, Flag, Shield, Volume2, VolumeX } from "lucide-react";
+import { soundEffects } from "@/lib/audio";
 
-// Pre-calculated tree positions so they're stable
-const TREES = [
-  { x: 4, lane: "top" }, { x: 18, lane: "top" }, { x: 33, lane: "top" }, { x: 48, lane: "top" },
-  { x: 62, lane: "top" }, { x: 77, lane: "top" }, { x: 91, lane: "top" },
-  { x: 8, lane: "bot" }, { x: 22, lane: "bot" }, { x: 37, lane: "bot" }, { x: 52, lane: "bot" },
-  { x: 67, lane: "bot" }, { x: 82, lane: "bot" }, { x: 96, lane: "bot" },
-];
-
-function WordDisplay({ word, input }: { word: string; input: string }) {
-  return (
-    <div className="flex items-center justify-center gap-0.5 font-mono text-2xl md:text-3xl font-bold tracking-widest select-none">
-      {word.split("").map((ch, i) => {
-        let cls = "text-white/30";
-        if (i < input.length) {
-          cls = input[i] === ch ? "text-emerald-400" : "text-red-400 bg-red-500/20 rounded";
-        } else if (i === input.length) {
-          cls = "text-white border-b-2 border-yellow-400";
-        }
-        return (
-          <span key={i} className={`transition-colors duration-75 ${cls}`}>
-            {ch}
-          </span>
-        );
-      })}
-    </div>
-  );
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  size: number;
+  color: string;
+  alpha: number;
+  life: number;
+  maxLife: number;
 }
 
 export function RacingGame({
-  words, wordIndex, currentInput, wpm, accuracy, progress,
-  targetWpm, startTime, lastWordCorrect, elapsedSeconds, comboStreak, mistakeCount, submissionCount,
+  words,
+  wordIndex,
+  currentInput,
+  wpm,
+  accuracy,
+  progress,
+  targetWpm,
+  startTime,
+  lastWordCorrect,
+  elapsedSeconds,
+  comboStreak,
+  mistakeCount,
+  submissionCount,
 }: ArcadeProps) {
-  const carPos = progress;
-  const [ghostPos, setGhostPos] = useState(0);
-  const [speedLines, setSpeedLines] = useState(false);
-  const prevSubmission = useRef(0);
-  const [hitFlash, setHitFlash] = useState<"good" | "bad" | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const roadOffsetRef = useRef(0);
+  const curveRef = useRef(0);
+  const particlesRef = useRef<Particle[]>([]);
+  const prevSubmissionRef = useRef(submissionCount);
 
-  // Total avg chars for ghost estimation
+  // Ghost progress calculation
+  const [ghostPos, setGhostPos] = useState(0);
   const avgWordLen = words.reduce((s, w) => s + w.length, 0) / Math.max(words.length, 1);
   const totalChars = words.length * (avgWordLen + 1);
   const targetSeconds = (totalChars / (targetWpm * 5)) * 60;
@@ -52,26 +49,287 @@ export function RacingGame({
     setGhostPos(pos);
   }, [elapsedSeconds, targetSeconds, startTime]);
 
+  // Audio trigger on submission
   useEffect(() => {
-    setSpeedLines(wpm > targetWpm);
-  }, [wpm, targetWpm]);
+    if (submissionCount === prevSubmissionRef.current) return;
+    prevSubmissionRef.current = submissionCount;
+    if (lastWordCorrect) {
+      soundEffects.playEngineRev();
+    } else {
+      soundEffects.playTireScreech();
+    }
+  }, [submissionCount, lastWordCorrect]);
 
+  // Canvas animation loop
   useEffect(() => {
-    if (lastWordCorrect === null) return;
-    if (submissionCount === prevSubmission.current) return;
-    prevSubmission.current = submissionCount;
-    setHitFlash(lastWordCorrect ? "good" : "bad");
-    const t = setTimeout(() => setHitFlash(null), 400);
-    return () => clearTimeout(t);
-  }, [lastWordCorrect, submissionCount]);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let animationId: number;
+
+    const render = () => {
+      const w = canvas.width;
+      const h = canvas.height;
+
+      // Dynamic speed based on WPM
+      const speed = startTime ? (wpm / 15) + 2 : 1;
+      roadOffsetRef.current = (roadOffsetRef.current + speed) % 200;
+      curveRef.current = Math.sin(Date.now() / 2000) * 0.4; // scrolling road curves
+
+      // 1. Draw Sky (Dark Cyberpunk Gradient)
+      const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.45);
+      skyGrad.addColorStop(0, "#090514");
+      skyGrad.addColorStop(1, "#180a2b");
+      ctx.fillStyle = skyGrad;
+      ctx.fillRect(0, 0, w, h * 0.45);
+
+      // Stars
+      ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+      for (let i = 0; i < 30; i++) {
+        const sx = (i * 127 + 53) % w;
+        const sy = (i * 37 + 11) % (h * 0.35);
+        ctx.fillRect(sx, sy, 1.5, 1.5);
+      }
+
+      // Horizon glow
+      const glowGrad = ctx.createLinearGradient(0, h * 0.35, 0, h * 0.45);
+      glowGrad.addColorStop(0, "rgba(236, 72, 153, 0)");
+      glowGrad.addColorStop(1, "rgba(236, 72, 153, 0.15)");
+      ctx.fillStyle = glowGrad;
+      ctx.fillRect(0, h * 0.35, w, h * 0.1);
+
+      // 2. Draw ground (cyberpunk grid lines)
+      ctx.fillStyle = "#0c051a";
+      ctx.fillRect(0, h * 0.45, w, h * 0.55);
+
+      // 3. Draw Pseudo 3D Road
+      const roadH = h * 0.55;
+      const horizonY = h * 0.45;
+
+      const segments = 24;
+      for (let i = segments; i > 0; i--) {
+        const y1 = horizonY + Math.pow((i - 1) / segments, 2.5) * roadH;
+        const y2 = horizonY + Math.pow(i / segments, 2.5) * roadH;
+        const w1 = w * 0.08 + Math.pow((i - 1) / segments, 2.5) * w * 0.5;
+        const w2 = w * 0.08 + Math.pow(i / segments, 2.5) * w * 0.5;
+
+        // Apply curve offset
+        const curveOffset1 = Math.sin(((i - 1) / segments) * Math.PI + Date.now() / 1500) * curveRef.current * 40;
+        const curveOffset2 = Math.sin((i / segments) * Math.PI + Date.now() / 1500) * curveRef.current * 40;
+
+        const x1 = w / 2 + curveOffset1;
+        const x2 = w / 2 + curveOffset2;
+
+        const isEven = Math.floor((roadOffsetRef.current + i * 25) / 50) % 2 === 0;
+
+        // Draw Road Segment
+        ctx.fillStyle = isEven ? "#1b112d" : "#130a22";
+        ctx.beginPath();
+        ctx.moveTo(x1 - w1 / 2, y1);
+        ctx.lineTo(x2 - w2 / 2, y2);
+        ctx.lineTo(x2 + w2 / 2, y2);
+        ctx.lineTo(x1 + w1 / 2, y1);
+        ctx.fill();
+
+        // Draw Road Shoulders (Red/White stripes)
+        ctx.fillStyle = isEven ? "#ec4899" : "#ffffff";
+        const shoulderW1 = w1 * 0.05;
+        const shoulderW2 = w2 * 0.05;
+        ctx.beginPath();
+        ctx.moveTo(x1 - w1 / 2 - shoulderW1, y1);
+        ctx.lineTo(x2 - w2 / 2 - shoulderW2, y2);
+        ctx.lineTo(x2 - w2 / 2, y2);
+        ctx.lineTo(x1 - w1 / 2, y1);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(x1 + w1 / 2, y1);
+        ctx.lineTo(x2 + w2 / 2, y2);
+        ctx.lineTo(x2 + w2 / 2 + shoulderW2, y2);
+        ctx.lineTo(x1 + w1 / 2 + shoulderW1, y1);
+        ctx.fill();
+
+        // Draw center dashed lines
+        if (isEven && i > 4) {
+          ctx.fillStyle = "#eab308";
+          const centerW1 = w1 * 0.02;
+          const centerW2 = w2 * 0.02;
+          ctx.beginPath();
+          ctx.moveTo(x1 - centerW1 / 2, y1);
+          ctx.lineTo(x2 - centerW2 / 2, y2);
+          ctx.lineTo(x2 + centerW2 / 2, y2);
+          ctx.lineTo(x1 + centerW1 / 2, y1);
+          ctx.fill();
+        }
+      }
+
+      // 4. Emit Particles from player car exhaust
+      if (startTime) {
+        const emitCount = wpm > 40 ? 3 : 1;
+        for (let k = 0; k < emitCount; k++) {
+          particlesRef.current.push({
+            x: w * 0.35 + (Math.random() * 8 - 4),
+            y: h * 0.8 + 10,
+            vx: -speed * 0.5 - Math.random() * 3,
+            vy: (Math.random() * 2 - 1) * 0.8,
+            size: Math.random() * 4 + 2,
+            color: comboStreak >= 4 ? "#38bdf8" : "#ec4899", // Blue nitrox or pink smoke
+            alpha: 1,
+            life: 0,
+            maxLife: 20 + Math.random() * 15,
+          });
+        }
+      }
+
+      // Update and Draw Particles
+      particlesRef.current.forEach((p, idx) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life++;
+        p.alpha = 1 - (p.life / p.maxLife);
+        p.size += 0.2; // expand smoke
+
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+
+      // Filter out dead particles
+      particlesRef.current = particlesRef.current.filter(p => p.life < p.maxLife);
+
+      // 5. Draw Competitor (Ghost Car)
+      // Ghost's lane is slightly offset right, player's lane slightly offset left
+      const relativeGhostProgress = ghostPos;
+      const relativePlayerProgress = progress;
+
+      // Position relative to player: if player is ahead, ghost is further back on canvas
+      const ghostDelta = relativeGhostProgress - relativePlayerProgress; // positive if ghost is ahead
+      const ghostYScale = Math.min(Math.max((ghostDelta + 100) / 200, 0.1), 1.0); // 3D projection Y position
+      
+      const ghostY = horizonY + Math.pow(ghostYScale, 1.8) * roadH;
+      const ghostSizeW = 20 + Math.pow(ghostYScale, 2) * 50;
+      const ghostSizeH = 10 + Math.pow(ghostYScale, 2) * 22;
+      const ghostRoadW = w * 0.08 + Math.pow(ghostYScale, 2.5) * w * 0.5;
+      const ghostCurveOffset = Math.sin((ghostYScale) * Math.PI + Date.now() / 1500) * curveRef.current * 40;
+      // Ghost rides slightly to the right side of the lane center
+      const ghostX = w / 2 + ghostCurveOffset + ghostRoadW * 0.15;
+
+      if (ghostYScale > 0.15 && ghostYScale < 0.98) {
+        ctx.save();
+        ctx.globalAlpha = 0.5; // Translucent ghost car
+        ctx.fillStyle = "#94a3b8"; // Gray neon outline
+        ctx.strokeStyle = "#38bdf8";
+        ctx.lineWidth = 2;
+        // Draw ghost car box
+        ctx.beginPath();
+        ctx.roundRect(ghostX - ghostSizeW / 2, ghostY - ghostSizeH, ghostSizeW, ghostSizeH, 4);
+        ctx.fill();
+        ctx.stroke();
+        // Tail lights
+        ctx.fillStyle = "#ef4444";
+        ctx.fillRect(ghostX - ghostSizeW / 2 + 3, ghostY - ghostSizeH + 2, 4, 3);
+        ctx.fillRect(ghostX + ghostSizeW / 2 - 7, ghostY - ghostSizeH + 2, 4, 3);
+        // Tag
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "8px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("GHOST", ghostX, ghostY - ghostSizeH - 4);
+        ctx.restore();
+      }
+
+      // 6. Draw Player Car (YOU)
+      // Player Y position is stable at bottom road scale (85%)
+      const playerYScale = 0.85;
+      const playerY = horizonY + Math.pow(playerYScale, 1.8) * roadH;
+      const playerSizeW = 20 + Math.pow(playerYScale, 2) * 55;
+      const playerSizeH = 10 + Math.pow(playerYScale, 2) * 24;
+      const playerRoadW = w * 0.08 + Math.pow(playerYScale, 2.5) * w * 0.5;
+      const playerCurveOffset = Math.sin((playerYScale) * Math.PI + Date.now() / 1500) * curveRef.current * 40;
+      // Player rides slightly to the left side of the lane center
+      const playerX = w / 2 + playerCurveOffset - playerRoadW * 0.15;
+
+      ctx.save();
+      // Drift/shake effect based on WPM
+      const shakeX = startTime ? (Math.random() * 2 - 1) * (wpm / 60) : 0;
+      const shakeY = startTime ? (Math.random() * 1.5 - 0.75) * (wpm / 60) : 0;
+
+      ctx.translate(playerX + shakeX, playerY + shakeY);
+
+      // Nitro booster exhaust fire
+      if (comboStreak >= 4) {
+        const fireGrad = ctx.createLinearGradient(0, 0, 0, 15);
+        fireGrad.addColorStop(0, "#38bdf8");
+        fireGrad.addColorStop(1, "rgba(56, 189, 248, 0)");
+        ctx.fillStyle = fireGrad;
+        ctx.beginPath();
+        ctx.moveTo(-15, 0);
+        ctx.lineTo(-5, 0);
+        ctx.lineTo(-10, 18 + Math.random() * 8);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(5, 0);
+        ctx.lineTo(15, 0);
+        ctx.lineTo(10, 18 + Math.random() * 8);
+        ctx.closePath();
+        ctx.fill();
+      }
+
+      // Main body (cyberpunk sports car)
+      ctx.fillStyle = "rgba(168, 85, 247, 0.9)"; // Purple neon body
+      ctx.strokeStyle = "#a855f7";
+      ctx.shadowColor = "#a855f7";
+      ctx.shadowBlur = 10;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.roundRect(-playerSizeW / 2, -playerSizeH, playerSizeW, playerSizeH, 6);
+      ctx.fill();
+      ctx.stroke();
+
+      // Windshield (cyan glow)
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = "#22d3ee";
+      ctx.beginPath();
+      ctx.roundRect(-playerSizeW * 0.35, -playerSizeH * 0.8, playerSizeW * 0.7, playerSizeH * 0.35, 2);
+      ctx.fill();
+
+      // Tail lights (bright red neon)
+      ctx.fillStyle = "#ff2222";
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = "#ff0000";
+      ctx.fillRect(-playerSizeW / 2 + 4, -playerSizeH * 0.7, 8, 4);
+      ctx.fillRect(playerSizeW / 2 - 12, -playerSizeH * 0.7, 8, 4);
+
+      // Wheels
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = "#1e293b";
+      ctx.fillRect(-playerSizeW / 2 - 2, -playerSizeH * 0.45, 3, playerSizeH * 0.4);
+      ctx.fillRect(playerSizeW / 2 - 1, -playerSizeH * 0.45, 3, playerSizeH * 0.4);
+
+      ctx.restore();
+
+      animationId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => cancelAnimationFrame(animationId);
+  }, [wpm, progress, ghostPos, startTime, comboStreak]);
 
   const currentWord = words[wordIndex] ?? "";
   const nextWords = words.slice(wordIndex + 1, wordIndex + 4);
-  const isAhead = carPos > ghostPos;
+  const isAhead = progress > ghostPos;
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-4 px-2 select-none">
-      {/* HUD */}
+      {/* HUD Bar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="bg-black/60 border border-white/10 rounded-xl px-4 py-2 flex items-center gap-2">
@@ -85,7 +343,13 @@ export function RacingGame({
           <div className="rounded-xl px-3 py-2 text-xs font-bold font-mono bg-yellow-400/15 text-yellow-300 border border-yellow-400/25">
             {comboStreak}x STREAK
           </div>
-          <div className={`rounded-xl px-3 py-2 text-xs font-bold font-mono ${isAhead ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" : "bg-red-500/20 text-red-400 border border-red-500/30"}`}>
+          <div
+            className={`rounded-xl px-3 py-2 text-xs font-bold font-mono ${
+              isAhead
+                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                : "bg-red-500/20 text-red-400 border border-red-500/30"
+            }`}
+          >
             {isAhead ? "▲ AHEAD" : "▼ BEHIND"}
           </div>
         </div>
@@ -94,191 +358,48 @@ export function RacingGame({
         </div>
       </div>
 
-      {/* Race Track */}
-      <motion.div
-        className="relative rounded-2xl overflow-hidden border border-white/10"
-        style={{ height: 180 }}
-        animate={hitFlash === "bad" ? { x: [0, -6, 6, -4, 4, 0] } : {}}
-        transition={{ duration: 0.3 }}
-      >
-        {/* Sky + Ground */}
-        <div className="absolute inset-0" style={{
-          background: "linear-gradient(to bottom, #0a0a1a 0%, #0a0a1a 40%, #111827 40%, #111827 100%)"
-        }} />
-
-        {/* Stars in sky */}
-        {[...Array(20)].map((_, i) => (
-          <div key={i} className="absolute w-0.5 h-0.5 bg-white/60 rounded-full"
-            style={{ left: `${(i * 37 + 11) % 100}%`, top: `${(i * 13 + 5) % 38}%` }}
-          />
-        ))}
-
-        {/* Road surface */}
-        <div className="absolute left-0 right-0 rounded-lg overflow-hidden"
-          style={{ top: "40%", height: "50%", background: "linear-gradient(to bottom, #1f2937, #111827)" }}
-        >
-          {/* Road edges — white lines */}
-          <div className="absolute top-0 left-0 right-0 h-0.5 bg-white/30" />
-          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/30" />
-
-          {/* Animated center dashes */}
-          <div className="absolute inset-0 overflow-hidden">
-            <motion.div
-              className="absolute top-1/2 -translate-y-1/2 flex gap-6"
-              animate={{ x: [0, -72] }}
-              transition={{ repeat: Infinity, duration: 0.5, ease: "linear" }}
-              style={{ width: "200%" }}
-            >
-              {[...Array(30)].map((_, i) => (
-                <div key={i} className="w-10 h-1 bg-yellow-400/50 rounded-full flex-shrink-0" />
-              ))}
-            </motion.div>
-          </div>
+      {/* Render Canvas */}
+      <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+        <canvas
+          ref={canvasRef}
+          width={800}
+          height={220}
+          className="w-full h-[220px] block"
+        />
+        {/* Flag finish tag overlay */}
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center opacity-70 pointer-events-none">
+          <Flag className="w-6 h-6 text-emerald-400 drop-shadow-[0_0_8px_#34d399] animate-bounce" />
+          <span className="text-[10px] font-mono font-bold text-emerald-400 mt-1">FINISH</span>
         </div>
+      </div>
 
-        {/* Trees on top edge */}
-        {TREES.filter(t => t.lane === "top").map((t, i) => (
-          <div key={i} className="absolute" style={{ left: `${t.x}%`, top: "22%" }}>
-            <div className="w-3 h-6 bg-emerald-800 rounded-t-full" />
-            <div className="w-2 h-2 bg-emerald-900 mx-auto" />
-          </div>
-        ))}
-
-        {/* Trees on bottom edge */}
-        {TREES.filter(t => t.lane === "bot").map((t, i) => (
-          <div key={i} className="absolute" style={{ left: `${t.x}%`, top: "88%" }}>
-            <div className="w-3 h-4 bg-emerald-800 rounded-t-full" />
-          </div>
-        ))}
-
-        {/* Finish line */}
-        <div className="absolute top-0 bottom-0 flex items-center" style={{ right: 8 }}>
-          <div className="w-3 h-[55%] grid" style={{ gridTemplateRows: "repeat(6, 1fr)", gridTemplateColumns: "1fr 1fr" }}>
-            {[...Array(12)].map((_, i) => (
-              <div key={i} className={`${(Math.floor(i / 2) + i % 2) % 2 === 0 ? "bg-white" : "bg-black"}`} />
-            ))}
-          </div>
-          <Flag className="w-4 h-4 text-white ml-1" />
-        </div>
-
-        {/* Ghost car */}
-        <motion.div
-          className="absolute"
-          style={{ top: "48%", left: `${Math.min(ghostPos, 90)}%` }}
-          animate={{ left: `${Math.min(ghostPos, 90)}%` }}
-          transition={{ duration: 0.4, ease: "linear" }}
-        >
-          <div className="relative -translate-y-1/2 -translate-x-1/2">
-            <div className="w-14 h-6 bg-white/20 border border-white/30 rounded-lg relative">
-              <div className="absolute top-0.5 left-1 right-1 h-2 bg-white/10 rounded-md" />
-              <div className="absolute -left-1 top-1 w-1.5 h-1 bg-white/20 rounded-l-sm" />
-              <div className="absolute -bottom-1 left-2 w-2.5 h-2.5 bg-white/30 rounded-full border border-white/20" />
-              <div className="absolute -bottom-1 right-2 w-2.5 h-2.5 bg-white/30 rounded-full border border-white/20" />
-            </div>
-            <div className="text-center text-[8px] text-white/40 font-mono mt-1">GHOST</div>
-          </div>
-        </motion.div>
-
-        {/* Player car */}
-        <motion.div
-          className="absolute"
-          style={{ top: "65%", left: `${Math.min(carPos, 90)}%` }}
-          animate={{ left: `${Math.min(carPos, 90)}%` }}
-          transition={{ type: "spring", stiffness: 120, damping: 18 }}
-        >
-          <div className="relative -translate-y-1/2 -translate-x-1/2">
-            {/* Speed lines */}
-            <AnimatePresence>
-              {speedLines && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="absolute right-full top-1/2 -translate-y-1/2 flex flex-col gap-0.5 pr-1"
-                >
-                  {[...Array(4)].map((_, i) => (
-                    <motion.div key={i}
-                      className="h-px bg-yellow-400/60 rounded"
-                      animate={{ width: [8, 20, 8] }}
-                      transition={{ repeat: Infinity, duration: 0.3, delay: i * 0.07 }}
-                    />
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Car body */}
-            <div className="w-14 h-6 bg-primary rounded-lg relative shadow-lg shadow-primary/40">
-              <div className="absolute top-0.5 left-2 right-2 h-2.5 bg-primary/60 rounded-md border border-primary/40" />
-              <div className="absolute -left-1.5 top-1.5 w-2 h-2 bg-primary/60 rounded-l-sm" />
-              {/* Wheels */}
-              <div className="absolute -bottom-1.5 left-1.5 w-3 h-3 bg-gray-800 rounded-full border-2 border-gray-600" />
-              <div className="absolute -bottom-1.5 right-1.5 w-3 h-3 bg-gray-800 rounded-full border-2 border-gray-600" />
-            </div>
-
-            {/* Hit flash */}
-            <AnimatePresence>
-              {hitFlash === "good" && (
-                <motion.div
-                  initial={{ opacity: 1, scale: 0.5 }}
-                  animate={{ opacity: 0, scale: 2, y: -20 }}
-                  exit={{}}
-                  transition={{ duration: 0.4 }}
-                  className="absolute -top-4 left-1/2 -translate-x-1/2 text-emerald-400 text-sm font-bold pointer-events-none"
-                >
-                  +1 ✓
-                </motion.div>
-              )}
-              {hitFlash === "bad" && (
-                <motion.div
-                  initial={{ opacity: 1, scale: 0.5 }}
-                  animate={{ opacity: 0, scale: 1.5, y: -20 }}
-                  exit={{}}
-                  transition={{ duration: 0.4 }}
-                  className="absolute -top-4 left-1/2 -translate-x-1/2 text-red-400 text-sm font-bold pointer-events-none"
-                >
-                  ✗
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            <div className="text-center text-[8px] text-primary font-mono font-bold mt-1">YOU</div>
-          </div>
-        </motion.div>
-
-        {/* Progress bar overlay */}
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/40">
-          <motion.div
-            className="h-full bg-primary/60"
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.3 }}
-          />
-        </div>
-      </motion.div>
-
-      {/* Typing arena */}
-      <div className="bg-gray-900/80 border border-white/10 rounded-2xl p-5 md:p-7 space-y-4">
+      {/* Word typing tray */}
+      <div className="bg-gray-900/85 border border-white/10 rounded-2xl p-5 md:p-7 space-y-4 shadow-inner">
         {!startTime && (
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="text-center text-yellow-400/70 font-mono text-sm"
           >
-            ⌨ Start typing to begin the race!
+            ⌨ Start typing to accelerate your racer!
           </motion.p>
         )}
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={wordIndex}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.15 }}
-          >
-            <WordDisplay word={currentWord} input={currentInput} />
-          </motion.div>
-        </AnimatePresence>
+        <div className="flex items-center justify-center gap-0.5 font-mono text-2xl md:text-3xl font-bold tracking-widest select-none">
+          {currentWord.split("").map((ch, i) => {
+            let cls = "text-white/20";
+            if (i < currentInput.length) {
+              cls = currentInput[i] === ch ? "text-emerald-400 drop-shadow-[0_0_6px_#34d399]" : "text-red-400 bg-red-500/20 rounded";
+            } else if (i === currentInput.length) {
+              cls = "text-white border-b-2 border-yellow-400 animate-pulse";
+            }
+            return (
+              <span key={i} className={`transition-all duration-75 ${cls}`}>
+                {ch}
+              </span>
+            );
+          })}
+        </div>
 
         {/* Next words */}
         <div className="flex items-center justify-center gap-4">
@@ -288,9 +409,9 @@ export function RacingGame({
         </div>
       </div>
 
-      {/* Bottom stats */}
+      {/* Bottom status bar */}
       <div className="flex justify-between text-xs text-white/30 font-mono px-1">
-        <span>Target: {targetWpm} WPM</span>
+        <span>Target speed: {targetWpm} WPM</span>
         <span>{Math.round(progress)}% complete</span>
       </div>
     </div>
