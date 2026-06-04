@@ -7,7 +7,7 @@
  */
 
 export interface User {
-  id: number;
+  id: string;
   username: string;
   createdAt: Date;
   /** @nullable */

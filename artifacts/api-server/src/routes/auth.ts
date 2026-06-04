@@ -1,44 +1,44 @@
 import { Router } from "express";
-import { db, usersTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { User } from "../models/index.js";
 import { hashPassword, verifyPassword, generateToken, verifyToken } from "../lib/auth.js";
-import { RegisterBody, LoginBody } from "@workspace/api-zod";
 
 const router = Router();
 
 router.post("/register", async (req, res) => {
-  const parsed = RegisterBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: "Invalid input" });
+  const { username, password } = req.body ?? {};
+  if (!username || typeof username !== "string" || username.length < 3) {
+    res.status(400).json({ error: "Username must be at least 3 characters" });
     return;
   }
-  const { username, password } = parsed.data;
+  if (!password || typeof password !== "string" || password.length < 6) {
+    res.status(400).json({ error: "Password must be at least 6 characters" });
+    return;
+  }
 
-  const existing = await db.select().from(usersTable).where(eq(usersTable.username, username)).limit(1);
-  if (existing.length > 0) {
+  const existing = await User.findOne({ username: username.trim() }).lean();
+  if (existing) {
     res.status(400).json({ error: "Username already taken" });
     return;
   }
 
   const passwordHash = await hashPassword(password);
-  const [user] = await db.insert(usersTable).values({ username, passwordHash }).returning();
+  const user = await User.create({ username: username.trim(), passwordHash });
 
-  const token = generateToken(user.id, user.username);
+  const token = generateToken(user._id.toString(), user.username);
   res.status(201).json({
-    user: { id: user.id, username: user.username, createdAt: user.createdAt },
-    token
+    user: { id: user._id.toString(), username: user.username, createdAt: user.createdAt },
+    token,
   });
 });
 
 router.post("/login", async (req, res) => {
-  const parsed = LoginBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: "Invalid input" });
+  const { username, password } = req.body ?? {};
+  if (!username || !password) {
+    res.status(400).json({ error: "Username and password required" });
     return;
   }
-  const { username, password } = parsed.data;
 
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.username, username)).limit(1);
+  const user = await User.findOne({ username: username.trim() });
   if (!user) {
     res.status(401).json({ error: "Invalid credentials" });
     return;
@@ -50,10 +50,10 @@ router.post("/login", async (req, res) => {
     return;
   }
 
-  const token = generateToken(user.id, user.username);
+  const token = generateToken(user._id.toString(), user.username);
   res.json({
-    user: { id: user.id, username: user.username, createdAt: user.createdAt },
-    token
+    user: { id: user._id.toString(), username: user.username, createdAt: user.createdAt },
+    token,
   });
 });
 
@@ -74,13 +74,13 @@ router.get("/me", async (req, res) => {
     return;
   }
 
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, payload.userId)).limit(1);
+  const user = await User.findById(payload.userId).lean();
   if (!user) {
     res.status(401).json({ error: "User not found" });
     return;
   }
 
-  res.json({ id: user.id, username: user.username, createdAt: user.createdAt });
+  res.json({ id: user._id.toString(), username: user.username, createdAt: user.createdAt });
 });
 
 export default router;

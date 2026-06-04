@@ -7,7 +7,7 @@ export async function hashPassword(password: string): Promise<string> {
   return new Promise((resolve, reject) => {
     crypto.scrypt(password, salt, 64, (err, hash) => {
       if (err) reject(err);
-      resolve(`${salt}:${hash.toString("hex")}`);
+      else resolve(`${salt}:${hash.toString("hex")}`);
     });
   });
 }
@@ -17,19 +17,19 @@ export async function verifyPassword(password: string, stored: string): Promise<
   return new Promise((resolve, reject) => {
     crypto.scrypt(password, salt, 64, (err, derivedHash) => {
       if (err) reject(err);
-      resolve(derivedHash.toString("hex") === hash);
+      else resolve(derivedHash.toString("hex") === hash);
     });
   });
 }
 
-export function generateToken(userId: number, username: string): string {
+export function generateToken(userId: string, username: string): string {
   const payload = JSON.stringify({ userId, username, iat: Date.now() });
   const encoded = Buffer.from(payload).toString("base64url");
   const sig = crypto.createHmac("sha256", SECRET).update(encoded).digest("base64url");
   return `${encoded}.${sig}`;
 }
 
-export function verifyToken(token: string): { userId: number; username: string } | null {
+export function verifyToken(token: string): { userId: string; username: string } | null {
   try {
     const [encoded, sig] = token.split(".");
     const expectedSig = crypto.createHmac("sha256", SECRET).update(encoded).digest("base64url");

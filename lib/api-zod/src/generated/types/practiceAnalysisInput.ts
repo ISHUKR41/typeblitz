@@ -11,5 +11,5 @@ export interface PracticeAnalysisInput {
   typedText: string;
   duration: number;
   /** @nullable */
-  userId?: number | null;
+  userId?: string | null;
 }

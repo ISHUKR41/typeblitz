@@ -40,7 +40,7 @@ function StatCard({ label, value, icon: Icon, color }: { label: string; value: s
 
 const ALPHABET = "abcdefghijklmnopqrstuvwxyz".split("");
 
-function LetterHeatmap({ userId }: { userId: number }) {
+function LetterHeatmap({ userId }: { userId: string }) {
   const { data: letters } = useGetLetterAccuracy(userId, {
     query: { queryKey: getGetLetterAccuracyQueryKey(userId) }
   });
@@ -87,20 +87,20 @@ function LetterHeatmap({ userId }: { userId: number }) {
 export default function Dashboard() {
   const { user } = useAuth();
 
-  const { data: stats } = useGetUserStats(user?.id ?? 0, {
-    query: { enabled: !!user, queryKey: getGetUserStatsQueryKey(user?.id ?? 0) }
+  const { data: stats } = useGetUserStats(user?.id ?? "", {
+    query: { enabled: !!user?.id, queryKey: getGetUserStatsQueryKey(user?.id ?? "") }
   });
 
-  const { data: progress } = useGetUserProgress(user?.id ?? 0, {
-    query: { enabled: !!user, queryKey: getGetUserProgressQueryKey(user?.id ?? 0) }
+  const { data: progress } = useGetUserProgress(user?.id ?? "", {
+    query: { enabled: !!user?.id, queryKey: getGetUserProgressQueryKey(user?.id ?? "") }
   });
 
-  const { data: sessions } = useGetUserSessions(user?.id ?? 0, {
-    query: { enabled: !!user, queryKey: getGetUserSessionsQueryKey(user?.id ?? 0) }
+  const { data: sessions } = useGetUserSessions(user?.id ?? "", {
+    query: { enabled: !!user?.id, queryKey: getGetUserSessionsQueryKey(user?.id ?? "") }
   });
 
-  const { data: levelProgress } = useGetLevelProgress(user?.id ?? 0, {
-    query: { enabled: !!user, queryKey: getGetLevelProgressQueryKey(user?.id ?? 0) }
+  const { data: levelProgress } = useGetLevelProgress(user?.id ?? "", {
+    query: { enabled: !!user?.id, queryKey: getGetLevelProgressQueryKey(user?.id ?? "") }
   });
 
   if (!user) {

@@ -1,61 +1,50 @@
 import { Router } from "express";
-import { db, sessionsTable, letterStatsTable } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
-import { CreateSessionBody, AnalyzePracticeBody } from "@workspace/api-zod";
+import mongoose from "mongoose";
+import { Session, LetterStat } from "../models/index.js";
 
 const router = Router();
 
 router.post("/", async (req, res) => {
-  const parsed = CreateSessionBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: "Invalid session data", details: parsed.error.issues });
+  const data = req.body;
+  if (!data?.userId || !data?.gameId || !data?.gameMode || data?.wpm == null || data?.accuracy == null) {
+    res.status(400).json({ error: "Invalid session data" });
     return;
   }
 
-  const data = parsed.data;
-  const [session] = await db.insert(sessionsTable).values({
-    userId: data.userId,
+  if (!mongoose.Types.ObjectId.isValid(data.userId)) {
+    res.status(400).json({ error: "Invalid userId" });
+    return;
+  }
+
+  const session = await Session.create({
+    userId: new mongoose.Types.ObjectId(data.userId),
     gameId: data.gameId,
     gameMode: data.gameMode,
-    wpm: data.wpm,
+    wpm: Math.round(data.wpm),
     accuracy: data.accuracy,
-    duration: data.duration,
-    level: data.level,
+    duration: data.duration ?? 0,
+    level: data.level ?? 1,
     score: data.score ?? null,
     letterErrors: data.letterErrors ?? null,
-  }).returning();
+  });
 
   // Update letter stats if provided
   if (data.letterErrors) {
     try {
       const errors = JSON.parse(data.letterErrors) as Record<string, { attempts: number; correct: number }>;
       for (const [letter, stat] of Object.entries(errors)) {
-        const existing = await db.select().from(letterStatsTable)
-          .where(and(eq(letterStatsTable.userId, data.userId), eq(letterStatsTable.letter, letter)))
-          .limit(1);
-
-        if (existing.length > 0) {
-          await db.update(letterStatsTable)
-            .set({
-              attempts: existing[0].attempts + stat.attempts,
-              correct: existing[0].correct + stat.correct
-            })
-            .where(and(eq(letterStatsTable.userId, data.userId), eq(letterStatsTable.letter, letter)));
-        } else {
-          await db.insert(letterStatsTable).values({
-            userId: data.userId,
-            letter,
-            attempts: stat.attempts,
-            correct: stat.correct
-          });
-        }
+        await LetterStat.findOneAndUpdate(
+          { userId: session.userId, letter },
+          { $inc: { attempts: stat.attempts, correct: stat.correct } },
+          { upsert: true }
+        );
       }
     } catch { /* ignore parse errors */ }
   }
 
   res.status(201).json({
-    id: session.id,
-    userId: session.userId,
+    id: session._id.toString(),
+    userId: session.userId.toString(),
     gameId: session.gameId,
     gameMode: session.gameMode,
     wpm: session.wpm,
@@ -64,24 +53,21 @@ router.post("/", async (req, res) => {
     level: session.level,
     score: session.score,
     completedAt: session.completedAt,
-    letterErrors: session.letterErrors
+    letterErrors: session.letterErrors,
   });
 });
 
 router.post("/analyze", async (req, res) => {
-  const parsed = AnalyzePracticeBody.safeParse(req.body);
-  if (!parsed.success) {
+  const { originalText, typedText, duration } = req.body ?? {};
+
+  if (!originalText || !typedText || duration == null) {
     res.status(400).json({ error: "Invalid input" });
     return;
   }
 
-  const { originalText, typedText, duration } = parsed.data;
-
-  // Calculate WPM
   const words = typedText.trim().split(/\s+/).length;
   const wpm = Math.round((words / Math.max(duration, 1)) * 60);
 
-  // Calculate accuracy and letter errors
   const letterMap: Record<string, { attempts: number; correct: number }> = {};
   let correctChars = 0;
 
@@ -92,13 +78,8 @@ router.post("/analyze", async (req, res) => {
     if (/[a-z]/.test(orig)) {
       if (!letterMap[orig]) letterMap[orig] = { attempts: 0, correct: 0 };
       letterMap[orig].attempts++;
-      if (orig === typed) {
-        letterMap[orig].correct++;
-        correctChars++;
-      }
-    } else if (orig === typed) {
-      correctChars++;
-    }
+      if (orig === typed) { letterMap[orig].correct++; correctChars++; }
+    } else if (orig === typed) { correctChars++; }
   }
 
   const accuracy = originalText.length > 0
@@ -113,7 +94,7 @@ router.post("/analyze", async (req, res) => {
       letter,
       attempts: v.attempts,
       correct: v.correct,
-      accuracy: Math.round((v.correct / v.attempts) * 1000) / 10
+      accuracy: Math.round((v.correct / v.attempts) * 1000) / 10,
     }))
     .sort((a, b) => a.accuracy - b.accuracy);
 

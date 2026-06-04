@@ -417,7 +417,7 @@ export function useGetMe<TData = Awaited<ReturnType<typeof getMe>>, TError = Err
 
 
 
-export const getGetUserStatsUrl = (userId: number,) => {
+export const getGetUserStatsUrl = (userId: string,) => {
 
 
 
@@ -428,7 +428,7 @@ export const getGetUserStatsUrl = (userId: number,) => {
 /**
  * @summary Get comprehensive user stats for dashboard
  */
-export const getUserStats = async (userId: number, options?: RequestInit): Promise<UserStats> => {
+export const getUserStats = async (userId: string, options?: RequestInit): Promise<UserStats> => {
 
   return customFetch<UserStats>(getGetUserStatsUrl(userId),
   {
@@ -443,14 +443,14 @@ export const getUserStats = async (userId: number, options?: RequestInit): Promi
 
 
 
-export const getGetUserStatsQueryKey = (userId: number,) => {
+export const getGetUserStatsQueryKey = (userId: string,) => {
     return [
     `/api/users/${userId}/stats`
     ] as const;
     }
 
 
-export const getGetUserStatsQueryOptions = <TData = Awaited<ReturnType<typeof getUserStats>>, TError = ErrorType<unknown>>(userId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUserStats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetUserStatsQueryOptions = <TData = Awaited<ReturnType<typeof getUserStats>>, TError = ErrorType<unknown>>(userId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUserStats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -477,7 +477,7 @@ export type GetUserStatsQueryError = ErrorType<unknown>
  */
 
 export function useGetUserStats<TData = Awaited<ReturnType<typeof getUserStats>>, TError = ErrorType<unknown>>(
- userId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUserStats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ userId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUserStats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -494,7 +494,7 @@ export function useGetUserStats<TData = Awaited<ReturnType<typeof getUserStats>>
 
 
 
-export const getGetLetterAccuracyUrl = (userId: number,) => {
+export const getGetLetterAccuracyUrl = (userId: string,) => {
 
 
 
@@ -505,7 +505,7 @@ export const getGetLetterAccuracyUrl = (userId: number,) => {
 /**
  * @summary Get per-letter accuracy breakdown
  */
-export const getLetterAccuracy = async (userId: number, options?: RequestInit): Promise<LetterAccuracy[]> => {
+export const getLetterAccuracy = async (userId: string, options?: RequestInit): Promise<LetterAccuracy[]> => {
 
   return customFetch<LetterAccuracy[]>(getGetLetterAccuracyUrl(userId),
   {
@@ -520,14 +520,14 @@ export const getLetterAccuracy = async (userId: number, options?: RequestInit): 
 
 
 
-export const getGetLetterAccuracyQueryKey = (userId: number,) => {
+export const getGetLetterAccuracyQueryKey = (userId: string,) => {
     return [
     `/api/users/${userId}/letter-accuracy`
     ] as const;
     }
 
 
-export const getGetLetterAccuracyQueryOptions = <TData = Awaited<ReturnType<typeof getLetterAccuracy>>, TError = ErrorType<unknown>>(userId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLetterAccuracy>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetLetterAccuracyQueryOptions = <TData = Awaited<ReturnType<typeof getLetterAccuracy>>, TError = ErrorType<unknown>>(userId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLetterAccuracy>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -554,7 +554,7 @@ export type GetLetterAccuracyQueryError = ErrorType<unknown>
  */
 
 export function useGetLetterAccuracy<TData = Awaited<ReturnType<typeof getLetterAccuracy>>, TError = ErrorType<unknown>>(
- userId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLetterAccuracy>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ userId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLetterAccuracy>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -571,7 +571,7 @@ export function useGetLetterAccuracy<TData = Awaited<ReturnType<typeof getLetter
 
 
 
-export const getGetUserSessionsUrl = (userId: number,) => {
+export const getGetUserSessionsUrl = (userId: string,) => {
 
 
 
@@ -582,7 +582,7 @@ export const getGetUserSessionsUrl = (userId: number,) => {
 /**
  * @summary Get user session history
  */
-export const getUserSessions = async (userId: number, options?: RequestInit): Promise<Session[]> => {
+export const getUserSessions = async (userId: string, options?: RequestInit): Promise<Session[]> => {
 
   return customFetch<Session[]>(getGetUserSessionsUrl(userId),
   {
@@ -597,14 +597,14 @@ export const getUserSessions = async (userId: number, options?: RequestInit): Pr
 
 
 
-export const getGetUserSessionsQueryKey = (userId: number,) => {
+export const getGetUserSessionsQueryKey = (userId: string,) => {
     return [
     `/api/users/${userId}/sessions`
     ] as const;
     }
 
 
-export const getGetUserSessionsQueryOptions = <TData = Awaited<ReturnType<typeof getUserSessions>>, TError = ErrorType<unknown>>(userId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUserSessions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetUserSessionsQueryOptions = <TData = Awaited<ReturnType<typeof getUserSessions>>, TError = ErrorType<unknown>>(userId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUserSessions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -631,7 +631,7 @@ export type GetUserSessionsQueryError = ErrorType<unknown>
  */
 
 export function useGetUserSessions<TData = Awaited<ReturnType<typeof getUserSessions>>, TError = ErrorType<unknown>>(
- userId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUserSessions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ userId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUserSessions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -648,7 +648,7 @@ export function useGetUserSessions<TData = Awaited<ReturnType<typeof getUserSess
 
 
 
-export const getGetUserProgressUrl = (userId: number,) => {
+export const getGetUserProgressUrl = (userId: string,) => {
 
 
 
@@ -659,7 +659,7 @@ export const getGetUserProgressUrl = (userId: number,) => {
 /**
  * @summary Get WPM progress over time (for charts)
  */
-export const getUserProgress = async (userId: number, options?: RequestInit): Promise<ProgressPoint[]> => {
+export const getUserProgress = async (userId: string, options?: RequestInit): Promise<ProgressPoint[]> => {
 
   return customFetch<ProgressPoint[]>(getGetUserProgressUrl(userId),
   {
@@ -674,14 +674,14 @@ export const getUserProgress = async (userId: number, options?: RequestInit): Pr
 
 
 
-export const getGetUserProgressQueryKey = (userId: number,) => {
+export const getGetUserProgressQueryKey = (userId: string,) => {
     return [
     `/api/users/${userId}/progress`
     ] as const;
     }
 
 
-export const getGetUserProgressQueryOptions = <TData = Awaited<ReturnType<typeof getUserProgress>>, TError = ErrorType<unknown>>(userId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUserProgress>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetUserProgressQueryOptions = <TData = Awaited<ReturnType<typeof getUserProgress>>, TError = ErrorType<unknown>>(userId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUserProgress>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -708,7 +708,7 @@ export type GetUserProgressQueryError = ErrorType<unknown>
  */
 
 export function useGetUserProgress<TData = Awaited<ReturnType<typeof getUserProgress>>, TError = ErrorType<unknown>>(
- userId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUserProgress>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ userId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUserProgress>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
@@ -725,7 +725,7 @@ export function useGetUserProgress<TData = Awaited<ReturnType<typeof getUserProg
 
 
 
-export const getGetLevelProgressUrl = (userId: number,) => {
+export const getGetLevelProgressUrl = (userId: string,) => {
 
 
 
@@ -736,7 +736,7 @@ export const getGetLevelProgressUrl = (userId: number,) => {
 /**
  * @summary Get level progress per game
  */
-export const getLevelProgress = async (userId: number, options?: RequestInit): Promise<LevelProgress[]> => {
+export const getLevelProgress = async (userId: string, options?: RequestInit): Promise<LevelProgress[]> => {
 
   return customFetch<LevelProgress[]>(getGetLevelProgressUrl(userId),
   {
@@ -751,14 +751,14 @@ export const getLevelProgress = async (userId: number, options?: RequestInit): P
 
 
 
-export const getGetLevelProgressQueryKey = (userId: number,) => {
+export const getGetLevelProgressQueryKey = (userId: string,) => {
     return [
     `/api/users/${userId}/level-progress`
     ] as const;
     }
 
 
-export const getGetLevelProgressQueryOptions = <TData = Awaited<ReturnType<typeof getLevelProgress>>, TError = ErrorType<unknown>>(userId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLevelProgress>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetLevelProgressQueryOptions = <TData = Awaited<ReturnType<typeof getLevelProgress>>, TError = ErrorType<unknown>>(userId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLevelProgress>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -785,7 +785,7 @@ export type GetLevelProgressQueryError = ErrorType<unknown>
  */
 
 export function useGetLevelProgress<TData = Awaited<ReturnType<typeof getLevelProgress>>, TError = ErrorType<unknown>>(
- userId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLevelProgress>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ userId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLevelProgress>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 

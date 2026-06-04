@@ -1,18 +1,22 @@
 import { Router } from "express";
-import { db, sessionsTable, letterStatsTable, usersTable } from "@workspace/db";
-import { eq, desc, avg, max, count, sum, sql } from "drizzle-orm";
+import mongoose from "mongoose";
+import { User, Session, LetterStat } from "../models/index.js";
 import { GAMES } from "../data/games.js";
 
 const router = Router();
 
-router.get("/:userId/stats", async (req, res) => {
-  const userId = parseInt(req.params.userId);
-  if (isNaN(userId)) { res.status(400).json({ error: "Invalid userId" }); return; }
+function isValidObjectId(id: string): boolean {
+  return mongoose.Types.ObjectId.isValid(id);
+}
 
-  const [user] = await db.select().from(usersTable).where(eq(usersTable.id, userId)).limit(1);
+router.get("/:userId/stats", async (req, res) => {
+  const { userId } = req.params;
+  if (!isValidObjectId(userId)) { res.status(400).json({ error: "Invalid userId" }); return; }
+
+  const user = await User.findById(userId).lean();
   if (!user) { res.status(404).json({ error: "User not found" }); return; }
 
-  const sessions = await db.select().from(sessionsTable).where(eq(sessionsTable.userId, userId));
+  const sessions = await Session.find({ userId: new mongoose.Types.ObjectId(userId) }).lean();
 
   const totalSessions = sessions.length;
   const averageWpm = totalSessions > 0 ? sessions.reduce((s, r) => s + r.wpm, 0) / totalSessions : 0;
@@ -20,7 +24,7 @@ router.get("/:userId/stats", async (req, res) => {
   const totalTimeMinutes = sessions.reduce((s, r) => s + r.duration, 0) / 60;
   const averageAccuracy = totalSessions > 0 ? sessions.reduce((s, r) => s + r.accuracy, 0) / totalSessions : 0;
 
-  // Simple streak calculation
+  // streak calculation
   let currentStreak = 0;
   if (sessions.length > 0) {
     const sortedDates = [...new Set(sessions.map(s => new Date(s.completedAt).toDateString()))].sort().reverse();
@@ -49,38 +53,38 @@ router.get("/:userId/stats", async (req, res) => {
     averageAccuracy: Math.round(averageAccuracy * 10) / 10,
     currentStreak,
     wordsTyped,
-    rank: null
+    rank: null,
   });
 });
 
 router.get("/:userId/letter-accuracy", async (req, res) => {
-  const userId = parseInt(req.params.userId);
-  if (isNaN(userId)) { res.status(400).json({ error: "Invalid userId" }); return; }
+  const { userId } = req.params;
+  if (!isValidObjectId(userId)) { res.status(400).json({ error: "Invalid userId" }); return; }
 
-  const stats = await db.select().from(letterStatsTable).where(eq(letterStatsTable.userId, userId));
+  const stats = await LetterStat.find({ userId: new mongoose.Types.ObjectId(userId) }).lean();
 
   const result = stats.map(s => ({
     letter: s.letter,
     attempts: s.attempts,
     correct: s.correct,
-    accuracy: s.attempts > 0 ? Math.round((s.correct / s.attempts) * 1000) / 10 : 100
+    accuracy: s.attempts > 0 ? Math.round((s.correct / s.attempts) * 1000) / 10 : 100,
   }));
 
   res.json(result);
 });
 
 router.get("/:userId/sessions", async (req, res) => {
-  const userId = parseInt(req.params.userId);
-  if (isNaN(userId)) { res.status(400).json({ error: "Invalid userId" }); return; }
+  const { userId } = req.params;
+  if (!isValidObjectId(userId)) { res.status(400).json({ error: "Invalid userId" }); return; }
 
-  const sessions = await db.select().from(sessionsTable)
-    .where(eq(sessionsTable.userId, userId))
-    .orderBy(desc(sessionsTable.completedAt))
-    .limit(50);
+  const sessions = await Session.find({ userId: new mongoose.Types.ObjectId(userId) })
+    .sort({ completedAt: -1 })
+    .limit(50)
+    .lean();
 
   res.json(sessions.map(s => ({
-    id: s.id,
-    userId: s.userId,
+    id: s._id.toString(),
+    userId: s.userId.toString(),
     gameId: s.gameId,
     gameMode: s.gameMode,
     wpm: s.wpm,
@@ -89,19 +93,18 @@ router.get("/:userId/sessions", async (req, res) => {
     level: s.level,
     score: s.score,
     completedAt: s.completedAt,
-    letterErrors: s.letterErrors
+    letterErrors: s.letterErrors,
   })));
 });
 
 router.get("/:userId/progress", async (req, res) => {
-  const userId = parseInt(req.params.userId);
-  if (isNaN(userId)) { res.status(400).json({ error: "Invalid userId" }); return; }
+  const { userId } = req.params;
+  if (!isValidObjectId(userId)) { res.status(400).json({ error: "Invalid userId" }); return; }
 
-  const sessions = await db.select().from(sessionsTable)
-    .where(eq(sessionsTable.userId, userId))
-    .orderBy(sessionsTable.completedAt);
+  const sessions = await Session.find({ userId: new mongoose.Types.ObjectId(userId) })
+    .sort({ completedAt: 1 })
+    .lean();
 
-  // Group by date
   const byDate: Record<string, { wpms: number[]; accs: number[]; count: number }> = {};
   for (const s of sessions) {
     const date = new Date(s.completedAt).toISOString().slice(0, 10);
@@ -115,17 +118,17 @@ router.get("/:userId/progress", async (req, res) => {
     date,
     wpm: Math.round(d.wpms.reduce((a, b) => a + b, 0) / d.wpms.length),
     accuracy: Math.round((d.accs.reduce((a, b) => a + b, 0) / d.accs.length) * 10) / 10,
-    sessionCount: d.count
+    sessionCount: d.count,
   }));
 
   res.json(result);
 });
 
 router.get("/:userId/level-progress", async (req, res) => {
-  const userId = parseInt(req.params.userId);
-  if (isNaN(userId)) { res.status(400).json({ error: "Invalid userId" }); return; }
+  const { userId } = req.params;
+  if (!isValidObjectId(userId)) { res.status(400).json({ error: "Invalid userId" }); return; }
 
-  const sessions = await db.select().from(sessionsTable).where(eq(sessionsTable.userId, userId));
+  const sessions = await Session.find({ userId: new mongoose.Types.ObjectId(userId) }).lean();
 
   const result = GAMES.map(game => {
     const gameSessions = sessions.filter(s => s.gameId === game.id);
@@ -137,7 +140,7 @@ router.get("/:userId/level-progress", async (req, res) => {
       currentLevel: maxLevel,
       totalLevels: game.levels.length,
       completed: maxLevel >= game.levels.length,
-      bestWpm
+      bestWpm,
     };
   });
 

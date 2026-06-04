@@ -7,7 +7,7 @@
  */
 
 export interface SessionInput {
-  userId: number;
+  userId: string;
   gameId: string;
   gameMode: string;
   wpm: number;

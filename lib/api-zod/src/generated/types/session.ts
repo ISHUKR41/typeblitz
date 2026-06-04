@@ -8,8 +8,8 @@
 import type { SessionGameMode } from './sessionGameMode';
 
 export interface Session {
-  id: number;
-  userId: number;
+  id: string;
+  userId: string;
   gameId: string;
   gameMode: SessionGameMode;
   wpm: number;

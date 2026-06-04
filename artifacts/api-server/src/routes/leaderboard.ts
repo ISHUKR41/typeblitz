@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { db, sessionsTable, usersTable } from "@workspace/db";
-import { eq, desc, max } from "drizzle-orm";
+import mongoose from "mongoose";
+import { Session, User } from "../models/index.js";
 
 const router = Router();
 
@@ -8,39 +8,47 @@ router.get("/", async (req, res) => {
   const gameId = typeof req.query.gameId === "string" ? req.query.gameId : undefined;
   const limit = Math.min(parseInt(req.query.limit as string) || 20, 50);
 
-  // Get all sessions, join with users, get best WPM per user (optionally per game)
-  const allSessions = await db.select({
-    sessionId: sessionsTable.id,
-    userId: sessionsTable.userId,
-    gameId: sessionsTable.gameId,
-    wpm: sessionsTable.wpm,
-    accuracy: sessionsTable.accuracy,
-    completedAt: sessionsTable.completedAt,
-  }).from(sessionsTable).orderBy(desc(sessionsTable.wpm));
+  const matchStage: Record<string, unknown> = {};
+  if (gameId) matchStage.gameId = gameId;
 
-  const users = await db.select().from(usersTable);
-  const userMap = new Map(users.map(u => [u.id, u.username]));
+  // Get best session per user (or per user+game if filtered)
+  const pipeline: mongoose.PipelineStage[] = [
+    { $match: matchStage },
+    { $sort: { wpm: -1 } },
+    {
+      $group: {
+        _id: gameId ? { userId: "$userId", gameId: "$gameId" } : "$userId",
+        userId: { $first: "$userId" },
+        gameId: { $first: "$gameId" },
+        wpm: { $max: "$wpm" },
+        accuracy: { $first: "$accuracy" },
+        completedAt: { $first: "$completedAt" },
+      }
+    },
+    { $sort: { wpm: -1 } },
+    { $limit: limit },
+    {
+      $lookup: {
+        from: "users",
+        localField: "userId",
+        foreignField: "_id",
+        as: "user",
+      }
+    },
+    { $unwind: "$user" },
+  ];
 
-  // Best WPM per user (and per game if filtered)
-  const bestByUser = new Map<string, typeof allSessions[0]>();
-  for (const s of allSessions) {
-    if (gameId && s.gameId !== gameId) continue;
-    const key = gameId ? `${s.userId}:${s.gameId}` : `${s.userId}`;
-    if (!bestByUser.has(key)) bestByUser.set(key, s);
-  }
+  const results = await Session.aggregate(pipeline);
 
-  const entries = [...bestByUser.values()]
-    .sort((a, b) => b.wpm - a.wpm)
-    .slice(0, limit)
-    .map((s, i) => ({
-      rank: i + 1,
-      userId: s.userId,
-      username: userMap.get(s.userId) ?? "Unknown",
-      wpm: s.wpm,
-      accuracy: s.accuracy,
-      gameId: s.gameId,
-      achievedAt: s.completedAt
-    }));
+  const entries = results.map((r, i) => ({
+    rank: i + 1,
+    userId: r.userId.toString(),
+    username: r.user.username,
+    wpm: r.wpm,
+    accuracy: r.accuracy,
+    gameId: r.gameId,
+    achievedAt: r.completedAt,
+  }));
 
   res.json(entries);
 });

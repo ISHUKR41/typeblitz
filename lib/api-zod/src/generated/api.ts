@@ -47,7 +47,7 @@ export const LoginBody = zod.object({
 
 export const LoginResponse = zod.object({
   "user": zod.object({
-  "id": zod.number(),
+  "id": zod.string(),
   "username": zod.string(),
   "createdAt": zod.coerce.date(),
   "totalSessions": zod.number().nullish(),
@@ -62,7 +62,7 @@ export const LoginResponse = zod.object({
  * @summary Get current user
  */
 export const GetMeResponse = zod.object({
-  "id": zod.number(),
+  "id": zod.string(),
   "username": zod.string(),
   "createdAt": zod.coerce.date(),
   "totalSessions": zod.number().nullish(),
@@ -75,11 +75,11 @@ export const GetMeResponse = zod.object({
  * @summary Get comprehensive user stats for dashboard
  */
 export const GetUserStatsParams = zod.object({
-  "userId": zod.coerce.number()
+  "userId": zod.coerce.string()
 })
 
 export const GetUserStatsResponse = zod.object({
-  "userId": zod.number(),
+  "userId": zod.string(),
   "username": zod.string(),
   "averageWpm": zod.number(),
   "bestWpm": zod.number(),
@@ -96,7 +96,7 @@ export const GetUserStatsResponse = zod.object({
  * @summary Get per-letter accuracy breakdown
  */
 export const GetLetterAccuracyParams = zod.object({
-  "userId": zod.coerce.number()
+  "userId": zod.coerce.string()
 })
 
 export const GetLetterAccuracyResponseItem = zod.object({
@@ -112,12 +112,12 @@ export const GetLetterAccuracyResponse = zod.array(GetLetterAccuracyResponseItem
  * @summary Get user session history
  */
 export const GetUserSessionsParams = zod.object({
-  "userId": zod.coerce.number()
+  "userId": zod.coerce.string()
 })
 
 export const GetUserSessionsResponseItem = zod.object({
-  "id": zod.number(),
-  "userId": zod.number(),
+  "id": zod.string(),
+  "userId": zod.string(),
   "gameId": zod.string(),
   "gameMode": zod.enum(['word-sprint', 'sentence-rush', 'code-type', 'letter-blaster', 'typing-race', 'lesson', 'custom', 'timed-test']),
   "wpm": zod.number(),
@@ -135,7 +135,7 @@ export const GetUserSessionsResponse = zod.array(GetUserSessionsResponseItem)
  * @summary Get WPM progress over time (for charts)
  */
 export const GetUserProgressParams = zod.object({
-  "userId": zod.coerce.number()
+  "userId": zod.coerce.string()
 })
 
 export const GetUserProgressResponseItem = zod.object({
@@ -151,7 +151,7 @@ export const GetUserProgressResponse = zod.array(GetUserProgressResponseItem)
  * @summary Get level progress per game
  */
 export const GetLevelProgressParams = zod.object({
-  "userId": zod.coerce.number()
+  "userId": zod.coerce.string()
 })
 
 export const GetLevelProgressResponseItem = zod.object({
@@ -236,7 +236,7 @@ export const GetLevelWordsResponse = zod.object({
  * @summary Save a completed game session
  */
 export const CreateSessionBody = zod.object({
-  "userId": zod.number(),
+  "userId": zod.string(),
   "gameId": zod.string(),
   "gameMode": zod.string(),
   "wpm": zod.number(),
@@ -295,7 +295,7 @@ export const GetLeaderboardQueryParams = zod.object({
 
 export const GetLeaderboardResponseItem = zod.object({
   "rank": zod.number(),
-  "userId": zod.number(),
+  "userId": zod.string(),
   "username": zod.string(),
   "wpm": zod.number(),
   "accuracy": zod.number(),
@@ -312,7 +312,7 @@ export const AnalyzePracticeBody = zod.object({
   "originalText": zod.string(),
   "typedText": zod.string(),
   "duration": zod.number(),
-  "userId": zod.number().nullish()
+  "userId": zod.string().nullish()
 })
 
 export const AnalyzePracticeResponse = zod.object({

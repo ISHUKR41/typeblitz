@@ -7,7 +7,7 @@
  */
 
 export interface UserStats {
-  userId: number;
+  userId: string;
   username: string;
   averageWpm: number;
   bestWpm: number;

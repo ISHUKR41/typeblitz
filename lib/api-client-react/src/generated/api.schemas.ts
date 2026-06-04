@@ -17,7 +17,7 @@ export interface AuthInput {
 }
 
 export interface User {
-  id: number;
+  id: string;
   username: string;
   createdAt: string;
   /** @nullable */
@@ -34,7 +34,7 @@ export interface AuthResponse {
 }
 
 export interface UserStats {
-  userId: number;
+  userId: string;
   username: string;
   averageWpm: number;
   bestWpm: number;
@@ -69,8 +69,8 @@ export const SessionGameMode = {
 } as const;
 
 export interface Session {
-  id: number;
-  userId: number;
+  id: string;
+  userId: string;
   gameId: string;
   gameMode: SessionGameMode;
   wpm: number;
@@ -85,7 +85,7 @@ export interface Session {
 }
 
 export interface SessionInput {
-  userId: number;
+  userId: string;
   gameId: string;
   gameMode: string;
   wpm: number;
@@ -191,7 +191,7 @@ export interface Lesson {
 
 export interface LeaderboardEntry {
   rank: number;
-  userId: number;
+  userId: string;
   username: string;
   wpm: number;
   accuracy: number;
@@ -204,7 +204,7 @@ export interface PracticeAnalysisInput {
   typedText: string;
   duration: number;
   /** @nullable */
-  userId?: number | null;
+  userId?: string | null;
 }
 
 export interface PracticeAnalysis {
