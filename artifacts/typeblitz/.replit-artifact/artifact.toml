@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "TypeBlitz - Typing Game"
+version = "1.0.0"
+id = "artifacts/typeblitz"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25383
+
+[services.development]
+run = "pnpm --filter @workspace/typeblitz run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/typeblitz", "run", "build" ]
+publicDir = "artifacts/typeblitz/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25383"
+BASE_PATH = "/"

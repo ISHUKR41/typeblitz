@@ -3,20 +3,32 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: TypeBlitz - Typing Game Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
+  - name: users
+    description: User management
+  - name: games
+    description: Game definitions and levels
+  - name: sessions
+    description: Game session results
+  - name: lessons
+    description: Professional typing lessons
+  - name: leaderboard
+    description: Global leaderboard
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +36,330 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthInput"
+      responses:
+        "201":
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Bad request
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Log in
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthInput"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Unauthorized
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Log out
+      responses:
+        "200":
+          description: Logged out
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+
+  /users/{userId}/stats:
+    get:
+      operationId: getUserStats
+      tags: [users]
+      summary: Get comprehensive user stats for dashboard
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserStats"
+
+  /users/{userId}/letter-accuracy:
+    get:
+      operationId: getLetterAccuracy
+      tags: [users]
+      summary: Get per-letter accuracy breakdown
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Letter accuracy data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LetterAccuracy"
+
+  /users/{userId}/sessions:
+    get:
+      operationId: getUserSessions
+      tags: [users]
+      summary: Get user session history
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Session history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Session"
+
+  /users/{userId}/progress:
+    get:
+      operationId: getUserProgress
+      tags: [users]
+      summary: Get WPM progress over time (for charts)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: WPM progress
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProgressPoint"
+
+  /users/{userId}/level-progress:
+    get:
+      operationId: getLevelProgress
+      tags: [users]
+      summary: Get level progress per game
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Level progress per game
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LevelProgress"
+
+  /games:
+    get:
+      operationId: getGames
+      tags: [games]
+      summary: Get all games with their levels
+      responses:
+        "200":
+          description: List of games
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Game"
+
+  /games/{gameId}:
+    get:
+      operationId: getGame
+      tags: [games]
+      summary: Get a specific game with levels
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Game details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Game"
+
+  /games/{gameId}/levels/{levelId}/words:
+    get:
+      operationId: getLevelWords
+      tags: [games]
+      summary: Get words/text content for a level
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: levelId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Level content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LevelContent"
+
+  /sessions:
+    post:
+      operationId: createSession
+      tags: [sessions]
+      summary: Save a completed game session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SessionInput"
+      responses:
+        "201":
+          description: Session saved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
+
+  /lessons:
+    get:
+      operationId: getLessons
+      tags: [lessons]
+      summary: Get all professional typing lessons
+      responses:
+        "200":
+          description: List of lessons
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Lesson"
+
+  /lessons/{lessonId}:
+    get:
+      operationId: getLesson
+      tags: [lessons]
+      summary: Get a specific lesson with content
+      parameters:
+        - name: lessonId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Lesson detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lesson"
+
+  /leaderboard:
+    get:
+      operationId: getLeaderboard
+      tags: [leaderboard]
+      summary: Get global leaderboard (top WPM)
+      parameters:
+        - name: gameId
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Leaderboard entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LeaderboardEntry"
+
+  /practice/analyze:
+    post:
+      operationId: analyzePractice
+      tags: [sessions]
+      summary: Analyze custom practice session text and return accuracy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PracticeAnalysisInput"
+      responses:
+        "200":
+          description: Analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PracticeAnalysis"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +370,299 @@ components:
       required:
         - status
 
+    AuthInput:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          minLength: 3
+        password:
+          type: string
+          minLength: 6
+
+    AuthResponse:
+      type: object
+      required: [user, token]
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        token:
+          type: string
+
+    User:
+      type: object
+      required: [id, username, createdAt]
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        totalSessions:
+          type: ["integer", "null"]
+        bestWpm:
+          type: ["integer", "null"]
+        currentLevel:
+          type: ["integer", "null"]
+
+    UserStats:
+      type: object
+      required: [userId, username, averageWpm, bestWpm, totalSessions, totalTimeMinutes, averageAccuracy, currentStreak]
+      properties:
+        userId:
+          type: integer
+        username:
+          type: string
+        averageWpm:
+          type: number
+        bestWpm:
+          type: integer
+        totalSessions:
+          type: integer
+        totalTimeMinutes:
+          type: number
+        averageAccuracy:
+          type: number
+        currentStreak:
+          type: integer
+        wordsTyped:
+          type: integer
+        rank:
+          type: ["integer", "null"]
+
+    LetterAccuracy:
+      type: object
+      required: [letter, attempts, correct, accuracy]
+      properties:
+        letter:
+          type: string
+        attempts:
+          type: integer
+        correct:
+          type: integer
+        accuracy:
+          type: number
+
+    Session:
+      type: object
+      required: [id, userId, gameId, gameMode, wpm, accuracy, duration, level, completedAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        gameId:
+          type: string
+        gameMode:
+          type: string
+          enum: [word-sprint, sentence-rush, code-type, letter-blaster, typing-race, lesson, custom, timed-test]
+        wpm:
+          type: integer
+        accuracy:
+          type: number
+        duration:
+          type: integer
+        level:
+          type: integer
+        score:
+          type: ["integer", "null"]
+        completedAt:
+          type: string
+          format: date-time
+        letterErrors:
+          type: ["string", "null"]
+
+    SessionInput:
+      type: object
+      required: [userId, gameId, gameMode, wpm, accuracy, duration, level]
+      properties:
+        userId:
+          type: integer
+        gameId:
+          type: string
+        gameMode:
+          type: string
+        wpm:
+          type: integer
+        accuracy:
+          type: number
+        duration:
+          type: integer
+        level:
+          type: integer
+        score:
+          type: ["integer", "null"]
+        letterErrors:
+          type: ["string", "null"]
+
+    ProgressPoint:
+      type: object
+      required: [date, wpm, accuracy]
+      properties:
+        date:
+          type: string
+        wpm:
+          type: number
+        accuracy:
+          type: number
+        sessionCount:
+          type: integer
+
+    LevelProgress:
+      type: object
+      required: [gameId, gameName, currentLevel, totalLevels, completed]
+      properties:
+        gameId:
+          type: string
+        gameName:
+          type: string
+        currentLevel:
+          type: integer
+        totalLevels:
+          type: integer
+        completed:
+          type: boolean
+        bestWpm:
+          type: ["integer", "null"]
+
+    Game:
+      type: object
+      required: [id, name, description, category, icon, levels]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum: [game, professional]
+        icon:
+          type: string
+        difficulty:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        levels:
+          type: array
+          items:
+            $ref: "#/components/schemas/Level"
+
+    Level:
+      type: object
+      required: [id, number, name, description, targetWpm, targetAccuracy]
+      properties:
+        id:
+          type: integer
+        number:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        targetWpm:
+          type: integer
+        targetAccuracy:
+          type: number
+        duration:
+          type: ["integer", "null"]
+        wordCount:
+          type: ["integer", "null"]
+
+    LevelContent:
+      type: object
+      required: [levelId, gameId, words]
+      properties:
+        levelId:
+          type: integer
+        gameId:
+          type: string
+        words:
+          type: array
+          items:
+            type: string
+        text:
+          type: ["string", "null"]
+
+    Lesson:
+      type: object
+      required: [id, title, description, category, order, estimatedMinutes, content]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+          enum: [home-row, top-row, bottom-row, numbers, symbols, capitalization, punctuation]
+        order:
+          type: integer
+        estimatedMinutes:
+          type: integer
+        targetKeys:
+          type: array
+          items:
+            type: string
+        content:
+          type: array
+          items:
+            type: string
+        completedBy:
+          type: ["integer", "null"]
+
+    LeaderboardEntry:
+      type: object
+      required: [rank, userId, username, wpm, accuracy, gameId, achievedAt]
+      properties:
+        rank:
+          type: integer
+        userId:
+          type: integer
+        username:
+          type: string
+        wpm:
+          type: integer
+        accuracy:
+          type: number
+        gameId:
+          type: string
+        achievedAt:
+          type: string
+          format: date-time
+
+    PracticeAnalysisInput:
+      type: object
+      required: [originalText, typedText, duration]
+      properties:
+        originalText:
+          type: string
+        typedText:
+          type: string
+        duration:
+          type: integer
+        userId:
+          type: ["integer", "null"]
+
+    PracticeAnalysis:
+      type: object
+      required: [wpm, accuracy, errorCount, letterErrors]
+      properties:
+        wpm:
+          type: integer
+        accuracy:
+          type: number
+        errorCount:
+          type: integer
+        letterErrors:
+          type: array
+          items:
+            $ref: "#/components/schemas/LetterAccuracy"
+        suggestions:
+          type: array
+          items:
+            type: string
