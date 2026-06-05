@@ -18,7 +18,64 @@ import { Button } from "@/components/ui/button";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from "recharts";
-import { Zap, Target, Clock, Flame, BarChart2, Trophy, ArrowRight, Lock } from "lucide-react";
+import { Zap, Target, Clock, Flame, BarChart2, Trophy, ArrowRight, Lock, Star, Shield, Code2, Sword, Rocket, CheckCircle2 } from "lucide-react";
+
+const ACHIEVEMENTS = [
+  { id: "wpm30",  icon: "⚡", color: "text-yellow-400",  bg: "bg-yellow-400/10",  border: "border-yellow-400/25",  title: "Speed Starter",    desc: "Reach 30 WPM",    check: (s: any) => (s?.bestWpm ?? 0) >= 30   },
+  { id: "wpm50",  icon: "🚀", color: "text-orange-400",  bg: "bg-orange-400/10",  border: "border-orange-400/25",  title: "Speedster",        desc: "Reach 50 WPM",    check: (s: any) => (s?.bestWpm ?? 0) >= 50   },
+  { id: "wpm80",  icon: "🔥", color: "text-red-400",     bg: "bg-red-400/10",     border: "border-red-400/25",     title: "Elite Typist",     desc: "Reach 80 WPM",    check: (s: any) => (s?.bestWpm ?? 0) >= 80   },
+  { id: "wpm100", icon: "💎", color: "text-cyan-300",    bg: "bg-cyan-300/10",    border: "border-cyan-300/25",    title: "Century Club",     desc: "Reach 100 WPM",   check: (s: any) => (s?.bestWpm ?? 0) >= 100  },
+  { id: "acc95",  icon: "🎯", color: "text-emerald-400", bg: "bg-emerald-400/10", border: "border-emerald-400/25", title: "Sharpshooter",     desc: "95%+ avg accuracy",check: (s: any) => (s?.averageAccuracy ?? 0) >= 95  },
+  { id: "acc99",  icon: "✨", color: "text-violet-300",  bg: "bg-violet-300/10",  border: "border-violet-300/25",  title: "Perfectionist",    desc: "99%+ avg accuracy",check: (s: any) => (s?.averageAccuracy ?? 0) >= 99  },
+  { id: "sess10", icon: "🎮", color: "text-blue-400",    bg: "bg-blue-400/10",    border: "border-blue-400/25",    title: "Getting Warmed Up",desc: "10 sessions",      check: (s: any) => (s?.totalSessions ?? 0) >= 10  },
+  { id: "sess50", icon: "🏆", color: "text-yellow-300",  bg: "bg-yellow-300/10",  border: "border-yellow-300/25",  title: "Dedicated",        desc: "50 sessions",      check: (s: any) => (s?.totalSessions ?? 0) >= 50  },
+  { id: "sess200",icon: "👑", color: "text-amber-300",   bg: "bg-amber-300/10",   border: "border-amber-300/25",   title: "Grandmaster",      desc: "200 sessions",     check: (s: any) => (s?.totalSessions ?? 0) >= 200 },
+  { id: "str3",   icon: "📅", color: "text-lime-400",    bg: "bg-lime-400/10",    border: "border-lime-400/25",    title: "Streak Start",     desc: "3-day streak",     check: (s: any) => (s?.currentStreak ?? 0) >= 3   },
+  { id: "str7",   icon: "🗓️", color: "text-green-400",   bg: "bg-green-400/10",   border: "border-green-400/25",   title: "Weekly Warrior",   desc: "7-day streak",     check: (s: any) => (s?.currentStreak ?? 0) >= 7   },
+  { id: "str30",  icon: "🌟", color: "text-primary",     bg: "bg-primary/10",     border: "border-primary/25",     title: "Iron Discipline",  desc: "30-day streak",    check: (s: any) => (s?.currentStreak ?? 0) >= 30  },
+];
+
+function AchievementsPanel({ stats }: { stats: any }) {
+  const unlocked = ACHIEVEMENTS.filter(a => a.check(stats));
+  const locked = ACHIEVEMENTS.filter(a => !a.check(stats));
+  return (
+    <div className="bg-card border border-card-border rounded-2xl p-6">
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h3 className="font-bold text-lg mb-0.5">Achievements</h3>
+          <p className="text-sm text-muted-foreground">{unlocked.length}/{ACHIEVEMENTS.length} unlocked</p>
+        </div>
+        <div className="text-2xl font-black font-mono text-yellow-400">{unlocked.length}<span className="text-sm text-muted-foreground font-normal">/{ACHIEVEMENTS.length}</span></div>
+      </div>
+      <div className="w-full h-2 bg-muted rounded-full overflow-hidden mb-5">
+        <motion.div
+          className="h-full bg-gradient-to-r from-primary via-yellow-400 to-emerald-400 rounded-full"
+          initial={{ width: 0 }}
+          animate={{ width: `${(unlocked.length / ACHIEVEMENTS.length) * 100}%` }}
+          transition={{ duration: 1.2, ease: "easeOut", delay: 0.3 }}
+        />
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {[...unlocked, ...locked].map((a, i) => {
+          const isUnlocked = a.check(stats);
+          return (
+            <motion.div
+              key={a.id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: i * 0.04 }}
+              className={`p-3 rounded-xl border transition-all ${isUnlocked ? `${a.bg} ${a.border}` : "bg-muted/20 border-border opacity-50"}`}
+            >
+              <div className="text-lg mb-1">{isUnlocked ? a.icon : "🔒"}</div>
+              <div className={`text-xs font-bold ${isUnlocked ? a.color : "text-muted-foreground"}`}>{a.title}</div>
+              <div className="text-[10px] text-muted-foreground mt-0.5">{a.desc}</div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 function StatCard({ label, value, icon: Icon, color }: { label: string; value: string | number; icon: React.ElementType; color: string }) {
   return (
@@ -267,6 +324,8 @@ export default function Dashboard() {
           <div className="text-sm text-muted-foreground mt-1">Time Practiced</div>
         </div>
       </div>
+
+      <AchievementsPanel stats={stats} />
     </div>
   );
 }

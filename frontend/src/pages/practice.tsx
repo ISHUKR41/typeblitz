@@ -86,6 +86,106 @@ function TypingDisplay({ text, input }: { text: string; input: string }) {
   );
 }
 
+// ─── Blind Mode ───────────────────────────────────────────────────────────
+const BLIND_WORDS = [
+  "the quick brown fox jumps over the lazy dog",
+  "practice makes perfect so keep on typing every day",
+  "keyboard mastery comes from consistent deliberate repetition",
+  "speed follows accuracy focus on correctness first",
+  "your fingers know the keys trust your muscle memory",
+];
+
+function BlindMode() {
+  const [text, setText] = useState(BLIND_WORDS[0]);
+  const [input, setInput] = useState("");
+  const [started, setStarted] = useState(false);
+  const [finished, setFinished] = useState(false);
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [result, setResult] = useState<{ wpm: number; accuracy: number } | null>(null);
+  const [round, setRound] = useState(0);
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    const val = e.target.value;
+    if (!started) { setStarted(true); setStartTime(Date.now()); }
+    if (val.length >= text.length) {
+      const elapsed = (Date.now() - startTime!) / 60000;
+      const correct = val.split("").filter((c, i) => c === text[i]).length;
+      const wpm = Math.round((correct / 5) / elapsed);
+      const accuracy = Math.round((correct / text.length) * 100);
+      setResult({ wpm, accuracy });
+      setFinished(true);
+      setInput(val.slice(0, text.length));
+    } else {
+      setInput(val);
+    }
+  }
+
+  function reset() {
+    const next = (round + 1) % BLIND_WORDS.length;
+    setRound(next); setText(BLIND_WORDS[next]); setInput("");
+    setStarted(false); setFinished(false); setStartTime(null); setResult(null);
+    setTimeout(() => ref.current?.focus(), 50);
+  }
+
+  const progress = Math.min(100, Math.round((input.length / text.length) * 100));
+
+  return (
+    <div className="space-y-5">
+      <div className="bg-background/60 border border-border rounded-xl p-4 text-sm text-muted-foreground leading-relaxed tracking-wide font-mono select-none">
+        {text.split("").map((c, i) => {
+          if (!started || i >= input.length) return <span key={i} className={i === input.length ? "border-b-2 border-primary" : ""}>{c}</span>;
+          return <span key={i} className={input[i] === c ? "text-emerald-400" : "text-destructive bg-destructive/15 rounded-sm"}>{c}</span>;
+        })}
+      </div>
+
+      <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+        <motion.div className="h-full bg-gradient-to-r from-primary to-chart-4 rounded-full"
+          animate={{ width: `${progress}%` }} transition={{ duration: 0.15 }} />
+      </div>
+
+      {!finished ? (
+        <div className="relative">
+          <textarea
+            ref={ref}
+            value={input}
+            onChange={handleChange}
+            autoFocus
+            autoComplete="off" autoCorrect="off" spellCheck={false}
+            placeholder="Start typing — your input is hidden..."
+            rows={3}
+            className="w-full resize-none rounded-xl border border-border bg-card p-4 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-transparent caret-primary placeholder:text-muted-foreground/60"
+            style={{ caretColor: "var(--primary)" }}
+          />
+          <div className="absolute top-3 right-3 text-xs text-muted-foreground/60 select-none pointer-events-none">
+            {input.length}/{text.length}
+          </div>
+        </div>
+      ) : (
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-primary/10 border border-primary/25 rounded-xl p-4 text-center">
+              <div className="text-3xl font-bold font-mono text-primary">{result?.wpm}</div>
+              <div className="text-xs text-muted-foreground mt-1">WPM</div>
+            </div>
+            <div className="bg-emerald-500/10 border border-emerald-500/25 rounded-xl p-4 text-center">
+              <div className="text-3xl font-bold font-mono text-emerald-400">{result?.accuracy}%</div>
+              <div className="text-xs text-muted-foreground mt-1">Accuracy</div>
+            </div>
+          </div>
+          <Button onClick={reset} className="w-full gap-2">
+            <RotateCcw className="w-4 h-4" /> Next Passage
+          </Button>
+        </motion.div>
+      )}
+
+      <p className="text-xs text-muted-foreground text-center">
+        Your keystrokes are invisible — this trains pure muscle memory. Round {round + 1}/{BLIND_WORDS.length}
+      </p>
+    </div>
+  );
+}
+
 // ─── Timed Test ───────────────────────────────────────────────────────────
 function TimedTest() {
   const [duration, setDuration] = useState(60);
@@ -741,6 +841,7 @@ export default function Practice() {
             { val: "govt",    icon: Shield,         label: "Govt Exam" },
             { val: "custom",  icon: FileText,        label: "Custom" },
             { val: "timed",   icon: Clock,           label: "Timed Test" },
+            { val: "blind",   icon: Target,          label: "Blind Mode" },
           ].map(t => (
             <TabsTrigger key={t.val} value={t.val}
               className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg text-sm flex-1 min-w-[100px]">
@@ -826,6 +927,22 @@ export default function Practice() {
               </div>
             </div>
             <TimedTest />
+          </div>
+        </TabsContent>
+
+        {/* ─── Blind Mode ─── */}
+        <TabsContent value="blind">
+          <div className="bg-card border border-card-border rounded-2xl p-5 md:p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-chart-4/15 rounded-xl flex items-center justify-center text-chart-4 border border-chart-4/20">
+                <Target className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold">Blind Mode</h3>
+                <p className="text-sm text-muted-foreground">Type without seeing your input — the ultimate muscle memory trainer</p>
+              </div>
+            </div>
+            <BlindMode />
           </div>
         </TabsContent>
       </Tabs>

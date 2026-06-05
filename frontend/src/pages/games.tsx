@@ -27,11 +27,14 @@ const GAME_THEME: Record<string, { text: string; bg: string; border: string; sha
   "snake-typer":      { text: "text-green-400",  bg: "bg-green-400/10",  border: "border-green-400/30",  shadow: "hover:shadow-green-400/15"  },
   "word-invaders":    { text: "text-sky-400",    bg: "bg-sky-400/10",    border: "border-sky-400/30",    shadow: "hover:shadow-sky-400/15"    },
   "code-rain":        { text: "text-emerald-300",bg: "bg-emerald-300/10",border: "border-emerald-300/30",shadow: "hover:shadow-emerald-300/15" },
+  "cyber-heist":      { text: "text-green-300",  bg: "bg-green-300/10",  border: "border-green-300/30",  shadow: "hover:shadow-green-300/15"  },
+  "arena-blitz":      { text: "text-violet-400", bg: "bg-violet-400/10", border: "border-violet-400/30", shadow: "hover:shadow-violet-400/15" },
 };
 
 const GAME_ICONS: Record<string, React.ElementType> = {
   Zap, AlignLeft, Code: Code2, Code2, Target, Timer, Shield, Terminal,
   CarFront: Car, Sword, Skull, Rocket, Flame, Play, Gamepad2, Crosshair, Cpu,
+  Wifi: Target, Crosshair2: Crosshair,
 };
 
 const DIFFICULTY: Record<string, { label: string; cls: string }> = {
@@ -66,6 +69,8 @@ const CATEGORY_META: Record<string, { label: string; color: string }> = {
   "snake-typer":      { label: "🐍 Snake Typer",           color: "text-green-400"  },
   "word-invaders":    { label: "👾 Word Invaders",          color: "text-sky-400"    },
   "code-rain":        { label: "💻 Code Rain",              color: "text-emerald-300"},
+  "cyber-heist":      { label: "🕵️ Cyber Heist",            color: "text-green-300"  },
+  "arena-blitz":      { label: "🎯 Arena Blitz",            color: "text-violet-400" },
 };
 
 // ─── Single game card ────────────────────────────────────────────────────

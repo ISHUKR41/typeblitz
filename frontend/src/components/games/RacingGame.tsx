@@ -16,6 +16,24 @@ interface Particle {
   maxLife: number;
 }
 
+interface RoadsideObject {
+  z: number;
+  side: "left" | "right";
+  type: "palm" | "sign" | "barrier" | "lamp";
+  label?: string;
+  phase: number;
+  speed: number;
+}
+
+interface RainDrop {
+  x: number;
+  y: number;
+  vy: number;
+  vx: number;
+  len: number;
+  alpha: number;
+}
+
 export function RacingGame({
   words,
   wordIndex,
@@ -35,6 +53,9 @@ export function RacingGame({
   const roadOffsetRef = useRef(0);
   const curveRef = useRef(0);
   const particlesRef = useRef<Particle[]>([]);
+  const roadsideObjectsRef = useRef<RoadsideObject[]>([]);
+  const rainRef = useRef<RainDrop[]>([]);
+  const lastSpawnRef = useRef(0);
   const prevSubmissionRef = useRef(submissionCount);
 
   // Ghost progress calculation
@@ -209,6 +230,181 @@ export function RacingGame({
           ctx.lineTo(x1 + centerW1 / 2, y1);
           ctx.fill();
         }
+      }
+
+      // 3.5 ROADSIDE OBJECTS — 3D perspective palm trees, neon signs, lamp posts, barriers
+      const now3 = Date.now();
+      const spawnInterval = Math.max(420 - speed * 28, 110);
+      if (now3 - lastSpawnRef.current > spawnInterval) {
+        lastSpawnRef.current = now3;
+        const SIGN_LABELS = ["NITRO", "SPEED", "APEX", "RUSH", "TURBO", "ULTRA", "BLITZ", "ZONE"];
+        const types: RoadsideObject["type"][] = ["palm", "palm", "sign", "barrier", "lamp"];
+        const chosenType = types[Math.floor(Math.random() * types.length)];
+        ["left", "right"].forEach((side, si) => {
+          if (Math.random() > 0.45 || chosenType === "sign") {
+            roadsideObjectsRef.current.push({
+              z: 0.02,
+              side: side as "left" | "right",
+              type: chosenType,
+              label: chosenType === "sign" ? SIGN_LABELS[Math.floor(Math.random() * SIGN_LABELS.length)] : undefined,
+              phase: Math.random() * Math.PI * 2 + si,
+              speed: 0.008 + speed * 0.0035,
+            });
+          }
+        });
+      }
+
+      // Update z positions
+      roadsideObjectsRef.current = roadsideObjectsRef.current
+        .map(obj => ({ ...obj, z: obj.z + obj.speed }))
+        .filter(obj => obj.z <= 1.25);
+
+      // Draw roadside objects sorted far-to-near
+      [...roadsideObjectsRef.current].sort((a, b) => a.z - b.z).forEach(obj => {
+        const objZ = obj.z;
+        const roadWAtZ = w * 0.08 + Math.pow(objZ, 2.5) * w * 0.5;
+        const curveOff = Math.sin(objZ * Math.PI + Date.now() / 1500) * curveRef.current * 40;
+        const roadCX = w / 2 + curveOff;
+        const sc = Math.pow(objZ, 1.6);
+        const screenY = horizonY + Math.pow(objZ, 2.5) * roadH;
+        const edgePad = roadWAtZ * 0.06 + 2;
+        const screenX = obj.side === "left"
+          ? roadCX - roadWAtZ / 2 - edgePad - sc * 10
+          : roadCX + roadWAtZ / 2 + edgePad + sc * 10;
+
+        ctx.save();
+        ctx.translate(screenX, screenY);
+
+        if (obj.type === "palm") {
+          const trunkH = 30 * sc;
+          // Neon underglow
+          ctx.shadowColor = "#a855f7";
+          ctx.shadowBlur = 8 * sc;
+          ctx.fillStyle = "rgba(168,85,247,0.4)";
+          ctx.fillRect(-1.5 * sc, -2, 3 * sc, 3);
+          ctx.shadowBlur = 0;
+          // Trunk
+          ctx.fillStyle = "#2d1b0e";
+          ctx.fillRect(-1.5 * sc, -trunkH, 3 * sc, trunkH);
+          // Fronds
+          for (let fi = 0; fi < 5; fi++) {
+            const ang = (fi / 5) * Math.PI * 2 + obj.phase + Date.now() / 3000;
+            ctx.strokeStyle = `rgba(${obj.side === "left" ? "80,180,80" : "60,160,60"},${0.6 + sc * 0.4})`;
+            ctx.lineWidth = 1.2 * sc;
+            ctx.beginPath();
+            ctx.moveTo(0, -trunkH);
+            ctx.quadraticCurveTo(
+              Math.cos(ang) * 9 * sc, -trunkH - 4 * sc,
+              Math.cos(ang) * 13 * sc, -trunkH + Math.sin(ang) * 3 * sc
+            );
+            ctx.stroke();
+          }
+        } else if (obj.type === "sign") {
+          const bw = 24 * sc;
+          const bh = 11 * sc;
+          const bxOff = obj.side === "left" ? -bw - 2 : 2;
+          // Pole
+          ctx.fillStyle = "#334155";
+          ctx.fillRect(-sc, -22 * sc, 2 * sc, 22 * sc);
+          // Board glow
+          ctx.shadowColor = "#818cf8";
+          ctx.shadowBlur = 7 * sc;
+          ctx.fillStyle = "#1e1b4b";
+          ctx.strokeStyle = "#818cf8";
+          ctx.lineWidth = 1.5 * sc;
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(bxOff, -30 * sc, bw, bh, 2 * sc);
+          else ctx.rect(bxOff, -30 * sc, bw, bh);
+          ctx.fill();
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+          if (sc > 0.28 && obj.label) {
+            ctx.fillStyle = "#a5b4fc";
+            ctx.font = `bold ${Math.max(Math.floor(5.5 * sc), 6)}px monospace`;
+            ctx.textAlign = "center";
+            ctx.fillText(obj.label, bxOff + bw / 2, -30 * sc + bh * 0.7);
+          }
+        } else if (obj.type === "lamp") {
+          const poleH = 26 * sc;
+          ctx.strokeStyle = "#475569";
+          ctx.lineWidth = 1.5 * sc;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(0, -poleH);
+          ctx.lineTo((obj.side === "left" ? -1 : 1) * 5 * sc, -poleH - 5 * sc);
+          ctx.stroke();
+          // Lamp bulb
+          ctx.fillStyle = `rgba(250,220,80,${0.5 + sc * 0.5})`;
+          ctx.shadowColor = "#facc14";
+          ctx.shadowBlur = 10 * sc;
+          ctx.beginPath();
+          ctx.arc((obj.side === "left" ? -1 : 1) * 5 * sc, -poleH - 5 * sc, 2.5 * sc, 0, Math.PI * 2);
+          ctx.fill();
+          // Light cone
+          ctx.shadowBlur = 0;
+          ctx.globalAlpha = 0.08 * sc;
+          ctx.fillStyle = "#facc14";
+          ctx.beginPath();
+          ctx.moveTo((obj.side === "left" ? -1 : 1) * 5 * sc, -poleH - 5 * sc);
+          ctx.lineTo((obj.side === "left" ? -1 : 1) * 5 * sc - 12 * sc, -1);
+          ctx.lineTo((obj.side === "left" ? -1 : 1) * 5 * sc + 12 * sc, -1);
+          ctx.closePath();
+          ctx.fill();
+          ctx.globalAlpha = 1;
+        } else {
+          // Barrier / guardrail
+          const gw = 20 * sc;
+          const gh = 6 * sc;
+          const bxOff = obj.side === "left" ? -gw - 3 : 3;
+          ctx.fillStyle = "#0f172a";
+          ctx.strokeStyle = "#ec4899";
+          ctx.lineWidth = sc;
+          ctx.shadowColor = "#ec4899";
+          ctx.shadowBlur = 5 * sc;
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(bxOff, -gh, gw, gh, sc);
+          else ctx.rect(bxOff, -gh, gw, gh);
+          ctx.fill();
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+          // Reflector dots
+          ctx.fillStyle = "#fbbf24";
+          for (let di = 0; di < 3; di++) {
+            ctx.beginPath();
+            ctx.arc(bxOff + (di + 0.5) * (gw / 3), -gh / 2, sc * 1.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+        ctx.restore();
+      });
+
+      // RAIN EFFECT — appears when WPM > 65
+      if (startTime && wpm > 65) {
+        const intensity = Math.min((wpm - 65) / 40, 1);
+        for (let ri = 0; ri < Math.floor(intensity * 5); ri++) {
+          rainRef.current.push({
+            x: Math.random() * w, y: 0,
+            vy: 14 + Math.random() * 9,
+            vx: 1.5 + Math.random() * 2,
+            len: 10 + Math.random() * 14,
+            alpha: 0.08 + intensity * 0.18,
+          });
+        }
+        rainRef.current = rainRef.current.filter(r => r.y < h + 20);
+        rainRef.current.forEach(r => {
+          r.x += r.vx; r.y += r.vy;
+          ctx.save();
+          ctx.globalAlpha = r.alpha;
+          ctx.strokeStyle = "#38bdf8";
+          ctx.lineWidth = 0.7;
+          ctx.beginPath();
+          ctx.moveTo(r.x, r.y);
+          ctx.lineTo(r.x + r.vx * 1.8, r.y + r.len);
+          ctx.stroke();
+          ctx.restore();
+        });
+      } else {
+        rainRef.current = [];
       }
 
       // 4. Emit Particles from player car exhaust

@@ -267,6 +267,36 @@ export const GAMES: Game[] = [
       { id: 85, number: 5, name: "Zero Day", description: "3 simultaneous targets. Expert CS + governance vocab.", targetWpm: 68, targetAccuracy: 94, duration: 60, wordCount: 44 },
     ]
   },
+  {
+    id: "cyber-heist",
+    name: "Cyber Heist",
+    description: "A network of secured nodes stands between you and the mainframe. Type each node's passkey to hack it. Matrix rain, animated packet data, and a glitching terminal make this the most atmospheric typing game yet.",
+    category: "game",
+    icon: "Terminal",
+    difficulty: "intermediate",
+    levels: [
+      { id: 86, number: 1, name: "Proxy Breach",      description: "7 nodes, short words. Infiltrate the outer network.",  targetWpm: 22, targetAccuracy: 85, duration: 75, wordCount: 24 },
+      { id: 87, number: 2, name: "Firewall Bypass",   description: "Longer words. Faster node respawn. Govt vocab begins.", targetWpm: 34, targetAccuracy: 87, duration: 75, wordCount: 30 },
+      { id: 88, number: 3, name: "Data Exfil",        description: "Mixed code and govt keywords. Mainframe in range.",     targetWpm: 46, targetAccuracy: 89, duration: 75, wordCount: 36 },
+      { id: 89, number: 4, name: "Root Access",       description: "Architecture terms. Glitch overlay increases.",         targetWpm: 58, targetAccuracy: 91, duration: 75, wordCount: 42 },
+      { id: 90, number: 5, name: "Zero Day Exploit",  description: "Expert CS + governance vocab. Full network assault.",   targetWpm: 72, targetAccuracy: 94, duration: 75, wordCount: 48 },
+    ]
+  },
+  {
+    id: "arena-blitz",
+    name: "Arena Blitz",
+    description: "You are a weapons platform at the center of a circular arena. Enemy units spiral inward from the edges — type their code-word to fire and destroy them before they breach your shield ring. Faster typing = faster bullets.",
+    category: "game",
+    icon: "Crosshair",
+    difficulty: "advanced",
+    levels: [
+      { id: 91, number: 1, name: "Scout Skirmish",   description: "3 slow grunt enemies. Short words. Learn the arena.",  targetWpm: 25, targetAccuracy: 85, duration: 60, wordCount: 24 },
+      { id: 92, number: 2, name: "Tank Rush",         description: "Tanks require 2 hits. 4-5 letter words.",              targetWpm: 36, targetAccuracy: 87, duration: 60, wordCount: 30 },
+      { id: 93, number: 3, name: "Speeder Wave",      description: "Fast diamond enemies + tanks. Govt vocabulary.",       targetWpm: 48, targetAccuracy: 89, duration: 60, wordCount: 36 },
+      { id: 94, number: 4, name: "Siege Mode",        description: "Mixed enemy types. Architecture and policy terms.",    targetWpm: 62, targetAccuracy: 91, duration: 60, wordCount: 42 },
+      { id: 95, number: 5, name: "Omega Protocol",    description: "Relentless assault. Expert CS + governance vocab.",    targetWpm: 76, targetAccuracy: 94, duration: 60, wordCount: 48 },
+    ]
+  },
 ];
 
 export const getGame = (gameId: string): Game | undefined => GAMES.find(g => g.id === gameId);

@@ -8,6 +8,8 @@ import { NeonRunnerGame } from "./NeonRunnerGame";
 import { SnakeTyperGame } from "./SnakeTyperGame";
 import { WordInvadersGame } from "./WordInvadersGame";
 import { CodeRainGame } from "./CodeRainGame";
+import { CyberHeistGame } from "./CyberHeistGame";
+import { ArenaBlitzGame } from "./ArenaBlitzGame";
 import { soundEffects } from "@/lib/audio";
 import { VirtualKeyboard } from "../VirtualKeyboard";
 
@@ -254,6 +256,8 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
       {gameId === "snake-typer"   && <SnakeTyperGame  {...props} />}
       {gameId === "word-invaders" && <WordInvadersGame {...props} />}
       {gameId === "code-rain"     && <CodeRainGame    {...props} />}
+      {gameId === "cyber-heist"   && <CyberHeistGame  {...props} />}
+      {gameId === "arena-blitz"   && <ArenaBlitzGame  {...props} />}
 
       {showKeyboard && (
         <div className="z-20 relative">

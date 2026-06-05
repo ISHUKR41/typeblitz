@@ -15,7 +15,7 @@ import {
   recordLevelResult,
 } from "@/lib/progress";
 
-const ARCADE_GAME_IDS = new Set(["turbo-race", "word-fighter", "zombie-hunt", "galaxy-blitz", "meteor-storm", "neon-runner", "snake-typer", "word-invaders", "code-rain"]);
+const ARCADE_GAME_IDS = new Set(["turbo-race", "word-fighter", "zombie-hunt", "galaxy-blitz", "meteor-storm", "neon-runner", "snake-typer", "word-invaders", "code-rain", "cyber-heist", "arena-blitz"]);
 
 type LetterStatMap = Record<string, { attempts: number; correct: number }>;
 
