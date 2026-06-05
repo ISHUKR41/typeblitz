@@ -5,6 +5,9 @@ import { ZombieGame } from "./ZombieGame";
 import { GalaxyGame } from "./GalaxyGame";
 import { MeteorGame } from "./MeteorGame";
 import { NeonRunnerGame } from "./NeonRunnerGame";
+import { SnakeTyperGame } from "./SnakeTyperGame";
+import { WordInvadersGame } from "./WordInvadersGame";
+import { CodeRainGame } from "./CodeRainGame";
 import { soundEffects } from "@/lib/audio";
 import { VirtualKeyboard } from "../VirtualKeyboard";
 
@@ -242,12 +245,15 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
         spellCheck={false}
         autoFocus
       />
-      {gameId === "turbo-race"   && <RacingGame     {...props} />}
-      {gameId === "word-fighter" && <FighterGame    {...props} />}
-      {gameId === "zombie-hunt"  && <ZombieGame     {...props} />}
-      {gameId === "galaxy-blitz" && <GalaxyGame     {...props} />}
-      {gameId === "meteor-storm" && <MeteorGame     {...props} />}
-      {gameId === "neon-runner"  && <NeonRunnerGame {...props} />}
+      {gameId === "turbo-race"    && <RacingGame      {...props} />}
+      {gameId === "word-fighter"  && <FighterGame     {...props} />}
+      {gameId === "zombie-hunt"   && <ZombieGame      {...props} />}
+      {gameId === "galaxy-blitz"  && <GalaxyGame      {...props} />}
+      {gameId === "meteor-storm"  && <MeteorGame      {...props} />}
+      {gameId === "neon-runner"   && <NeonRunnerGame  {...props} />}
+      {gameId === "snake-typer"   && <SnakeTyperGame  {...props} />}
+      {gameId === "word-invaders" && <WordInvadersGame {...props} />}
+      {gameId === "code-rain"     && <CodeRainGame    {...props} />}
 
       {showKeyboard && (
         <div className="z-20 relative">

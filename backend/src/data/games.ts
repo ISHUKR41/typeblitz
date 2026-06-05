@@ -222,6 +222,51 @@ export const GAMES: Game[] = [
       { id: 70, number: 5, name: "Cyberpunk Final", description: "Maximum speed obstacle course. Expert vocab.", targetWpm: 66, targetAccuracy: 94, duration: 60, wordCount: 44 },
     ]
   },
+  {
+    id: "snake-typer",
+    name: "Snake Typer",
+    description: "Classic snake reimagined — type words to feed your neon snake as it glides through the grid. Correct words grow your snake; miss the timer and it starves. Build the longest snake!",
+    category: "game",
+    icon: "Gamepad2",
+    difficulty: "beginner",
+    levels: [
+      { id: 71, number: 1, name: "Hatchling", description: "Short 3-4 letter words. Slow snake. Learn the grid.", targetWpm: 20, targetAccuracy: 85, duration: 60, wordCount: 22 },
+      { id: 72, number: 2, name: "Growing", description: "4-5 letter words. Moderate pace. Snake gets longer.", targetWpm: 28, targetAccuracy: 87, duration: 60, wordCount: 28 },
+      { id: 73, number: 3, name: "Serpent", description: "Govt + coding mixed vocabulary. Multiple food items.", targetWpm: 38, targetAccuracy: 89, duration: 60, wordCount: 34 },
+      { id: 74, number: 4, name: "Anaconda", description: "Advanced vocab. Fast snake. Three simultaneous foods.", targetWpm: 50, targetAccuracy: 91, duration: 60, wordCount: 40 },
+      { id: 75, number: 5, name: "King Cobra", description: "Expert words. Maximum speed. Only the fastest survive.", targetWpm: 62, targetAccuracy: 94, duration: 60, wordCount: 48 },
+    ]
+  },
+  {
+    id: "word-invaders",
+    name: "Word Invaders",
+    description: "Alien ships descend in formation — each carrying a word. Type the target alien's word to fire your laser and blast it! Watch out as the fleet descends faster with each wave.",
+    category: "game",
+    icon: "Crosshair",
+    difficulty: "intermediate",
+    levels: [
+      { id: 76, number: 1, name: "Scout Wave", description: "Slow descent. Short words. Learn to aim.", targetWpm: 22, targetAccuracy: 85, duration: 60, wordCount: 20 },
+      { id: 77, number: 2, name: "Invasion Force", description: "Faster aliens. 4-5 letter words. Stay calm.", targetWpm: 32, targetAccuracy: 87, duration: 60, wordCount: 26 },
+      { id: 78, number: 3, name: "Armada", description: "Full fleet. Govt exam vocabulary. Multiple waves.", targetWpm: 44, targetAccuracy: 89, duration: 60, wordCount: 32 },
+      { id: 79, number: 4, name: "Mothership", description: "Elite descent. Architecture and policy terms.", targetWpm: 58, targetAccuracy: 91, duration: 60, wordCount: 38 },
+      { id: 80, number: 5, name: "Galactic Siege", description: "Relentless fleet. Expert vocabulary. Final stand.", targetWpm: 72, targetAccuracy: 94, duration: 60, wordCount: 44 },
+    ]
+  },
+  {
+    id: "code-rain",
+    name: "Code Rain",
+    description: "The matrix falls — cascading code rains down every column. Hidden words glow gold in the stream. Type them to decrypt and collapse the column in a burst of light!",
+    category: "game",
+    icon: "Cpu",
+    difficulty: "intermediate",
+    levels: [
+      { id: 81, number: 1, name: "Initialization", description: "1 target word. Short keywords. Matrix awakens.", targetWpm: 20, targetAccuracy: 85, duration: 60, wordCount: 20 },
+      { id: 82, number: 2, name: "Compilation", description: "Moderate code terms. 1-2 simultaneous targets.", targetWpm: 30, targetAccuracy: 87, duration: 60, wordCount: 26 },
+      { id: 83, number: 3, name: "Runtime", description: "Developer vocabulary. 2 targets. Rain speeds up.", targetWpm: 42, targetAccuracy: 89, duration: 60, wordCount: 32 },
+      { id: 84, number: 4, name: "Deep Decrypt", description: "Architecture terms. 2-3 targets. Fast cascade.", targetWpm: 55, targetAccuracy: 91, duration: 60, wordCount: 38 },
+      { id: 85, number: 5, name: "Zero Day", description: "3 simultaneous targets. Expert CS + governance vocab.", targetWpm: 68, targetAccuracy: 94, duration: 60, wordCount: 44 },
+    ]
+  },
 ];
 
 export const getGame = (gameId: string): Game | undefined => GAMES.find(g => g.id === gameId);

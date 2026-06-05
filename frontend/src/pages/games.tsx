@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import {
   Zap, AlignLeft, Code2, Target, Timer, Shield, Terminal,
-  ChevronRight, Star, Lock, TrendingUp, Car, Sword, Skull, Rocket, CalendarDays, Flame, Play
+  ChevronRight, Star, Lock, TrendingUp, Car, Sword, Skull, Rocket, CalendarDays, Flame, Play,
+  Gamepad2, Crosshair, Cpu
 } from "lucide-react";
 import { getGameProgress, isLevelUnlocked } from "@/lib/progress";
 
@@ -23,11 +24,14 @@ const GAME_THEME: Record<string, { text: string; bg: string; border: string; sha
   "galaxy-blitz":     { text: "text-cyan-400",   bg: "bg-cyan-400/10",   border: "border-cyan-400/30",   shadow: "hover:shadow-cyan-400/15" },
   "meteor-storm":     { text: "text-orange-500", bg: "bg-orange-500/10", border: "border-orange-500/30", shadow: "hover:shadow-orange-500/15" },
   "neon-runner":      { text: "text-violet-400", bg: "bg-violet-400/10", border: "border-violet-400/30", shadow: "hover:shadow-violet-400/15" },
+  "snake-typer":      { text: "text-green-400",  bg: "bg-green-400/10",  border: "border-green-400/30",  shadow: "hover:shadow-green-400/15"  },
+  "word-invaders":    { text: "text-sky-400",    bg: "bg-sky-400/10",    border: "border-sky-400/30",    shadow: "hover:shadow-sky-400/15"    },
+  "code-rain":        { text: "text-emerald-300",bg: "bg-emerald-300/10",border: "border-emerald-300/30",shadow: "hover:shadow-emerald-300/15" },
 };
 
 const GAME_ICONS: Record<string, React.ElementType> = {
   Zap, AlignLeft, Code: Code2, Code2, Target, Timer, Shield, Terminal,
-  CarFront: Car, Sword, Skull, Rocket, Flame, Play,
+  CarFront: Car, Sword, Skull, Rocket, Flame, Play, Gamepad2, Crosshair, Cpu,
 };
 
 const DIFFICULTY: Record<string, { label: string; cls: string }> = {
@@ -59,6 +63,9 @@ const CATEGORY_META: Record<string, { label: string; color: string }> = {
   "galaxy-blitz":     { label: "🚀 Space Shooter",        color: "text-cyan-400" },
   "meteor-storm":     { label: "☄️ Meteor Defense",        color: "text-orange-500" },
   "neon-runner":      { label: "🏃 Neon Runner",           color: "text-violet-400" },
+  "snake-typer":      { label: "🐍 Snake Typer",           color: "text-green-400"  },
+  "word-invaders":    { label: "👾 Word Invaders",          color: "text-sky-400"    },
+  "code-rain":        { label: "💻 Code Rain",              color: "text-emerald-300"},
 };
 
 // ─── Single game card ────────────────────────────────────────────────────
