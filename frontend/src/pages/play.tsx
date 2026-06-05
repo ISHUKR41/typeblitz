@@ -15,7 +15,7 @@ import {
   recordLevelResult,
 } from "@/lib/progress";
 
-const ARCADE_GAME_IDS = new Set(["turbo-race", "word-fighter", "zombie-hunt", "galaxy-blitz", "meteor-storm", "neon-runner", "snake-typer", "word-invaders", "code-rain", "cyber-heist", "arena-blitz"]);
+const ARCADE_GAME_IDS = new Set(["turbo-race", "word-fighter", "zombie-hunt", "galaxy-blitz", "meteor-storm", "neon-runner", "snake-typer", "word-invaders", "code-rain", "cyber-heist", "arena-blitz", "bubble-pop", "fruit-blitz"]);
 
 type LetterStatMap = Record<string, { attempts: number; correct: number }>;
 
@@ -296,12 +296,17 @@ export default function Play() {
   const finishGame = useCallback((finalInput: string, tStart: number) => {
     const secs = (Date.now() - tStart) / 1000;
     const mins = secs / 60;
-    // Count only CORRECTLY typed characters for WPM (industry standard)
-    let correct = 0;
-    for (let i = 0; i < finalInput.length; i++) {
-      if (finalInput[i] === text[i]) correct++;
+    // ▶ STRICT word-based WPM — only fully correct words contribute
+    // char-position matching inflates WPM when a wrong word happens to align; word-split prevents this
+    const _textWords  = text.trim().split(/\s+/);
+    const _typedWords = finalInput.trim().split(/\s+/);
+    let correctChars = 0;
+    for (let i = 0; i < _textWords.length; i++) {
+      if ((_typedWords[i] ?? "") === _textWords[i]) {
+        correctChars += _textWords[i].length + (i < _textWords.length - 1 ? 1 : 0);
+      }
     }
-    const finalWpm = Math.round((correct / 5) / Math.max(mins, 0.01));
+    const finalWpm = Math.round((correctChars / 5) / Math.max(mins, 0.01));
     const totalK = totalKeystrokesRef.current;
     const errorK = errorKeystrokesRef.current;
     const finalAcc = totalK > 0 ? Math.max(0, Math.min(100, Math.round(((totalK - errorK) / totalK) * 100))) : 100;
@@ -357,10 +362,23 @@ export default function Play() {
       soundEffects.playClick(false);
     }
 
-    // Count correct chars in real-time (for live WPM via ref)
+    // ▶ STRICT live WPM — word-by-word, only fully correct words (submitted via space) count
+    // Wrong words contribute ZERO — consistent with arcade mode and monkeytype standard
+    const _tWords = text.split(" ");
+    const _iParts = val.split(" ");
     let correct = 0;
-    for (let i = 0; i < val.length; i++) {
-      if (val[i] === text[i]) correct++;
+    for (let wi = 0; wi < _iParts.length - 1; wi++) {
+      if ((_iParts[wi] ?? "") === (_tWords[wi] ?? "")) {
+        correct += (_tWords[wi]?.length ?? 0) + 1; // +1 for space
+      }
+    }
+    // Current word: count sequential chars from start up to first mismatch
+    const _cwi = _iParts.length - 1;
+    const _curr = _iParts[_cwi] ?? "";
+    const _exp  = _tWords[_cwi] ?? "";
+    for (let ci = 0; ci < _curr.length; ci++) {
+      if (ci >= _exp.length || _curr[ci] !== _exp[ci]) break;
+      correct++;
     }
     correctCharsRef.current = correct;
 
