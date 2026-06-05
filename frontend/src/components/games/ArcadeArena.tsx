@@ -3,6 +3,8 @@ import { RacingGame } from "./RacingGame";
 import { FighterGame } from "./FighterGame";
 import { ZombieGame } from "./ZombieGame";
 import { GalaxyGame } from "./GalaxyGame";
+import { MeteorGame } from "./MeteorGame";
+import { NeonRunnerGame } from "./NeonRunnerGame";
 import { soundEffects } from "@/lib/audio";
 import { VirtualKeyboard } from "../VirtualKeyboard";
 
@@ -47,16 +49,19 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
   const inputRef = useRef<HTMLInputElement>(null);
   const typedWordsRef = useRef<string[]>([]);
 
-  // Keystroke metrics
+  // Keystroke metrics (for accuracy calculation)
   const totalKeystrokesRef = useRef(0);
   const errorKeystrokesRef = useRef(0);
+
+  // WPM is based ONLY on exact-correct words — wrong words contribute zero
+  // This prevents inflating WPM by typing fast but incorrectly
   const correctCharsRef = useRef(0);
 
   const progress = words.length > 0 ? (wordIndex / words.length) * 100 : 0;
 
-  // Live real-time accuracy percentage
   const [liveAccuracy, setLiveAccuracy] = useState(100);
 
+  // ── Live WPM ticker — recalculates every 400ms ─────────────────────────
   useEffect(() => {
     if (!startTime) return;
     const id = setInterval(() => {
@@ -64,23 +69,24 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
       setElapsed(secs);
       const mins = secs / 60;
       if (mins > 0) {
-        // Calculate correct characters dynamically (completed words + current input)
+        // ▶ STRICT: only count characters from EXACTLY matched words
+        // Wrong words contribute 0 correct chars to WPM
         let correct = 0;
         for (let i = 0; i < wordIndex; i++) {
-          const w = typedWordsRef.current[i] ?? "";
+          const w   = typedWordsRef.current[i] ?? "";
           const exp = words[i] ?? "";
-          for (let j = 0; j < Math.min(w.length, exp.length); j++) {
-            if (w[j] === exp[j]) correct++;
+          if (w === exp) {
+            correct += exp.length + 1; // all chars + space separator
           }
-          if (w === exp) correct++; // space character
         }
-        const currExpected = words[wordIndex] ?? "";
+        // Current (unsubmitted) word: count matching chars so the display
+        // isn't frozen while typing, but ONLY up to correct position
+        const currExp = words[wordIndex] ?? "";
         for (let i = 0; i < currentInput.length; i++) {
-          if (currentInput[i] === currExpected[i]) correct++;
+          if (currentInput[i] === currExp[i]) correct++;
         }
         correctCharsRef.current = correct;
 
-        // WPM = correct chars / 5 / minutes
         const live = Math.round((correct / 5) / mins);
         setWpm(live);
         setWpmHistory(h => [...h.slice(-29), live]);
@@ -103,7 +109,7 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
       const expectedWord = words[wordIndex] ?? "";
 
       if (val.endsWith(" ")) {
-        // User typed space to submit word
+        // Space submitted the word
         const typedWord = val.trim();
         if (typedWord === expectedWord) {
           soundEffects.playClick(true);
@@ -111,51 +117,46 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
           errorKeystrokesRef.current += 1;
           soundEffects.playError();
           if (strictMode) {
-            // Block spacebar in strict mode
             updateAccuracyState();
             return;
           }
         }
       } else {
-        // Typing character in the current word
-        const idx = val.length - 1;
-        const typedChar = val[idx];
-        const expectedChar = expectedWord[idx];
+        // Typing a character in the current word
+        const idx      = val.length - 1;
+        const typedCh  = val[idx];
+        const expectCh = expectedWord[idx];
 
-        if (typedChar === expectedChar) {
+        if (typedCh === expectCh) {
           soundEffects.playClick(false);
         } else {
           errorKeystrokesRef.current += 1;
           soundEffects.playError();
           if (strictMode) {
-            // Block wrong character in strict mode
             updateAccuracyState();
             return;
           }
         }
       }
     } else if (val.length < currentInput.length) {
-      // Backspace typed
       soundEffects.playClick(false);
     }
 
     updateAccuracyState();
 
     if (val.endsWith(" ")) {
-      const typed = val.trim();
+      const typed    = val.trim();
       const expected = words[wordIndex] ?? "";
       const isCorrect = typed === expected;
-      
-      // Calculate how many characters in this word were actually typed correctly
-      let charsOk = 0;
-      for (let i = 0; i < Math.min(typed.length, expected.length); i++) {
-        if (typed[i] === expected[i]) charsOk++;
-      }
-      
-      typedWordsRef.current = [...typedWordsRef.current, typed];
-      correctCharsRef.current += charsOk + (isCorrect ? 1 : 0);
 
-      // Play vintage typewriter bell sound
+      typedWordsRef.current = [...typedWordsRef.current, typed];
+
+      // ▶ Only add chars to correctCharsRef when EXACTLY correct
+      if (isCorrect) {
+        correctCharsRef.current += expected.length + 1;
+      }
+      // Wrong word → contributes ZERO correct chars (no WPM padding for errors)
+
       if (soundEffects.getTheme() === "typewriter") {
         soundEffects.playTypewriterBell();
       }
@@ -170,23 +171,25 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
       if (next >= words.length) {
         const secs = (Date.now() - (startTime ?? Date.now())) / 1000;
         const mins = secs / 60;
-        
-        // Final correct characters calculation
+
+        // ▶ Final WPM: same rule — only exact-match words count
         let finalCorrect = 0;
         for (let i = 0; i < words.length; i++) {
-          const w = typedWordsRef.current[i] ?? "";
+          const w   = typedWordsRef.current[i] ?? "";
           const exp = words[i] ?? "";
-          for (let j = 0; j < Math.min(w.length, exp.length); j++) {
-            if (w[j] === exp[j]) finalCorrect++;
+          if (w === exp) {
+            // last word doesn't get a space
+            finalCorrect += exp.length + (i < words.length - 1 ? 1 : 0);
           }
-          if (i < words.length - 1 && w === exp) finalCorrect++; // space character
         }
-        
+
         const finalWpm = Math.round((finalCorrect / 5) / Math.max(mins, 0.01));
-        const totalK = totalKeystrokesRef.current;
-        const errorK = errorKeystrokesRef.current;
-        const finalAcc = totalK > 0 ? Math.max(0, Math.min(100, Math.round(((totalK - errorK) / totalK) * 100))) : 100;
-        
+        const totalK   = totalKeystrokesRef.current;
+        const errorK   = errorKeystrokesRef.current;
+        const finalAcc = totalK > 0
+          ? Math.max(0, Math.min(100, Math.round(((totalK - errorK) / totalK) * 100)))
+          : 100;
+
         onComplete(finalWpm, finalAcc, Math.max(1, Math.floor(secs)), typedWordsRef.current.join(" "));
       } else {
         setWordIndex(next);
@@ -199,7 +202,9 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
   const updateAccuracyState = () => {
     const totalK = totalKeystrokesRef.current;
     const errorK = errorKeystrokesRef.current;
-    const acc = totalK > 0 ? Math.max(0, Math.min(100, Math.round(((totalK - errorK) / totalK) * 100))) : 100;
+    const acc = totalK > 0
+      ? Math.max(0, Math.min(100, Math.round(((totalK - errorK) / totalK) * 100)))
+      : 100;
     setLiveAccuracy(acc);
   };
 
@@ -237,10 +242,12 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
         spellCheck={false}
         autoFocus
       />
-      {gameId === "turbo-race"   && <RacingGame  {...props} />}
-      {gameId === "word-fighter" && <FighterGame {...props} />}
-      {gameId === "zombie-hunt"  && <ZombieGame  {...props} />}
-      {gameId === "galaxy-blitz" && <GalaxyGame  {...props} />}
+      {gameId === "turbo-race"   && <RacingGame     {...props} />}
+      {gameId === "word-fighter" && <FighterGame    {...props} />}
+      {gameId === "zombie-hunt"  && <ZombieGame     {...props} />}
+      {gameId === "galaxy-blitz" && <GalaxyGame     {...props} />}
+      {gameId === "meteor-storm" && <MeteorGame     {...props} />}
+      {gameId === "neon-runner"  && <NeonRunnerGame {...props} />}
 
       {showKeyboard && (
         <div className="z-20 relative">

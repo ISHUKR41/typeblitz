@@ -192,6 +192,36 @@ export const GAMES: Game[] = [
       { id: 60, number: 5, name: "Galactic Boss", description: "The final invasion. Expert-level vocabulary.", targetWpm: 72, targetAccuracy: 94, duration: 60, wordCount: 40 },
     ]
   },
+  {
+    id: "meteor-storm",
+    name: "Meteor Storm",
+    description: "Meteors hurtle toward Earth — type each word before impact to fire your laser cannon and destroy them! Build combos for bonus points. Protect the city!",
+    category: "game",
+    icon: "Flame",
+    difficulty: "intermediate",
+    levels: [
+      { id: 61, number: 1, name: "Shower", description: "Slow meteors with simple words. Learn to aim.", targetWpm: 22, targetAccuracy: 85, duration: 60, wordCount: 22 },
+      { id: 62, number: 2, name: "Storm Front", description: "Faster meteors with govt admin vocabulary.", targetWpm: 32, targetAccuracy: 87, duration: 60, wordCount: 28 },
+      { id: 63, number: 3, name: "Meteor Blitz", description: "Multiple simultaneous meteors. SSC-level words.", targetWpm: 44, targetAccuracy: 89, duration: 60, wordCount: 34 },
+      { id: 64, number: 4, name: "Extinction Wave", description: "High-speed barrage. UPSC vocabulary.", targetWpm: 56, targetAccuracy: 91, duration: 60, wordCount: 40 },
+      { id: 65, number: 5, name: "Armageddon", description: "Relentless meteor swarm. Expert-level vocab.", targetWpm: 68, targetAccuracy: 94, duration: 60, wordCount: 45 },
+    ]
+  },
+  {
+    id: "neon-runner",
+    name: "Neon Runner",
+    description: "Sprint through a neon city skyline — type words to jump over walls, dash through gates and land on platforms. Build your combo and survive the endless run!",
+    category: "game",
+    icon: "Play",
+    difficulty: "intermediate",
+    levels: [
+      { id: 66, number: 1, name: "First Block", description: "Wide obstacles, slow scroll, easy words.", targetWpm: 20, targetAccuracy: 85, duration: 60, wordCount: 20 },
+      { id: 67, number: 2, name: "City Sprint", description: "Faster scroll with administrative vocab.", targetWpm: 30, targetAccuracy: 87, duration: 60, wordCount: 26 },
+      { id: 68, number: 3, name: "Neon Rush", description: "Mixed wall and gate obstacles. Coding terms.", targetWpm: 42, targetAccuracy: 89, duration: 60, wordCount: 32 },
+      { id: 69, number: 4, name: "Hyper Drive", description: "High-speed run with professional vocabulary.", targetWpm: 54, targetAccuracy: 91, duration: 60, wordCount: 38 },
+      { id: 70, number: 5, name: "Cyberpunk Final", description: "Maximum speed obstacle course. Expert vocab.", targetWpm: 66, targetAccuracy: 94, duration: 60, wordCount: 44 },
+    ]
+  },
 ];
 
 export const getGame = (gameId: string): Game | undefined => GAMES.find(g => g.id === gameId);

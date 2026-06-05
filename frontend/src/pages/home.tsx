@@ -100,7 +100,7 @@ function TypingWord() {
 
 const STATS = [
   { value: 50000, suffix: "+", label: "Keystrokes Tracked" },
-  { value: 11, suffix: " Games", label: "Unique Game Modes" },
+  { value: 13, suffix: " Games", label: "Unique Game Modes" },
   { value: 99, suffix: "%", label: "Typing Accuracy" },
   { value: 12, suffix: " Lessons", label: "Pro Lessons" },
 ];
@@ -119,7 +119,7 @@ const FEATURES = [
     color: "text-chart-2",
     bg: "bg-chart-2/10",
     border: "border-chart-2/20",
-    title: "11 Game Modes",
+    title: "13 Game Modes",
     desc: "Word Sprint to arcade battles. Each game trains a different muscle — from raw speed to symbol precision.",
   },
   {

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import {
   Zap, AlignLeft, Code2, Target, Timer, Shield, Terminal,
-  ChevronRight, Star, Lock, TrendingUp, Car, Sword, Skull, Rocket, CalendarDays
+  ChevronRight, Star, Lock, TrendingUp, Car, Sword, Skull, Rocket, CalendarDays, Flame, Play
 } from "lucide-react";
 import { getGameProgress, isLevelUnlocked } from "@/lib/progress";
 
@@ -21,11 +21,13 @@ const GAME_THEME: Record<string, { text: string; bg: string; border: string; sha
   "word-fighter":     { text: "text-red-400",    bg: "bg-red-400/10",    border: "border-red-400/30",    shadow: "hover:shadow-red-400/15" },
   "zombie-hunt":      { text: "text-lime-400",   bg: "bg-lime-400/10",   border: "border-lime-400/30",   shadow: "hover:shadow-lime-400/15" },
   "galaxy-blitz":     { text: "text-cyan-400",   bg: "bg-cyan-400/10",   border: "border-cyan-400/30",   shadow: "hover:shadow-cyan-400/15" },
+  "meteor-storm":     { text: "text-orange-500", bg: "bg-orange-500/10", border: "border-orange-500/30", shadow: "hover:shadow-orange-500/15" },
+  "neon-runner":      { text: "text-violet-400", bg: "bg-violet-400/10", border: "border-violet-400/30", shadow: "hover:shadow-violet-400/15" },
 };
 
 const GAME_ICONS: Record<string, React.ElementType> = {
   Zap, AlignLeft, Code: Code2, Code2, Target, Timer, Shield, Terminal,
-  CarFront: Car, Sword, Skull, Rocket,
+  CarFront: Car, Sword, Skull, Rocket, Flame, Play,
 };
 
 const DIFFICULTY: Record<string, { label: string; cls: string }> = {
@@ -55,6 +57,8 @@ const CATEGORY_META: Record<string, { label: string; color: string }> = {
   "word-fighter":     { label: "⚔️ Arcade Fighter",       color: "text-red-400" },
   "zombie-hunt":      { label: "🧟 Zombie Survival",      color: "text-lime-400" },
   "galaxy-blitz":     { label: "🚀 Space Shooter",        color: "text-cyan-400" },
+  "meteor-storm":     { label: "☄️ Meteor Defense",        color: "text-orange-500" },
+  "neon-runner":      { label: "🏃 Neon Runner",           color: "text-violet-400" },
 };
 
 // ─── Single game card ────────────────────────────────────────────────────
@@ -208,7 +212,7 @@ export default function Games() {
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Game Modes</h1>
         <p className="text-muted-foreground mt-1 text-sm md:text-base">
-          11 games · 5 levels each · English, Govt Exam, Coding & Arcade
+          13 games · 5 levels each · English, Govt Exam, Coding & Arcade
         </p>
       </motion.div>
 
