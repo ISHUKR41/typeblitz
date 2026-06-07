@@ -83,10 +83,11 @@ function TypedText({ text, input }: { text: string; input: string }) {
 // ─── Results screen ───────────────────────────────────────────────────────
 function ResultsScreen({
   wpm, accuracy, duration, levelNumber, targetWpm, passed, nextLevelUnlocked,
-  onRetry, onNext, onMenu,
+  wordBreakdown, onRetry, onNext, onMenu,
 }: {
   wpm: number; accuracy: number; duration: number; levelNumber: number; targetWpm: number;
   passed: boolean; nextLevelUnlocked: boolean;
+  wordBreakdown?: { total: number; correct: number; wrong: number };
   onRetry: () => void; onNext: () => void; onMenu: () => void;
 }) {
   const grade = wpm >= 80 ? "S" : wpm >= 60 ? "A" : wpm >= 40 ? "B" : wpm >= 25 ? "C" : "D";
@@ -114,7 +115,7 @@ function ResultsScreen({
         <div className="grid grid-cols-3 gap-2">
           {[
             { label: "WPM", value: wpm, color: "text-primary", icon: Zap },
-            { label: "Accuracy", value: `${accuracy}%`, color: "text-chart-2", icon: Target },
+            { label: "Accuracy", value: `${accuracy}%`, color: accuracy >= 95 ? "text-emerald-400" : accuracy >= 80 ? "text-chart-2" : "text-destructive", icon: Target },
             { label: "Time", value: `${Math.floor(duration/60)}:${(duration%60).toString().padStart(2,"0")}`, color: "text-chart-3", icon: Clock },
           ].map(s => (
             <div key={s.label} className="bg-background rounded-xl border border-border p-3 text-center">
@@ -124,6 +125,29 @@ function ResultsScreen({
             </div>
           ))}
         </div>
+
+        {/* Word breakdown — shows exactly which words counted toward WPM */}
+        {wordBreakdown && wordBreakdown.total > 0 && (
+          <div className="grid grid-cols-3 gap-2 text-center text-xs">
+            <div className="bg-emerald-500/10 border border-emerald-500/25 rounded-xl py-2">
+              <div className="text-lg font-black font-mono text-emerald-400">{wordBreakdown.correct}</div>
+              <div className="text-emerald-400/70 font-semibold">correct words</div>
+              <div className="text-muted-foreground/60 text-[10px]">counted in WPM</div>
+            </div>
+            <div className={`${wordBreakdown.wrong > 0 ? "bg-red-500/10 border-red-500/25" : "bg-muted/30 border-border"} border rounded-xl py-2`}>
+              <div className={`text-lg font-black font-mono ${wordBreakdown.wrong > 0 ? "text-red-400" : "text-muted-foreground"}`}>{wordBreakdown.wrong}</div>
+              <div className={`font-semibold ${wordBreakdown.wrong > 0 ? "text-red-400/70" : "text-muted-foreground"}`}>wrong words</div>
+              <div className="text-muted-foreground/60 text-[10px]">contributed 0 WPM</div>
+            </div>
+            <div className="bg-muted/30 border border-border rounded-xl py-2">
+              <div className="text-lg font-black font-mono">{wordBreakdown.total}</div>
+              <div className="text-muted-foreground font-semibold">total words</div>
+              <div className="text-muted-foreground/60 text-[10px]">
+                {wordBreakdown.total > 0 ? `${Math.round((wordBreakdown.correct / wordBreakdown.total) * 100)}% word accuracy` : ""}
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="flex items-start gap-2 bg-muted/40 rounded-xl px-3 py-2.5 text-xs">
           <CheckCircle className="w-3.5 h-3.5 text-primary flex-shrink-0 mt-0.5" />
@@ -191,6 +215,11 @@ export default function Play() {
   const [showKeyboard, setShowKeyboard] = useState(() => localStorage.getItem("typeblitz.showKeyboard") !== "false");
   const [soundTheme, setSoundTheme] = useState(() => soundEffects.getTheme());
 
+  // Word-level accuracy tracking (live HUD display)
+  const [wordStats, setWordStats] = useState({ total: 0, correct: 0, wrong: 0 });
+  // Final word breakdown stored on game completion for the results screen
+  const [finalWordBreakdown, setFinalWordBreakdown] = useState<{ total: number; correct: number; wrong: number } | undefined>(undefined);
+
   // Industry-standard keystroke accuracy refs (persists even if user backspaces)
   const totalKeystrokesRef = useRef(0);
   const errorKeystrokesRef = useRef(0);
@@ -227,6 +256,7 @@ export default function Play() {
       correctCharsRef.current = 0;
       totalKeystrokesRef.current = 0;
       errorKeystrokesRef.current = 0;
+      setWordStats({ total: 0, correct: 0, wrong: 0 });
       setTimeout(() => inputRef.current?.focus(), 100);
     }
     if (levelContent && isArcade) {
@@ -310,7 +340,16 @@ export default function Play() {
     const totalK = totalKeystrokesRef.current;
     const errorK = errorKeystrokesRef.current;
     const finalAcc = totalK > 0 ? Math.max(0, Math.min(100, Math.round(((totalK - errorK) / totalK) * 100))) : 100;
-    
+
+    // Compute word-level breakdown for the results screen
+    let correctWordCount = 0;
+    let wrongWordCount = 0;
+    for (let i = 0; i < _textWords.length; i++) {
+      if ((_typedWords[i] ?? "") === _textWords[i]) correctWordCount++;
+      else wrongWordCount++;
+    }
+    setFinalWordBreakdown({ total: _textWords.length, correct: correctWordCount, wrong: wrongWordCount });
+
     const progressResult = gameId
       ? recordLevelResult({ gameId, level: levelNumber, wpm: finalWpm, accuracy: finalAcc, targetWpm })
       : { passed: isPassingResult(finalWpm, finalAcc, targetWpm), nextLevelUnlocked: false };
@@ -367,9 +406,12 @@ export default function Play() {
     const _tWords = text.split(" ");
     const _iParts = val.split(" ");
     let correct = 0;
-    for (let wi = 0; wi < _iParts.length - 1; wi++) {
+    let correctWordCount = 0;
+    const totalSubmitted = Math.max(0, _iParts.length - 1);
+    for (let wi = 0; wi < totalSubmitted; wi++) {
       if ((_iParts[wi] ?? "") === (_tWords[wi] ?? "")) {
         correct += (_tWords[wi]?.length ?? 0) + 1; // +1 for space
+        correctWordCount++;
       }
     }
     // Current word: count sequential chars from start up to first mismatch
@@ -381,6 +423,8 @@ export default function Play() {
       correct++;
     }
     correctCharsRef.current = correct;
+    // Update live word stats for HUD display
+    setWordStats({ total: totalSubmitted, correct: correctWordCount, wrong: totalSubmitted - correctWordCount });
 
     // Real-time Keystroke accuracy
     const totalK = totalKeystrokesRef.current;
@@ -407,6 +451,8 @@ export default function Play() {
     correctCharsRef.current = 0;
     totalKeystrokesRef.current = 0;
     errorKeystrokesRef.current = 0;
+    setWordStats({ total: 0, correct: 0, wrong: 0 });
+    setFinalWordBreakdown(undefined);
     setResetKey(k => k + 1);
     setTimeout(() => inputRef.current?.focus(), 100);
   };
@@ -624,16 +670,25 @@ export default function Play() {
                     {audioMuted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-primary" />}
                   </button>
                 </div>
-                {/* WPM */}
-                <div className="flex items-center gap-1 bg-card border border-border rounded-xl px-2.5 py-1.5">
+                {/* Word accuracy — shows correct vs wrong words clearly */}
+                {wordStats.total > 0 && (
+                  <div className="flex items-center gap-1 bg-card border border-border rounded-xl px-2.5 py-1.5" title="Correct words / Total words typed">
+                    <CheckCircle className={`w-3.5 h-3.5 ${wordStats.wrong > 0 ? "text-orange-400" : "text-emerald-400"}`} />
+                    <span className={`font-mono font-bold text-sm ${wordStats.wrong > 0 ? "text-orange-400" : "text-emerald-400"}`}>{wordStats.correct}</span>
+                    <span className="text-xs text-muted-foreground">/{wordStats.total}</span>
+                    {wordStats.wrong > 0 && <span className="text-xs text-red-400 font-mono ml-0.5">✗{wordStats.wrong}</span>}
+                  </div>
+                )}
+                {/* WPM — only correct words count */}
+                <div className="flex items-center gap-1 bg-card border border-border rounded-xl px-2.5 py-1.5 cursor-help" title="WPM = correct words only. Wrong words contribute ZERO to your score.">
                   <Zap className="w-3.5 h-3.5 text-primary" />
                   <span className="font-mono font-bold text-base">{wpm}</span>
                   <span className="text-xs text-muted-foreground">WPM</span>
                 </div>
                 {/* Accuracy */}
-                <div className="flex items-center gap-1 bg-card border border-border rounded-xl px-2.5 py-1.5">
-                  <Target className="w-3.5 h-3.5 text-chart-2" />
-                  <span className="font-mono font-bold text-base">{accuracy}%</span>
+                <div className="flex items-center gap-1 bg-card border border-border rounded-xl px-2.5 py-1.5" title="Keystroke accuracy — every wrong key press permanently lowers this">
+                  <Target className={`w-3.5 h-3.5 ${accuracy >= 95 ? "text-emerald-400" : accuracy >= 80 ? "text-orange-400" : "text-red-400"}`} />
+                  <span className={`font-mono font-bold text-base ${accuracy >= 95 ? "text-emerald-400" : accuracy >= 80 ? "text-orange-400" : "text-red-400"}`}>{accuracy}%</span>
                 </div>
                 {/* Timer */}
                 <div className="flex items-center gap-1 bg-card border border-border rounded-xl px-2.5 py-1.5">
@@ -701,8 +756,14 @@ export default function Play() {
 
             <div className="flex justify-between text-xs text-muted-foreground font-mono px-1">
               <span>{input.length} / {text.length} chars</span>
-              <span>Target: {targetWpm} WPM</span>
-              <span>{Math.round(progress)}% complete</span>
+              <span className="flex items-center gap-1">
+                <Zap className="w-3 h-3 text-primary" />
+                Target: <span className="text-primary font-bold">{targetWpm}</span> WPM
+              </span>
+              <span className="flex items-center gap-1">
+                <CheckCircle className="w-3 h-3 text-emerald-400" />
+                <span className="text-emerald-400/70">Only correct words count</span>
+              </span>
             </div>
           </motion.div>
         ) : (
@@ -720,6 +781,7 @@ export default function Play() {
               targetWpm={targetWpm}
               passed={levelResult?.passed ?? isPassingResult(wpm, accuracy, targetWpm)}
               nextLevelUnlocked={levelResult?.nextLevelUnlocked ?? false}
+              wordBreakdown={finalWordBreakdown}
               onRetry={handleRetry}
               onNext={() => setLocation(`/play/${gameId}/${Math.min(levelNumber + 1, 5)}`)}
               onMenu={() => setLocation("/games")}

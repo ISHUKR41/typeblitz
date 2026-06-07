@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { RacingGame } from "./RacingGame";
 import { FighterGame } from "./FighterGame";
 import { ZombieGame } from "./ZombieGame";
@@ -53,6 +54,7 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
   const [comboStreak, setComboStreak] = useState(0);
   const [mistakeCount, setMistakeCount] = useState(0);
   const [submissionCount, setSubmissionCount] = useState(0);
+  const [comboVisible, setComboVisible] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const typedWordsRef = useRef<string[]>([]);
 
@@ -105,6 +107,14 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
   useEffect(() => {
     setTimeout(() => inputRef.current?.focus(), 150);
   }, []);
+
+  // Show combo popup when a streak of 3+ is achieved
+  useEffect(() => {
+    if (!lastWordCorrect || comboStreak < 3) return;
+    setComboVisible(true);
+    const t = setTimeout(() => setComboVisible(false), 900);
+    return () => clearTimeout(t);
+  }, [submissionCount, lastWordCorrect, comboStreak]);
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -236,7 +246,37 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
   };
 
   return (
-    <div className="w-full h-full space-y-4" onClick={() => inputRef.current?.focus()}>
+    <div className="w-full h-full space-y-4 relative" onClick={() => inputRef.current?.focus()}>
+      {/* Combo streak popup */}
+      <AnimatePresence>
+        {comboVisible && comboStreak >= 3 && (
+          <motion.div
+            key={submissionCount}
+            initial={{ opacity: 0, scale: 0.5, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: -10 }}
+            exit={{ opacity: 0, scale: 1.4, y: -50 }}
+            transition={{ duration: 0.25, ease: "easeOut" }}
+            className="absolute top-8 left-1/2 -translate-x-1/2 z-50 pointer-events-none select-none"
+          >
+            <div className={`text-center px-5 py-2.5 rounded-2xl border backdrop-blur-sm shadow-2xl ${
+              comboStreak >= 15 ? "bg-yellow-500/25 border-yellow-400/60 shadow-yellow-400/20" :
+              comboStreak >= 10 ? "bg-orange-500/25 border-orange-400/60 shadow-orange-400/20" :
+              comboStreak >= 5  ? "bg-chart-2/25  border-chart-2/60  shadow-chart-2/20"  :
+                                  "bg-primary/20  border-primary/50  shadow-primary/20"
+            }`}>
+              <div className={`text-3xl font-black font-mono ${
+                comboStreak >= 15 ? "text-yellow-400" :
+                comboStreak >= 10 ? "text-orange-400" :
+                comboStreak >= 5  ? "text-chart-2"    :
+                                    "text-primary"
+              }`}>
+                {comboStreak >= 15 ? "🔥🔥" : comboStreak >= 10 ? "🔥" : comboStreak >= 5 ? "⚡" : "✓"} {comboStreak}×
+              </div>
+              <div className="text-xs font-bold text-white/70 uppercase tracking-widest mt-0.5">COMBO!</div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <input
         ref={inputRef}
         type="text"

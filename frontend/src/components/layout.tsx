@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import {
   Keyboard, LayoutDashboard, Trophy, Gamepad2,
-  GraduationCap, LogOut, Menu, X, Shield, ChevronRight, CalendarDays
+  GraduationCap, LogOut, Menu, X, Shield, ChevronRight, CalendarDays, Zap
 } from "lucide-react";
 
 interface NavItem {
@@ -92,13 +92,37 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
       <div className="p-4 border-t border-border mt-auto space-y-3">
         {user ? (
           <>
+            {/* User card */}
             <div className="flex items-center gap-3 px-1">
-              <div className="w-9 h-9 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
+              {/* Avatar with tier color */}
+              <div className={`w-9 h-9 rounded-full border flex items-center justify-center font-bold text-sm flex-shrink-0 ${
+                (user.bestWpm ?? 0) >= 100 ? "bg-yellow-400/20 border-yellow-400/40 text-yellow-400" :
+                (user.bestWpm ?? 0) >= 80  ? "bg-red-400/20    border-red-400/40    text-red-400"    :
+                (user.bestWpm ?? 0) >= 60  ? "bg-chart-2/20   border-chart-2/40   text-chart-2"    :
+                (user.bestWpm ?? 0) >= 40  ? "bg-primary/20   border-primary/30   text-primary"    :
+                                             "bg-muted        border-border        text-muted-foreground"
+              }`}>
                 {user.username.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-semibold text-sm truncate">{user.username}</p>
-                <p className="text-xs text-muted-foreground">Best: {user.bestWpm ?? 0} WPM</p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <Zap className="w-3 h-3 text-primary flex-shrink-0" />
+                  <p className="text-xs text-muted-foreground">
+                    <span className="text-primary font-bold">{user.bestWpm ?? 0}</span> WPM best ·{" "}
+                    <span className={`font-semibold ${
+                      (user.bestWpm ?? 0) >= 100 ? "text-yellow-400" :
+                      (user.bestWpm ?? 0) >= 80  ? "text-red-400"    :
+                      (user.bestWpm ?? 0) >= 60  ? "text-chart-2"    :
+                      (user.bestWpm ?? 0) >= 40  ? "text-primary"    : "text-muted-foreground"
+                    }`}>
+                      {(user.bestWpm ?? 0) >= 100 ? "Elite" :
+                       (user.bestWpm ?? 0) >= 80  ? "Expert" :
+                       (user.bestWpm ?? 0) >= 60  ? "Advanced" :
+                       (user.bestWpm ?? 0) >= 40  ? "Intermediate" : "Beginner"}
+                    </span>
+                  </p>
+                </div>
               </div>
             </div>
             <Button

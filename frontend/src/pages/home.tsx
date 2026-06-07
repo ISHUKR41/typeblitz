@@ -196,40 +196,49 @@ function HeroTypingWidget() {
 }
 
 const STATS = [
-  { value: 1000000, suffix: "+", label: "Keystrokes Tracked" },
-  { value: 16,      suffix: " Games", label: "Unique Game Modes" },
-  { value: 99,      suffix: "%", label: "Peak Accuracy Achieved" },
-  { value: 12,      suffix: " Lessons", label: "Structured Lessons" },
+  { value: 20,  suffix: " Games",   label: "Unique Arcade Modes"   },
+  { value: 100, suffix: " Levels",  label: "Progressive Challenges" },
+  { value: 500, suffix: "+ Words",  label: "Govt Exam Vocabulary"  },
+  { value: 12,  suffix: " Lessons", label: "Touch-Type Lessons"    },
 ];
 
 const FEATURES = [
   { icon: Zap, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20",
-    title: "Precise WPM Engine", desc: "Only perfect words count. Millisecond-accurate measurement. No inflation from wrong attempts." },
+    title: "Strict WPM Engine", desc: "Only perfectly typed words count. Wrong words contribute zero. No inflation — raw, honest speed." },
   { icon: Gamepad2, color: "text-chart-2", bg: "bg-chart-2/10", border: "border-chart-2/20",
-    title: "16 Unique Games", desc: "Racing, Fighters, Zombies, Space Shooters, Matrix Rain, Snake — all built around typing mastery." },
+    title: "20 Unique Games", desc: "Racing, Fighters, Zombies, Space Shooters, Bubble Pop, Fruit Blitz, Matrix Rain, Snake — all typing." },
   { icon: BarChart2, color: "text-chart-3", bg: "bg-chart-3/10", border: "border-chart-3/20",
-    title: "Deep Analytics", desc: "Letter-by-letter heatmaps reveal exactly which keys slow you down. Track improvement daily." },
+    title: "Deep Analytics", desc: "Mechanical keyboard heatmap shows exactly which keys slow you down. Per-letter accuracy tracking." },
   { icon: Trophy, color: "text-yellow-400", bg: "bg-yellow-400/10", border: "border-yellow-400/20",
-    title: "Global Rankings", desc: "Your personal best locked into a worldwide leaderboard. Climb one WPM at a time." },
+    title: "Global Rankings", desc: "Your personal best on a worldwide leaderboard. 12 achievement badges. Daily challenge streaks." },
   { icon: Shield, color: "text-blue-400", bg: "bg-blue-400/10", border: "border-blue-400/20",
-    title: "Govt Exam Ready", desc: "SSC, UPSC, Banking, Railways, Police exam vocabulary across all 5 levels. Built for aspirants." },
+    title: "Govt Exam Ready", desc: "SSC CGL, UPSC, Banking, Railways, Police vocabulary. 5 difficulty levels for every exam board." },
   { icon: Code2, color: "text-emerald-400", bg: "bg-emerald-400/10", border: "border-emerald-400/20",
-    title: "Coding Vocabulary", desc: "JavaScript, Python, React, SQL, Git keywords. Master every symbol and shorthand." },
+    title: "Coding Vocabulary", desc: "JavaScript, TypeScript, Python, Go, SQL, Git, DevOps terms. Real code snippets to type." },
 ];
 
 const HOW_IT_WORKS = [
-  { icon: Play, step: "01", title: "Pick a Game", desc: "Choose from 16 unique typing games — each one trains a different skill, from raw speed to symbol precision.", color: "text-primary" },
-  { icon: Zap, step: "02", title: "Level Up", desc: "Complete 5 progressively harder levels per game. Passing requires both speed AND 90%+ accuracy.", color: "text-chart-2" },
-  { icon: BarChart2, step: "03", title: "Track Progress", desc: "Your dashboard shows WPM trends, weak keys, session history, and global rank. Everything in one place.", color: "text-chart-3" },
+  { icon: Play, step: "01", title: "Pick a Game", desc: "20 unique typing games — from Zombie Hunt to Cyber Heist to Fruit Blitz. Each one trains a different skill.", color: "text-primary" },
+  { icon: Zap, step: "02", title: "Level Up", desc: "5 progressively harder levels per game. Speed AND 90%+ accuracy required. Wrong words = zero WPM.", color: "text-chart-2" },
+  { icon: BarChart2, step: "03", title: "See Your DNA", desc: "Your dashboard shows WPM trends, letter heatmaps, session history, streaks, and 12 achievement badges.", color: "text-chart-3" },
+];
+
+const EXAM_BOARDS = [
+  { icon: "🏛️", name: "SSC CGL",     speed: "35 WPM",  topic: "General / Admin"  },
+  { icon: "🏦", name: "IBPS Banking", speed: "40 WPM",  topic: "Financial Terms"  },
+  { icon: "🚂", name: "RRB NTPC",    speed: "30 WPM",  topic: "Railway Technical" },
+  { icon: "📜", name: "UPSC Mains",  speed: "40 WPM",  topic: "Civil Services"   },
+  { icon: "⚖️", name: "High Court",   speed: "40 WPM",  topic: "Legal / Judiciary"},
+  { icon: "👮", name: "SSC CPO",     speed: "35 WPM",  topic: "Police / Defence" },
 ];
 
 const GAME_HIGHLIGHTS = [
-  { id: "turbo-race",    name: "Turbo Race",     icon: "🏎️", color: "text-orange-400", desc: "Outrun a ghost car in neon streets" },
-  { id: "zombie-hunt",   name: "Zombie Hunt",    icon: "🧟", color: "text-lime-400",   desc: "Survive a zombie horde with typing" },
-  { id: "galaxy-blitz",  name: "Galaxy Blitz",   icon: "🚀", color: "text-cyan-400",   desc: "Shoot alien fleets in deep space" },
-  { id: "snake-typer",   name: "Snake Typer",    icon: "🐍", color: "text-green-400",  desc: "Feed your neon snake with words" },
-  { id: "word-invaders", name: "Word Invaders",  icon: "👾", color: "text-sky-400",    desc: "Space Invaders but you type to shoot" },
-  { id: "code-rain",     name: "Code Rain",      icon: "💻", color: "text-emerald-300",desc: "Decrypt the Matrix cascade in real-time" },
+  { id: "turbo-race",    name: "Turbo Race",     icon: "🏎️", color: "text-orange-400", desc: "Race a ghost car on a pseudo-3D neon highway" },
+  { id: "zombie-hunt",   name: "Zombie Hunt",    icon: "🧟", color: "text-lime-400",   desc: "Survive zombie waves — type words to shoot" },
+  { id: "cyber-heist",   name: "Cyber Heist",    icon: "🕵️", color: "text-green-300",  desc: "Hack a secured node network with passkeys" },
+  { id: "bubble-pop",    name: "Bubble Pop",     icon: "🫧", color: "text-pink-400",   desc: "Pop floating word-bubbles before they drift away" },
+  { id: "fruit-blitz",   name: "Fruit Blitz",    icon: "🍉", color: "text-lime-500",   desc: "Slice flying fruits by typing their words" },
+  { id: "arena-blitz",   name: "Arena Blitz",    icon: "🎯", color: "text-violet-400", desc: "Top-down turret — destroy circular enemies" },
 ];
 
 export default function Home() {
@@ -420,6 +429,68 @@ export default function Home() {
           <Link href="/games">
             <Button variant="outline" size="sm" className="gap-1.5 border-primary/30">All 20 games <ArrowRight className="w-3.5 h-3.5" /></Button>
           </Link>
+        </motion.div>
+      </section>
+
+      {/* ── GOVT EXAM READY ─────────────────────────────────────────── */}
+      <section className="px-6 md:px-12 py-8 pb-16 max-w-6xl mx-auto w-full">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="relative overflow-hidden rounded-3xl border border-blue-500/25 bg-gradient-to-br from-blue-500/8 via-primary/5 to-transparent p-8 md:p-12"
+        >
+          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-blue-500/6 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-primary/5 rounded-full blur-[80px] pointer-events-none" />
+
+          <div className="relative flex flex-col lg:flex-row items-start gap-10">
+            {/* Left: Copy */}
+            <div className="flex-1 min-w-0">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-500/15 border border-blue-500/30 rounded-full text-blue-400 text-xs font-bold uppercase tracking-widest mb-5">
+                <Shield className="w-3.5 h-3.5" /> Government Exam Ready
+              </div>
+              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4 leading-tight">
+                Crack SSC, UPSC, Banking<br className="hidden sm:block" /> &amp; Railway Typing Tests
+              </h2>
+              <p className="text-muted-foreground mb-6 max-w-lg leading-relaxed">
+                TypeBlitz trains you with authentic vocabulary from real government exam papers.
+                SSC CGL, IBPS Banking, RRB NTPC, UPSC, High Court &amp; Police — master the words 
+                that actually appear in your test, then play arcade games to build unstoppable speed.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link href="/practice">
+                  <Button size="lg" className="gap-2 shadow-lg shadow-primary/20 w-full sm:w-auto">
+                    <BookOpen className="w-4 h-4" /> Start Exam Practice
+                  </Button>
+                </Link>
+                <Link href="/challenge">
+                  <Button size="lg" variant="outline" className="gap-2 border-blue-500/30 hover:border-blue-500/60 text-blue-400 w-full sm:w-auto">
+                    <Trophy className="w-4 h-4" /> Daily Exam Challenge
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Right: Exam board grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-3 w-full lg:w-auto lg:min-w-[360px]">
+              {EXAM_BOARDS.map((exam, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.06 }}
+                  whileHover={{ y: -3, transition: { duration: 0.15 } }}
+                  className="bg-card/70 border border-card-border rounded-2xl p-4 text-center group cursor-default hover:border-blue-500/30 transition-colors"
+                >
+                  <div className="text-2xl mb-2">{exam.icon}</div>
+                  <div className="font-bold text-sm text-white mb-0.5">{exam.name}</div>
+                  <div className="text-primary font-mono font-extrabold text-base">{exam.speed}</div>
+                  <div className="text-xs text-muted-foreground mt-1">{exam.topic}</div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
         </motion.div>
       </section>
 

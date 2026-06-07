@@ -491,20 +491,53 @@ export default function ChallengePage() {
               <Zap className="h-4 w-4 text-primary" />
               Live Score
             </h2>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-xl bg-background p-3">
-                <div className="font-mono text-2xl font-bold text-primary">{result?.wpm ?? liveStats.wpm}</div>
-                <div className="text-xs text-muted-foreground">WPM</div>
+            {/* WPM vs Target bar */}
+            {startedAt && (
+              <div className="mb-3 rounded-xl bg-background p-3">
+                <div className="flex items-end justify-between mb-1.5">
+                  <span className="text-xs text-muted-foreground">WPM vs Target</span>
+                  <span className="text-xs font-mono text-muted-foreground">/{challenge.targetWpm}</span>
+                </div>
+                <div className="h-2.5 bg-muted rounded-full overflow-hidden mb-1">
+                  <motion.div
+                    className={`h-full rounded-full transition-all ${
+                      (result?.wpm ?? liveStats.wpm) >= challenge.targetWpm ? "bg-emerald-400" :
+                      (result?.wpm ?? liveStats.wpm) >= challenge.targetWpm * 0.75 ? "bg-yellow-400" : "bg-primary"
+                    }`}
+                    animate={{ width: `${Math.min(((result?.wpm ?? liveStats.wpm) / challenge.targetWpm) * 100, 100)}%` }}
+                    transition={{ duration: 0.4 }}
+                  />
+                </div>
+                <div className={`font-mono text-3xl font-extrabold ${
+                  (result?.wpm ?? liveStats.wpm) >= challenge.targetWpm ? "text-emerald-400" :
+                  (result?.wpm ?? liveStats.wpm) >= challenge.targetWpm * 0.75 ? "text-yellow-400" : "text-primary"
+                }`}>
+                  {result?.wpm ?? liveStats.wpm}
+                  <span className="text-base font-normal text-muted-foreground ml-1">WPM</span>
+                  {(result?.wpm ?? liveStats.wpm) >= challenge.targetWpm && (
+                    <span className="text-emerald-400 text-base ml-2">✓</span>
+                  )}
+                </div>
               </div>
+            )}
+            <div className="grid grid-cols-2 gap-3">
+              {!startedAt && (
+                <div className="col-span-2 rounded-xl bg-background p-3">
+                  <div className="font-mono text-2xl font-bold text-primary">0</div>
+                  <div className="text-xs text-muted-foreground">WPM</div>
+                </div>
+              )}
               <div className="rounded-xl bg-background p-3">
-                <div className="font-mono text-2xl font-bold text-chart-2">{result?.accuracy ?? liveStats.accuracy}%</div>
+                <div className={`font-mono text-2xl font-bold ${(result?.accuracy ?? liveStats.accuracy) >= 95 ? "text-emerald-400" : (result?.accuracy ?? liveStats.accuracy) >= 80 ? "text-yellow-400" : "text-destructive"}`}>
+                  {result?.accuracy ?? liveStats.accuracy}%
+                </div>
                 <div className="text-xs text-muted-foreground">Accuracy</div>
               </div>
               <div className="rounded-xl bg-background p-3">
                 <div className="font-mono text-2xl font-bold text-destructive">{result?.errors ?? liveStats.errors}</div>
                 <div className="text-xs text-muted-foreground">Errors</div>
               </div>
-              <div className="rounded-xl bg-background p-3">
+              <div className="col-span-2 rounded-xl bg-background p-3">
                 <div className="font-mono text-2xl font-bold text-yellow-400">{result?.duration ?? elapsed}s</div>
                 <div className="text-xs text-muted-foreground">Time</div>
               </div>

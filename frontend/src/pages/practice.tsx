@@ -5,8 +5,8 @@ import { useGetLessons, useAnalyzePractice, getGetLessonsQueryKey } from "@works
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  GraduationCap, FileText, Clock, Zap, Target,
-  CheckCircle2, ArrowRight, BookOpen, Shield, Code2, RotateCcw
+  GraduationCap, FileText, Clock, Target,
+  CheckCircle2, ArrowRight, Shield, Code2, RotateCcw
 } from "lucide-react";
 import { soundEffects } from "@/lib/audio";
 
@@ -496,8 +496,39 @@ const LONG_GOVT_PASSAGES = [
     category: "Railways NTPC Special",
     title: "Indian Railways Infrastructure and Safety Modernization",
     text: "Indian Railways is currently undergoing a massive structural modernization process. Under the new national rail plan, old tracks are being replaced with modern steel routes to handle high-speed trains. Kavach, the indigenous automatic train protection system, is being deployed across thousands of route kilometers to prevent signal passing at danger and head-on collisions. Simultaneously, the station redevelopment program is transforming heritage locations into modern transport hubs. Freight corridors are being electrified to decrease cargo delivery times and improve logistically critical connections between commercial ports and manufacturing zones. Clerical staff in the railways manage crucial operations, including passenger ticketing networks, freight schedules, and cargo rosters. Efficient database entry and error-free typing skills are necessary to prevent logistical delays. The Staff Selection Commission and Railway Recruitment Boards emphasize touch-typing proficiency in skill tests to ensure that candidates can handle heavy administrative databases under tight schedules.",
-  }
+  },
+  {
+    category: "UPSC Mains",
+    title: "Indian Polity and Constitutional Provisions",
+    text: "The Indian Constitution is a living document that has evolved through numerous amendments to address changing socio-political realities. Fundamental Rights guaranteed under Part III protect citizens from arbitrary state action, while Directive Principles of State Policy under Part IV guide the government in formulating welfare legislation. The doctrine of basic structure, established by the Supreme Court, ensures that Parliament cannot destroy the fundamental character of the Constitution even through constitutional amendments. Federal features such as division of powers between the Union and States, independent judiciary, and a bicameral legislature at the centre form the backbone of India's democratic governance framework. The Preamble, often described as the soul of the Constitution, declares India to be a Sovereign, Socialist, Secular, Democratic Republic committed to securing justice, liberty, equality, and fraternity to all its citizens.",
+  },
+  {
+    category: "Banking IBPS",
+    title: "Monetary Policy and Reserve Bank of India",
+    text: "Monetary policy in India is formulated and implemented by the Reserve Bank of India through its Monetary Policy Committee. The primary objective is to maintain price stability while keeping in mind the goal of growth. The Repo Rate, Reverse Repo Rate, Cash Reserve Ratio, and Statutory Liquidity Ratio are the principal instruments through which the Reserve Bank controls liquidity and credit in the economy. When inflation rises, the central bank typically tightens monetary policy by increasing the repo rate, which raises borrowing costs for commercial banks and thereby reduces money supply in the economy. Conversely, during a slowdown, the RBI reduces rates to stimulate lending, investment, and economic activity. Banking professionals must understand these mechanisms to effectively advise clients, manage interest rate risk, and ensure institutional compliance with regulatory guidelines issued by the Reserve Bank.",
+  },
+  {
+    category: "SSC CPO Police",
+    title: "Central Police Organisation and Law Enforcement",
+    text: "The Central Police Organisation encompasses a range of paramilitary and specialised forces responsible for internal security, border management, and intelligence operations in India. The Central Reserve Police Force, Border Security Force, Central Industrial Security Force, and the Indo-Tibetan Border Police are among the premier organisations under the Ministry of Home Affairs. Personnel in these forces are recruited through the Staff Selection Commission examinations, which test candidates on general awareness, quantitative aptitude, logical reasoning, and English language proficiency. The Sub-Inspector selection process includes a comprehensive written examination, physical standard test, and a medical examination. Officers must demonstrate not only physical fitness and intelligence but also exceptional integrity, communication skills, and the capacity to handle sensitive administrative functions under considerable pressure.",
+  },
+  {
+    category: "High Court Clerk",
+    title: "Judicial Proceedings and Court Administration",
+    text: "High Courts in India exercise original and appellate jurisdiction over civil, criminal, and constitutional matters. Court clerks and stenographers play a vital role in maintaining records, preparing cause lists, drafting orders, and managing correspondence between the judiciary and litigants. Accuracy and speed in transcription are essential qualities for court staff. The process of recording evidence, minutes of proceedings, and certified copies of judgments demands meticulous attention to detail and error-free documentation. Legal terminology such as ex-parte proceedings, interlocutory applications, contempt petitions, and writ jurisdiction must be understood and correctly transcribed by court administrative staff. The High Court Stenographer examination conducted by the respective High Court administrations evaluates candidates on English shorthand, transcription accuracy, typing speed, and general English proficiency.",
+  },
+  {
+    category: "UPSC Economics",
+    title: "Indian Economy and Planning",
+    text: "India's economic planning journey began with the establishment of the Planning Commission in 1950, which formulated Five Year Plans to guide resource allocation and development priorities. The National Institution for Transforming India, popularly known as NITI Aayog, replaced the Planning Commission in 2015, adopting a more consultative and decentralised approach to development policy. India's economy is characterised by its diversity across agriculture, manufacturing, and services sectors. The services sector, which includes information technology, banking, insurance, and telecommunications, contributes over fifty percent of the gross domestic product. Public sector undertakings continue to play a significant role in strategic industries, while liberalisation policies since 1991 have encouraged private investment and foreign direct investment across most sectors of the economy.",
+  },
+  {
+    category: "SSC CHSL",
+    title: "Data Entry and Lower Division Clerk Functions",
+    text: "Lower Division Clerks and Data Entry Operators form the backbone of government administrative operations. Their primary responsibilities include maintaining official registers, processing applications, entering data into government software systems, preparing letters and reports, managing file movements, and assisting senior officers in day-to-day administrative tasks. The Staff Selection Commission conducts the Combined Higher Secondary Level examination to fill these essential positions across central government ministries and departments. Candidates who qualify the written examination must appear for a skill test that evaluates typing speed at thirty five words per minute on computers. Accuracy is as important as speed because errors in official documents can lead to significant administrative complications and delays in public service delivery.",
+  },
 ];
+
 
 const ALL_GOVT_PASSAGES = [...GOVT_PASSAGES, ...LONG_GOVT_PASSAGES];
 
@@ -810,6 +841,185 @@ function GovtExamPractice() {
   );
 }
 
+// ─── Code Practice ────────────────────────────────────────────────────────
+const CODE_SNIPPETS = [
+  {
+    lang: "TypeScript",
+    icon: "⚡",
+    title: "Async API Fetch",
+    code: `async function fetchUser(id: string): Promise<User> {\n  const res = await fetch(\`/api/users/\${id}\`);\n  if (!res.ok) throw new Error("Not found");\n  return res.json();\n}`,
+  },
+  {
+    lang: "TypeScript",
+    icon: "⚡",
+    title: "React Hook Pattern",
+    code: `function useLocalStorage<T>(key: string, init: T) {\n  const [val, setVal] = useState<T>(() => {\n    const stored = localStorage.getItem(key);\n    return stored ? JSON.parse(stored) : init;\n  });\n  return [val, setVal] as const;\n}`,
+  },
+  {
+    lang: "Python",
+    icon: "🐍",
+    title: "Class with Methods",
+    code: `class Stack:\n    def __init__(self):\n        self.items = []\n    def push(self, item):\n        self.items.append(item)\n    def pop(self):\n        return self.items.pop() if self.items else None\n    def is_empty(self):\n        return len(self.items) == 0`,
+  },
+  {
+    lang: "Python",
+    icon: "🐍",
+    title: "List Comprehension",
+    code: `def process_scores(scores: list[int]) -> dict:\n    passing = [s for s in scores if s >= 40]\n    failing = [s for s in scores if s < 40]\n    return {\n        "average": sum(scores) / len(scores),\n        "passing": len(passing),\n        "failing": len(failing),\n    }`,
+  },
+  {
+    lang: "SQL",
+    icon: "🗄️",
+    title: "Aggregation Query",
+    code: `SELECT u.username,\n       COUNT(s.id) AS sessions,\n       AVG(s.wpm) AS avg_wpm,\n       MAX(s.wpm) AS best_wpm\nFROM users u\nLEFT JOIN sessions s ON u.id = s.user_id\nGROUP BY u.id, u.username\nHAVING COUNT(s.id) > 0\nORDER BY avg_wpm DESC\nLIMIT 10;`,
+  },
+  {
+    lang: "SQL",
+    icon: "🗄️",
+    title: "Table Creation",
+    code: `CREATE TABLE sessions (\n    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n    user_id UUID NOT NULL REFERENCES users(id),\n    game_mode VARCHAR(50) NOT NULL,\n    wpm INTEGER NOT NULL CHECK (wpm >= 0),\n    accuracy DECIMAL(5,2) NOT NULL,\n    created_at TIMESTAMPTZ DEFAULT NOW()\n);`,
+  },
+  {
+    lang: "JavaScript",
+    icon: "🟨",
+    title: "Debounce Utility",
+    code: `function debounce(fn, delay) {\n  let timer;\n  return function (...args) {\n    clearTimeout(timer);\n    timer = setTimeout(() => {\n      fn.apply(this, args);\n    }, delay);\n  };\n}`,
+  },
+  {
+    lang: "Go",
+    icon: "🔷",
+    title: "HTTP Handler",
+    code: `func GetUser(w http.ResponseWriter, r *http.Request) {\n    id := chi.URLParam(r, "id")\n    user, err := db.FindUser(r.Context(), id)\n    if err != nil {\n        http.Error(w, "not found", 404)\n        return\n    }\n    json.NewEncoder(w).Encode(user)\n}`,
+  },
+];
+
+const LANG_FILTERS = ["All", "TypeScript", "Python", "SQL", "JavaScript", "Go"];
+
+function CodePractice() {
+  const [selectedLang, setSelectedLang] = useState("All");
+  const [snippet, setSnippet] = useState<typeof CODE_SNIPPETS[0] | null>(null);
+  const [input, setInput] = useState("");
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [result, setResult] = useState<{ wpm: number; accuracy: number; errors: number } | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const filtered = selectedLang === "All" ? CODE_SNIPPETS : CODE_SNIPPETS.filter(s => s.lang === selectedLang);
+
+  function startSnippet(s: typeof CODE_SNIPPETS[0]) {
+    setSnippet(s);
+    setInput("");
+    setStartTime(null);
+    setResult(null);
+    setTimeout(() => textareaRef.current?.focus(), 100);
+  }
+
+  function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    const val = e.target.value;
+    if (!startTime && val.length > 0) setStartTime(Date.now());
+    setInput(val);
+    if (snippet && val.length >= snippet.code.length) {
+      const elapsed = (Date.now() - (startTime ?? Date.now())) / 60000;
+      const correct = countCorrectChars(snippet.code, val);
+      const errors = Math.max(0, snippet.code.length - correct);
+      const wpm = Math.round((correct / 5) / Math.max(elapsed, 0.001));
+      const accuracy = Math.round((correct / snippet.code.length) * 100);
+      setResult({ wpm, accuracy, errors });
+    }
+  }
+
+  if (result && snippet) {
+    return (
+      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="max-w-lg mx-auto space-y-5 py-4 text-center">
+        <div className="w-14 h-14 bg-primary/20 rounded-2xl flex items-center justify-center mx-auto text-2xl">{snippet.icon}</div>
+        <h3 className="text-2xl font-bold">Code Typed!</h3>
+        <p className="text-sm text-muted-foreground">{snippet.lang} — {snippet.title}</p>
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: "WPM", val: result.wpm, cls: "text-primary" },
+            { label: "Accuracy", val: `${result.accuracy}%`, cls: "text-chart-2" },
+            { label: "Errors", val: result.errors, cls: "text-destructive" },
+          ].map(s => (
+            <div key={s.label} className="bg-card border border-border rounded-xl p-3">
+              <div className={`text-2xl font-bold font-mono ${s.cls}`}>{s.val}</div>
+              <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-3">
+          <Button variant="outline" className="flex-1" onClick={() => { setSnippet(null); setResult(null); }}>All Snippets</Button>
+          <Button className="flex-1 gap-2" onClick={() => startSnippet(snippet)}><RotateCcw className="w-4 h-4" /> Retry</Button>
+        </div>
+      </motion.div>
+    );
+  }
+
+  if (snippet) {
+    const progress = snippet.code.length > 0 ? Math.min(100, Math.round((input.length / snippet.code.length) * 100)) : 0;
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-lg">{snippet.icon}</span>
+            <span className="font-bold text-sm">{snippet.lang}</span>
+            <span className="text-muted-foreground text-sm">— {snippet.title}</span>
+          </div>
+          <Button variant="ghost" size="sm" onClick={() => setSnippet(null)}>← Back</Button>
+        </div>
+        <div className="bg-background/60 border border-border rounded-xl p-4 font-mono text-sm leading-relaxed select-none whitespace-pre-wrap">
+          {snippet.code.split("").map((char, i) => {
+            let cls = "text-muted-foreground/60";
+            if (i < input.length) cls = input[i] === char ? "text-emerald-400" : "text-red-400 bg-red-500/15 rounded-sm";
+            else if (i === input.length) cls = "bg-primary/20 border-b-2 border-primary text-foreground";
+            return <span key={i} className={cls}>{char}</span>;
+          })}
+        </div>
+        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+          <motion.div className="h-full bg-gradient-to-r from-primary to-chart-4 rounded-full" animate={{ width: `${progress}%` }} transition={{ duration: 0.15 }} />
+        </div>
+        <textarea
+          ref={textareaRef}
+          value={input}
+          onChange={handleInput}
+          autoFocus
+          autoComplete="off" autoCorrect="off" spellCheck={false}
+          rows={5}
+          className="w-full resize-none rounded-xl border border-border bg-card p-4 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+          placeholder="Type the code above..."
+        />
+        <p className="text-xs text-muted-foreground text-center">{input.length} / {snippet.code.length} characters</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-wrap gap-2">
+        {LANG_FILTERS.map(lang => (
+          <button key={lang} onClick={() => setSelectedLang(lang)}
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${selectedLang === lang ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground hover:text-foreground"}`}>
+            {lang}
+          </button>
+        ))}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {filtered.map((s, i) => (
+          <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+            whileHover={{ y: -2 }} onClick={() => startSnippet(s)}
+            className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:border-primary/40 transition-all group">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xl">{s.icon}</span>
+              <span className="text-xs font-mono font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded">{s.lang}</span>
+              <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-primary/60 ml-auto transition-colors" />
+            </div>
+            <div className="font-bold text-sm group-hover:text-primary transition-colors mb-1">{s.title}</div>
+            <pre className="text-[10px] text-muted-foreground font-mono line-clamp-3 leading-relaxed overflow-hidden">{s.code}</pre>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Lesson category colours ──────────────────────────────────────────────
 const LESSON_CAT_COLORS: Record<string, string> = {
   "home-row": "text-primary",
@@ -839,6 +1049,7 @@ export default function Practice() {
           {[
             { val: "lessons", icon: GraduationCap, label: "Lessons" },
             { val: "govt",    icon: Shield,         label: "Govt Exam" },
+            { val: "code",    icon: Code2,          label: "Code" },
             { val: "custom",  icon: FileText,        label: "Custom" },
             { val: "timed",   icon: Clock,           label: "Timed Test" },
             { val: "blind",   icon: Target,          label: "Blind Mode" },
@@ -895,6 +1106,22 @@ export default function Practice() {
               </div>
             </div>
             <GovtExamPractice />
+          </div>
+        </TabsContent>
+
+        {/* ─── Code Practice ─── */}
+        <TabsContent value="code">
+          <div className="bg-card border border-primary/20 rounded-2xl p-5 md:p-6">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-primary/15 rounded-xl flex items-center justify-center text-primary border border-primary/20">
+                <Code2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold">Code Snippet Practice</h3>
+                <p className="text-sm text-muted-foreground">TypeScript · Python · SQL · JavaScript · Go — real code, real speed</p>
+              </div>
+            </div>
+            <CodePractice />
           </div>
         </TabsContent>
 

@@ -18,6 +18,46 @@ function RankBadge({ rank }: { rank: number }) {
   return <span className="font-mono text-sm text-muted-foreground w-5 text-center">{rank}</span>;
 }
 
+function TopPodium({ entries }: { entries: Array<{ rank: number; username: string; wpm: number; accuracy: number; gameId: string }> }) {
+  const top3 = entries.slice(0, 3);
+  if (top3.length < 1) return null;
+
+  const order = [1, 0, 2]; // silver, gold, bronze display order
+  const podiumHeights = ["h-20", "h-28", "h-14"];
+  const colors = [
+    { bg: "bg-yellow-500/20 border-yellow-500/50", text: "text-yellow-400", label: "🥇 Champion" },
+    { bg: "bg-slate-400/20 border-slate-400/50", text: "text-slate-300", label: "🥈 2nd Place" },
+    { bg: "bg-amber-600/20 border-amber-600/50", text: "text-amber-500", label: "🥉 3rd Place" },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.1 }}
+      className="flex items-end justify-center gap-4 mb-8 pt-4"
+    >
+      {order.map((idx) => {
+        const entry = top3[idx];
+        if (!entry) return <div key={idx} className="flex-1 max-w-[140px]" />;
+        const c = colors[idx];
+        return (
+          <div key={idx} className="flex flex-col items-center flex-1 max-w-[160px]">
+            <div className={`w-14 h-14 rounded-full ${c.bg} border-2 flex items-center justify-center text-xl font-black mb-2 shadow-lg`}>
+              {entry.username.charAt(0).toUpperCase()}
+            </div>
+            <div className={`font-bold text-sm ${c.text} truncate max-w-full px-1 text-center`}>{entry.username}</div>
+            <div className="font-mono font-extrabold text-white text-lg">{entry.wpm} <span className="text-xs text-muted-foreground font-normal">WPM</span></div>
+            <div className={`w-full ${podiumHeights[idx]} ${c.bg} border rounded-t-xl mt-2 flex items-center justify-center`}>
+              <span className={`text-xs font-bold ${c.text}`}>{c.label}</span>
+            </div>
+          </div>
+        );
+      })}
+    </motion.div>
+  );
+}
+
 export default function Leaderboard() {
   const { user } = useAuth();
   const [selectedGame, setSelectedGame] = useState("");
@@ -59,6 +99,10 @@ export default function Leaderboard() {
           </button>
         ))}
       </div>
+
+      {!isLoading && (entries ?? []).length >= 3 && (
+        <TopPodium entries={entries ?? []} />
+      )}
 
       <div className="bg-card border border-card-border rounded-2xl overflow-hidden">
         <div className="grid grid-cols-[auto_1fr_auto_auto_auto] gap-4 px-6 py-3 border-b border-border bg-muted/30 text-xs text-muted-foreground font-semibold uppercase tracking-wider">

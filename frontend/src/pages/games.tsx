@@ -292,7 +292,7 @@ export default function Games() {
         className="flex items-center justify-center gap-2 text-xs text-muted-foreground pt-4"
       >
         <Lock className="w-3.5 h-3.5" />
-        Progress is saved locally now and can sync to your account when MongoDB is configured. Clear each level to unlock the next.
+        Progress is saved locally. Sign in to sync across devices and appear on the leaderboard. Complete all 5 levels to master each game.
       </motion.p>
     </div>
   );
