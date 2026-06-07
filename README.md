@@ -1,214 +1,168 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/TypeBlitz-v2.0-8b5cf6?style=for-the-badge&logo=keyboard&logoColor=white" />
-<img src="https://img.shields.io/badge/Games-20-22c55e?style=for-the-badge" />
-<img src="https://img.shields.io/badge/Stack-React%20%2B%20Express-38bdf8?style=for-the-badge" />
-<img src="https://img.shields.io/badge/Database-MongoDB%20Atlas-47a248?style=for-the-badge&logo=mongodb&logoColor=white" />
-<img src="https://img.shields.io/badge/License-MIT-f59e0b?style=for-the-badge" />
+<img src="https://img.shields.io/badge/TypeBlitz-v2.0-00ffb3?style=for-the-badge&logo=keyboard&logoColor=black" alt="TypeBlitz" />
 
-# ⌨️ TypeBlitz
+# ⚡ TypeBlitz
 
-### *The world's most immersive typing trainer — where speed meets skill, arcade games meet muscle memory, and government exam prep meets genuine fun.*
+### The world's most addictive typing game platform
 
-[🎮 Play Now](#) · [📊 Dashboard](#) · [🏆 Leaderboard](#) · [📘 Practice](#)
+**20 arcade games · Govt Exam ready · Code vocabulary · Real-time analytics**
+
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](https://choosealicense.com/licenses/mit/)
+[![React 18](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react)](https://react.dev/)
+[![TypeScript 5](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript)](https://typescriptlang.org/)
+[![Tailwind CSS 4](https://img.shields.io/badge/Tailwind-4-06B6D4?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
+[![Express 5](https://img.shields.io/badge/Express-5-000000?style=flat-square&logo=express)](https://expressjs.com/)
+[![MongoDB Atlas](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat-square&logo=mongodb)](https://www.mongodb.com/atlas)
+[![Framer Motion](https://img.shields.io/badge/Framer_Motion-11-FF0055?style=flat-square&logo=framer)](https://www.framer.com/motion/)
+
+[**🎮 Play Now**](#) · [**📊 Dashboard**](#) · [**🏆 Leaderboard**](#) · [**📖 API Docs**](#)
 
 ---
 
 </div>
 
-## ✨ What is TypeBlitz?
+## 🎯 What is TypeBlitz?
 
-TypeBlitz is a **professional typing training platform** built around a simple idea: if typing practice was as fun as gaming, people would actually do it every day.
+TypeBlitz is a **fully-featured, professional typing game platform** built for everyone — from students preparing for SSC/UPSC/Banking government exams to developers who want to type code at lightning speed.
 
-It combines:
-- **20 unique game modes** — canvas-rendered arcade games that train your fingers while keeping you hooked
-- **Government exam preparation** — SSC CGL/CHSL, Railways NTPC, Court Stenographer — complete with official scoring algorithms
-- **Developer vocabulary** — JavaScript, Python, React, SQL, Git, Architecture terms across all 5 levels
-- **Deep analytics** — per-letter accuracy heatmap, WPM trend chart, session history, and 12 achievement badges
-- **Strict WPM engine** — wrong words contribute zero characters; no inflation, no shortcuts
+Unlike typical typing trainers, TypeBlitz gamifies the entire learning journey with **20 unique arcade games**, cinematic canvas rendering, real-time WPM analytics, and a structured progression system that keeps you coming back every single day.
+
+> **"Every keystroke has weight."** — Type faster. Think sharper. Reach your peak.
 
 ---
 
-## 🎮 Game Library — 20 Modes
+## ✨ Features
 
-### 🕹️ Arcade Canvas Games (13 total)
+### 🎮 20 Unique Arcade Games
 
-Canvas-rendered games with real-time physics, particles, and animations — all built on the raw HTML5 Canvas API, zero game engines:
-
-| Game | Theme | Unique Mechanic |
-|------|-------|-----------------|
-| 🏎️ **Turbo Race** | Cyberpunk Synthwave | Race a ghost car on a pseudo-3D Outrun highway with **3D roadside palm trees, neon signs, lamp posts, and rain effects** at high WPM |
-| ⚔️ **Word Fighter** | Cyberpunk Dojo | Katana-wielding fighter — type words to attack; health bars with spring physics |
-| 🧟 **Zombie Hunt** | Horror Survival | Zombie horde approaches your safe house; correct words fire your gun |
-| 🚀 **Galaxy Blitz** | Space Shooter | Alien fleet descends; dual energy bolts fire on each correct word; shield HP system |
-| ☄️ **Meteor Storm** | Planetary Defense | Meteors orbit inward with velocity; type words to blast them before impact |
-| 🏃 **Neon Runner** | Infinite Runner | Endless procedural neon city; jump/duck/dash via typing; obstacle patterns scale with level |
-| 🐍 **Snake Typer** | Grid Snake | Classic snake on a glowing grid — feed it by typing words on orbs before timers drain; grows longer each level |
-| 👾 **Word Invaders** | Space Invaders | Type alien words to fire your laser cannon; alien fleet descends in formation over time |
-| 💻 **Code Rain** | Matrix Decrypt | Words glow gold in cascading matrix rain; type them to collapse columns in burst-of-light explosions |
-| 🕵️ **Cyber Heist** | Hacker Terminal | Network topology with 7 interconnected nodes; type passkeys to hack each node; animated data packets flow on hacked connections; glitch overlay on errors |
-| 🎯 **Arena Blitz** | Top-Down Shooter | You're a rotary weapons platform; grunt/tank/speeder enemies spiral inward from the edge; floor-bounce particles on kills |
-| 🫧 **Bubble Pop** | Chill Arcade | Colorful word-bubbles float upward — type each word before it drifts off the top; build combos for bonus points |
-| 🍉 **Fruit Blitz** | Slice Mechanic | Fruits arc through the air — type their word to slice them mid-flight; miss one and lose a life; split animations with juice particles |
-
-### 📚 Classic Typing Modes (7 total)
-
-| Mode | Target Skill |
-|------|-------------|
-| ⚡ **Word Sprint** | Raw speed training with 5 progressive levels |
-| 🏛️ **Govt Exam Sprint** | SSC/UPSC/Banking vocabulary, 5 difficulty levels |
-| 📄 **Sentence Rush** | Full-sentence fluency and reading flow |
-| 💻 **Code Type** | Typing actual code syntax, operators, brackets |
-| 📖 **Code Vocab** | Developer terminology from basic to architecture-level |
-| 🔡 **Letter Blaster** | Individual key reaction speed training |
-| 🏁 **Typing Race** | Competitive passage racing |
+| Game | Category | Description |
+|------|----------|-------------|
+| 🏎️ **Turbo Race** | Arcade | Pseudo-3D neon highway racing — type to accelerate |
+| 🧟 **Zombie Hunt** | Arcade | Graveyard survival — shoot zombies by typing their words |
+| 🚀 **Galaxy Blitz** | Arcade | Space shooter — destroy alien waves with typing |
+| ⚔️ **Word Fighter** | Arcade | Street fighter-style typing combat with HP bars |
+| 🏃 **Neon Runner** | Arcade | Side-scrolling runner with physics and obstacles |
+| 🐍 **Snake Typer** | Arcade | Classic snake game controlled entirely by typing |
+| 👾 **Word Invaders** | Arcade | Space Invaders with typing mechanics |
+| 💻 **Code Rain** | Arcade | Matrix digital rain typing challenge |
+| 🕵️ **Cyber Heist** | Arcade | Hack secured networks by typing passkeys |
+| 🎯 **Arena Blitz** | Arcade | Top-down turret combat with multiple enemies |
+| 🫧 **Bubble Pop** | Arcade | Pop floating word-bubbles before they drift away |
+| 🍉 **Fruit Blitz** | Arcade | Slice flying fruits by typing their words |
+| ☄️ **Meteor Storm** | Arcade | Defend the earth from incoming meteor words |
+| ⚡ **Word Sprint** | Training | Pure speed training with 5-level word progression |
+| 🏛️ **Govt Exam Sprint** | Training | SSC/UPSC/Banking/Railways exam vocabulary |
+| 📜 **Sentence Rush** | Training | Full passages from basic to UPSC-level prose |
+| 💻 **Code Type** | Coding | Real code snippets with brackets, symbols, indentation |
+| 🔤 **Code Vocab** | Coding | Programming keywords and architecture terms |
+| 🏅 **Letter Blaster** | Precision | Single-key precision and reaction training |
+| 🏁 **Typing Race** | Competitive | Classic word race with WPM leaderboard |
 
 ---
 
-## 🏋️ Practice Hub — 5 Modes
+### 📚 Government Exam Ready
+
+TypeBlitz contains 500+ authentic vocabulary words from real exam papers across all tiers:
+
+| Exam | Target WPM | Words |
+|------|-----------|-------|
+| **SSC CGL** | 35 WPM | Administrative and general vocabulary |
+| **IBPS Banking** | 40 WPM | Financial and banking terminology |
+| **RRB NTPC** | 30 WPM | Railway technical terms |
+| **UPSC Mains** | 40 WPM | Civil services and polity vocabulary |
+| **High Court Typist** | 40 WPM | Legal and judiciary terms |
+| **SSC CPO** | 35 WPM | Police and defence vocabulary |
+
+---
+
+### 💻 Coding Vocabulary
+
+- TypeScript, JavaScript, Python, Go, Rust, SQL, Java patterns
+- Real code snippets — functions, algorithms, async/await patterns
+- DevOps and cloud architecture terminology
+- 5 difficulty levels: keywords → distributed systems
+
+---
+
+### 📊 Deep Analytics Dashboard
+
+- **Live WPM** with animated sparkline chart
+- **Per-letter heatmap** — see exactly which keys slow you down
+- **Session history** — all 20 games tracked separately
+- **WPM progress chart** over time
+- **12 achievement badges** — speed, accuracy, streaks
+- **Game-level progression** with visual progress bars
+- **Day streak tracking** — stay motivated daily
+
+---
+
+### 🎓 Professional Practice Modes
 
 | Mode | Description |
 |------|-------------|
-| 📘 **12 Structured Lessons** | From home-row fundamentals to advanced symbol rows |
-| 🏛️ **Govt Exam Simulator** | SSC CGL/CHSL, Railways NTPC, High Court — official scoring with Levenshtein error detection (half/full mistakes, exact exam rules) |
-| ✏️ **Custom Text** | Paste any content — code, articles, meeting notes — get detailed accuracy breakdown |
-| ⏱️ **Timed Test** | 1, 2, or 5-minute WPM benchmark with live character highlighting |
-| 🫣 **Blind Mode** | Type without seeing your input — builds pure muscle memory |
-
----
-
-## 📊 Dashboard & Analytics
-
-Every session is recorded and displayed in a rich analytics dashboard:
-
-- **WPM Progress Chart** — Recharts line graph of speed over all sessions
-- **Mechanical Heatmap** — QWERTY keyboard colored by per-letter accuracy (emerald → amber → red with hover tooltips showing exact %)
-- **Game Level Progress** — animated progress bars for all 18 games
-- **Recent Sessions** — last 8 plays with WPM, accuracy, game mode, and level
-- **12 Achievement Badges** — Speed (30/50/80/100 WPM), Accuracy (95%/99%), Sessions (10/50/200), Streaks (3/7/30 days) — with animated unlock progress bar
-- **Global Rank** — real-time worldwide leaderboard position
-
----
-
-## 🏛️ Government Exam Rules — Implemented Exactly
-
-TypeBlitz implements **official Indian government exam typing evaluation**:
-
-### SSC CGL / CHSL
-- **Target**: 35 WPM net speed
-- **Error limit**: 7% of total key depressions
-- **Penalty**: Every 10 errors beyond limit = 1 word deducted from net score
-- Uses Levenshtein distance to detect **full mistakes** (omission, substitution) vs **half mistakes** (capitalization errors)
-
-### Railways NTPC
-- **Target**: 30 WPM net speed
-- **Free allowance**: First 5% of errors are ignored
-- **Penalty for excess**: 10 depressions per mistake beyond the free zone
-
-### High Court Stenographer
-- **Target**: 40 WPM net speed
-- **Error limit**: 3% (strictest mode)
-- Separate counts for full mistakes and half mistakes
+| **Structured Lessons** | 12 progressive keyboard groups (home row → symbols) |
+| **Govt Exam Practice** | SSC, UPSC, Banking, Railways passages |
+| **Code Practice** | 8 programming language snippets with syntax highlighting |
+| **Custom Text** | Type any content you paste |
+| **Timed Test** | 30/60/120 second speed tests |
+| **Blind Mode** | Type without seeing input — ultimate pro mode |
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-```
-React 19 + TypeScript 5
-Vite 6 (dev server, HMR, build)
-Tailwind CSS v4 + CSS Custom Properties theming
-Framer Motion (all UI animations, spring physics, AnimatePresence)
-Recharts (WPM trend chart, ResponsiveContainer)
-HTML5 Canvas API (all 11 arcade games — no game engine, raw canvas)
-Wouter (lightweight SPA routing)
-TanStack Query v5 (server state, queryKey-explicit hooks)
-Lucide React (icon system)
-```
+
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **React** | 18 | UI framework with concurrent mode |
+| **TypeScript** | 5 | Full type safety across the stack |
+| **Vite** | 7 | Ultra-fast HMR build tool |
+| **Tailwind CSS** | 4 | Utility-first styling system |
+| **Framer Motion** | 11 | Animations, layout animations, transitions |
+| **Canvas API** | Native | Game rendering engine (60fps) |
+| **Wouter** | 3 | Lightweight client-side routing |
+| **TanStack Query** | 5 | Server state & cache management |
+| **Recharts** | 2 | Dashboard charts and sparklines |
+| **React.lazy + Suspense** | 18 | Code splitting & lazy loading |
 
 ### Backend
-```
-Express 5 + TypeScript
-Mongoose 8 + MongoDB Atlas
-OpenAPI 3.0 spec → auto-generated type-safe client (orval)
-Zod validation on all request bodies
-bcryptjs (password hashing, salt rounds = 12)
-JWT (stateless auth, 7-day expiry)
-```
 
-### Monorepo
-```
-pnpm 9 workspaces
-├── frontend/    → React Vite app  (port 25383 dev / 3000 external)
-├── backend/     → Express API     (port 8080  dev / 80  external)
-└── lib/         → Shared OpenAPI-generated TanStack Query hooks
-```
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **Express** | 5 | HTTP server framework |
+| **MongoDB Atlas** | 7 | Primary database (cloud) |
+| **Mongoose** | 8 | Schema-validated ODM |
+| **bcrypt** | 5 | Secure password hashing |
+| **JWT** | 9 | Stateless auth tokens |
+| **Pino** | 9 | Structured production logging |
+| **esbuild** | Latest | Ultra-fast TypeScript bundling |
 
----
-
-## 📁 Project Structure
+### Monorepo Architecture
 
 ```
 typeblitz/
-├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── games/                  # 13 canvas arcade game components
-│   │   │   │   ├── ArcadeArena.tsx     # Game session controller + routing
-│   │   │   │   ├── RacingGame.tsx      # Pseudo-3D Outrun + 3D roadside objects
-│   │   │   │   ├── FighterGame.tsx     # Cyberpunk dojo fighter
-│   │   │   │   ├── ZombieGame.tsx      # Zombie horde survival
-│   │   │   │   ├── GalaxyGame.tsx      # Space shooter with shields
-│   │   │   │   ├── MeteorGame.tsx      # Orbital meteor defense
-│   │   │   │   ├── NeonRunnerGame.tsx  # Infinite neon runner
-│   │   │   │   ├── SnakeTyperGame.tsx  # Grid snake with countdown orbs
-│   │   │   │   ├── WordInvadersGame.tsx# Space Invaders formation
-│   │   │   │   ├── CodeRainGame.tsx    # Matrix rain decrypt
-│   │   │   │   ├── CyberHeistGame.tsx  # Network hacking terminal
-│   │   │   │   ├── ArenaBlitzGame.tsx  # Top-down arena shooter
-│   │   │   │   ├── BubblePopGame.tsx   # Floating bubble pop mechanic
-│   │   │   │   └── FruitBlitzGame.tsx  # Fruit slice with split animation
-│   │   │   ├── ui/                     # shadcn/ui components
-│   │   │   └── VirtualKeyboard.tsx     # On-screen keyboard for mobile
-│   │   ├── pages/
-│   │   │   ├── home.tsx         # Landing page + live typing widget
-│   │   │   ├── games.tsx        # Game library (18 games, themed cards)
-│   │   │   ├── play.tsx         # Game session + letter stat tracking
-│   │   │   ├── practice.tsx     # Practice hub (5 modes incl. Blind Mode)
-│   │   │   ├── dashboard.tsx    # Analytics + heatmap + achievements
-│   │   │   ├── challenge.tsx    # Daily challenge + streak system
-│   │   │   ├── leaderboard.tsx  # Global rankings table
-│   │   │   ├── login.tsx
-│   │   │   └── register.tsx
-│   │   ├── context/
-│   │   │   └── AuthContext.tsx  # JWT auth context + useAuth hook
-│   │   ├── lib/
-│   │   │   ├── audio.ts         # Sound effects engine (Web Audio API)
-│   │   │   └── progress.ts      # Level unlock logic + localStorage sync
-│   │   └── App.tsx              # Root router + layout
-│   └── vite.config.ts
+├── frontend/                   # React + Vite SPA
+│   └── src/
+│       ├── pages/              # Route-level components (lazy loaded)
+│       ├── components/
+│       │   ├── games/          # 13 canvas-rendered arcade games
+│       │   ├── ui/             # shadcn/ui design system
+│       │   └── layout.tsx      # App shell + sidebar navigation
+│       ├── context/            # Auth context (JWT + localStorage)
+│       ├── lib/                # WPM engine, audio, progress tracking
+│       └── index.css           # Neon design system tokens
 │
-├── backend/
-│   ├── src/
-│   │   ├── data/
-│   │   │   ├── games.ts         # 20 game definitions + 105 level configs
-│   │   │   └── words.ts         # Word lists for every game × 5 levels
-│   │   ├── models/
-│   │   │   ├── User.ts          # Mongoose user schema
-│   │   │   ├── Session.ts       # Game session schema
-│   │   │   └── LetterStat.ts    # Per-letter accuracy schema
-│   │   ├── routes/
-│   │   │   ├── auth.ts          # Register + login
-│   │   │   ├── games.ts         # Game + word list endpoints
-│   │   │   ├── sessions.ts      # Session submit + analyze
-│   │   │   ├── users.ts         # Stats, progress, letter accuracy
-│   │   │   └── lessons.ts       # 12 structured lessons
-│   │   └── index.ts             # Express app entry
-│   └── openapi.yaml
+├── backend/                    # Express 5 REST API
+│   └── src/
+│       ├── routes/             # RESTful API endpoints
+│       ├── models/             # Mongoose models (User, Session, LetterStat)
+│       ├── data/               # Word lists, game configs, lessons
+│       └── lib/                # Auth, DB, logger
 │
 └── lib/
-    └── api-client-react/        # Auto-generated TanStack Query hooks
+    └── api-client-react/       # Generated type-safe React hooks
 ```
 
 ---
@@ -216,136 +170,245 @@ typeblitz/
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 20+
-- pnpm 9+
-- MongoDB Atlas cluster (free tier works)
+
+- **Node.js** 20+
+- **pnpm** 9+
+- **MongoDB Atlas** account (optional — app works without it)
 
 ### Installation
 
 ```bash
-git clone https://github.com/your-username/typeblitz.git
+# 1. Clone the repo
+git clone https://github.com/yourusername/typeblitz.git
 cd typeblitz
+
+# 2. Install all workspace dependencies
 pnpm install
+
+# 3. Configure environment (optional for full features)
+cp backend/.env.example backend/.env
+# Edit backend/.env with your MongoDB URI and JWT secret
+
+# 4. Start the backend API server (port 8080)
+pnpm --filter @workspace/api-server run dev
+
+# 5. Start the frontend dev server (port 5173)
+pnpm --filter @workspace/typeblitz run dev
+
+# Open http://localhost:5173
 ```
 
-### Environment Setup
+### Environment Variables
 
-```bash
-# backend/.env
-MONGODB_URI=mongodb+srv://<user>:<pass>@cluster.mongodb.net/typeblitz
-JWT_SECRET=your-256-bit-secret-key
+Create `backend/.env`:
+
+```env
+# MongoDB Atlas connection string (optional - app runs without it)
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/typeblitz
+
+# JWT signing secret (required for auth)
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
+
+# Server port (default: 8080)
 PORT=8080
-NODE_ENV=development
+
+# Logging level (default: info)
+LOG_LEVEL=info
 ```
 
-> Without `MONGODB_URI`, the server starts in **demo mode** — all API routes return empty arrays and sessions are not saved. The app is still fully playable.
+> **Demo mode:** Without `MONGODB_URI`, the app starts with a warning and all gameplay, word lists, lessons, and practices work fine. Only user accounts and leaderboard require a database.
 
-### Development
+---
 
-```bash
-# Start both services
-pnpm run dev
+## 🎮 Game Engine Details
 
-# Or individually:
-pnpm --filter @workspace/typeblitz run dev    # Frontend → localhost:25383
-pnpm --filter @workspace/api-server run dev   # Backend  → localhost:8080
+### Canvas Rendering
+
+All 13 arcade games use the **native Canvas 2D API** for rendering:
+
+- **60fps game loop** via `requestAnimationFrame` with delta-time physics
+- **Pixel-perfect collision detection** for projectiles and enemies
+- **Particle systems** for explosions, impacts, trails, and ambient effects
+- **Procedural animations** — no sprite sheets or image assets required
+- **Screen shake** — impactful feedback for hits and misses
+- **Parallax scrolling** — multi-layer depth for racing and runner games
+
+### Audio Engine
+
+```typescript
+// Available sound themes
+soundEffects.setTheme("mechanical");   // Clicky mechanical keyboard
+soundEffects.setTheme("typewriter");   // Vintage typewriter sounds
+soundEffects.setTheme("soft");         // Quiet soft-touch keys
+soundEffects.setTheme("silent");       // No sound
 ```
+
+### WPM Calculation — Strict Mode
+
+```typescript
+// STRICT: Only fully correct words count — no inflation
+// Wrong words contribute ZERO characters to WPM
+const finalWpm = Math.round((correctCharsFromExactWords / 5) / timeInMinutes);
+
+// Accuracy: per-keystroke precision (backspaces don't erase errors)
+const accuracy = ((totalKeystrokes - errorKeystrokes) / totalKeystrokes) * 100;
+```
+
+This matches the industry standard (MonkeyType, TypeRacer) while being even stricter — partial credit for wrong words is eliminated entirely.
+
+---
+
+## 📈 Progression System
+
+Each game has **5 levels** unlocked by passing the previous one with target WPM + 90% accuracy:
+
+| Level | WPM Target | Difficulty |
+|-------|-----------|------------|
+| 1 — Warm Up | 20–25 | Beginner words |
+| 2 — Building Speed | 30–38 | Common vocabulary |
+| 3 — Hitting Stride | 40–45 | Govt exam terms |
+| 4 — Advanced | 50–60 | UPSC / technical |
+| 5 — Mastery | 60–75 | Expert vocabulary |
+
+Progress is stored in `localStorage` per game per level — no login required for single-player.
+
+---
+
+## 🏆 Daily Challenge System
+
+A new challenge is generated every day with:
+- Fixed target WPM based on difficulty
+- Unique word sets across 21 challenge types
+- Streak tracking (keep your streak alive every day)
+- Global ranking among all participants
+
+---
+
+## 🗺️ Roadmap
+
+### ✅ v2.0 — Completed
+
+- [x] 20 typing games with 5 levels each
+- [x] 13 canvas-rendered arcade games (particles, physics, audio)
+- [x] Government exam vocabulary (SSC, UPSC, Banking, Railways, Police, Court)
+- [x] Coding vocabulary (TS, Python, Go, SQL, DevOps)
+- [x] Strict WPM — only exact words count
+- [x] Per-letter accuracy heatmap
+- [x] Dashboard with WPM chart, achievements, session history
+- [x] Daily challenge with streak tracking
+- [x] Global leaderboard with top-3 podium
+- [x] 12 structured keyboard lessons
+- [x] 6 practice modes (Lessons, Govt, Code, Custom, Timed, Blind)
+- [x] Lazy loading with React.lazy + Suspense
+- [x] Mechanical keyboard + typewriter audio themes
+- [x] JWT authentication + bcrypt
+- [x] MongoDB Atlas with graceful offline fallback
+- [x] Fully responsive design (mobile → 4K)
+- [x] Combo streak system with animated popups
+
+### 🚧 v2.1 — In Progress
+
+- [ ] Ghost mode — race against your personal best
+- [ ] Multiplayer rooms — real-time head-to-head
+- [ ] Custom word list import (CSV/JSON)
+- [ ] Mobile-optimized virtual keyboard overlay
+- [ ] Export session stats as PDF certificate
+
+### 🔮 v3.0 — Vision
+
+- [ ] AI-powered weak key detection and personalized drills
+- [ ] PWA with offline support and service workers
+- [ ] Community word packs marketplace
+- [ ] Typing certification system for employers
+- [ ] 50+ language keyboard support
+- [ ] Voice-guided lesson mode
 
 ---
 
 ## 📡 API Reference
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET` | `/api/games` | All 18 games with levels |
-| `GET` | `/api/games/:id` | Single game detail |
-| `GET` | `/api/games/:id/levels/:n/words` | Word list for game+level |
-| `POST` | `/api/sessions` | Submit completed session |
-| `GET` | `/api/users/:id/stats` | WPM, rank, streak, accuracy |
-| `GET` | `/api/users/:id/progress` | WPM history (for chart) |
-| `GET` | `/api/users/:id/sessions` | Recent 8 sessions |
-| `GET` | `/api/users/:id/letter-accuracy` | Per-letter heatmap data |
-| `GET` | `/api/users/:id/level-progress` | Game unlock status |
-| `GET` | `/api/leaderboard` | Global rankings |
-| `POST` | `/api/auth/register` | Create account |
-| `POST` | `/api/auth/login` | Login + JWT response |
-| `GET` | `/api/lessons` | 12 structured lessons |
-| `POST` | `/api/practice/analyze` | Custom text accuracy analysis |
+### Auth
 
----
-
-## ⚡ WPM Calculation — Strict & Fair
-
-```typescript
-// Only fully correct words count
-const correctChars = words
-  .filter((word, i) => typedWords[i] === word)
-  .reduce((sum, w) => sum + w.length + 1, 0); // +1 for space
-
-const wpm = Math.round((correctChars / 5) / (elapsedMinutes));
-const accuracy = (correctChars / Math.max(expectedLength, typedLength)) * 100;
+```http
+POST /api/auth/register         Create new account
+POST /api/auth/login            Get JWT token
+GET  /api/auth/me               Get current user (requires Authorization header)
+POST /api/auth/logout           Invalidate session
 ```
 
-- Wrong words → **zero chars** counted toward WPM
-- Partially correct words → **zero chars** counted
-- Matches **monkeytype.com** standard
-- No inflation, no partial credit
+### Games
 
----
+```http
+GET /api/games                  List all 20 games with level configs
+GET /api/games/:id              Single game metadata
+GET /api/games/:id/levels/:n/words   Level word list (shuffled per request)
+```
 
-## 📈 Roadmap
+### Sessions
 
-### ✅ v2.0 — Current
-- [x] 20 game modes (13 arcade canvas + 7 classic)
-- [x] 5 levels per game with unique word lists (govt + code vocab)
-- [x] Strict WPM calculation — wrong words = 0 contribution
-- [x] Govt exam simulator with official SSC/Railway/Court scoring rules
-- [x] Dashboard: WPM chart + letter heatmap + achievements (12 badges)
-- [x] Blind Mode practice (type without seeing input)
-- [x] Interactive typing widget on home page
-- [x] 3D roadside objects in RacingGame (palm trees, neon signs, lamp posts, rain)
-- [x] Cyber Heist (hacker terminal) + Arena Blitz (top-down shooter) + Bubble Pop + Fruit Blitz games
-- [x] MongoDB Atlas production-ready with graceful demo fallback
-- [x] Fully responsive on all device sizes
+```http
+POST /api/sessions              Submit game result (wpm, accuracy, duration)
+GET  /api/sessions/:userId      User's session history (paginated)
+GET  /api/sessions/:userId/stats     Aggregated stats (best WPM, avg accuracy)
+GET  /api/sessions/:userId/progress  WPM over time for charting
+```
 
-### 🔜 v2.1 — Upcoming
-- [ ] Multiplayer race rooms (WebSocket real-time)
-- [ ] Hindi / Devanagari typing mode
-- [ ] Mobile-native on-screen keyboard overlay
-- [ ] Sharable result cards (OG image generation)
-- [ ] AI Typing Coach — personalized drills targeting your weakest keys
-- [ ] Custom word list import (CSV / plain text)
-- [ ] PWA + offline mode
-- [ ] Audio theme selector (lo-fi, synthwave, silence)
+### Leaderboard
+
+```http
+GET /api/leaderboard            Global top 100 by WPM
+GET /api/leaderboard?game=:id   Per-game rankings
+```
+
+### Lessons & Practice
+
+```http
+GET /api/lessons                All structured lessons
+GET /api/lessons/:id            Single lesson content
+GET /api/practice/:mode         Practice word lists by mode
+```
 
 ---
 
 ## 🤝 Contributing
 
-```bash
-# Fork + clone
-git checkout -b feature/your-feature-name
+Contributions are welcome! To get started:
 
-# Canvas games follow the ArcadeProps interface in ArcadeArena.tsx
-# All games receive: words, wordIndex, currentInput, wpm, accuracy,
-#   progress, startTime, lastWordCorrect, submissionCount, comboStreak, mistakeCount
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feat/my-feature`
+3. Make your changes
+4. Commit with conventional commits: `git commit -m "feat: add ghost mode"`
+5. Push and open a Pull Request
 
-pnpm run dev   # test locally
-# Submit PR with clear description
-```
+### Adding a New Arcade Game
+
+1. Create `frontend/src/components/games/MyNewGame.tsx` — Canvas rendering with `ArcadeProps`
+2. Register in `ArcadeArena.tsx` (import + switch case)
+3. Add to `ARCADE_GAME_IDS` set in `play.tsx`
+4. Add game config in `backend/src/data/games.ts`
+5. Add word lists in `backend/src/data/words.ts`
+
+### Code Style
+
+- TypeScript strict mode — no `any` types
+- Tailwind for all styling — no inline CSS
+- Framer Motion for all animations
+- Components under 400 lines — split if larger
 
 ---
 
 ## 📄 License
 
-MIT License — see [LICENSE](./LICENSE) for details.
+MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
 <div align="center">
 
-**Built for typists, government exam aspirants, and developers who believe every keystroke counts.**
+**Built with ❤️ for typists who want to reach their peak**
 
-⌨️ *Type faster. Think clearer. Win more.*
+⭐ **Star this repo** if TypeBlitz helped you type faster!
+
+*TypeBlitz · Type faster. Think sharper. Reach your peak.*
 
 </div>

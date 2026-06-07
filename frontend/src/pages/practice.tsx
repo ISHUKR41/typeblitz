@@ -42,6 +42,81 @@ const GOVT_PASSAGES = [
     title: "Staff Selection Commission",
     text: "The Staff Selection Commission conducts Combined Graduate Level and Combined Higher Secondary Level examinations to recruit staff for various posts in ministries, departments, and organisations of the Government of India. Candidates are selected based on written examinations followed by skill tests and document verification.",
   },
+  {
+    category: "UPSC",
+    title: "Civil Services Examination",
+    text: "The Union Public Service Commission conducts the Civil Services Examination to recruit officers for the Indian Administrative Service, Indian Police Service, Indian Foreign Service, and other Group A and Group B Central Services. It is considered one of the most competitive examinations in the country.",
+  },
+  {
+    category: "Polity",
+    title: "Fundamental Rights",
+    text: "The Fundamental Rights enshrined in Part III of the Constitution of India guarantee civil liberties to all citizens. These include the right to equality, right to freedom, right against exploitation, right to freedom of religion, cultural and educational rights, and the right to constitutional remedies.",
+  },
+  {
+    category: "Polity",
+    title: "Directive Principles",
+    text: "The Directive Principles of State Policy are contained in Part IV of the Constitution of India. They are non-justiciable guidelines for the governance of the country, aimed at establishing socioeconomic justice and welfare, ensuring equitable distribution of resources and opportunities among all citizens.",
+  },
+  {
+    category: "Economy",
+    title: "GST Reform",
+    text: "The Goods and Services Tax was introduced in India on the first of July 2017, replacing a complex system of indirect taxes. It is a comprehensive, multi-stage, destination-based tax levied on every value addition, subsuming central excise duty, service tax, value added tax, and several other levies.",
+  },
+  {
+    category: "Banking",
+    title: "IBPS Examinations",
+    text: "The Institute of Banking Personnel Selection conducts examinations for the recruitment of officers and clerks in public sector banks across India. The selection process consists of a preliminary examination, mains examination, and an interview round for officer-level posts in participating banks.",
+  },
+  {
+    category: "Banking",
+    title: "Non-Performing Assets",
+    text: "A non-performing asset is a loan or advance for which the principal or interest payment remains overdue for a period of ninety days. Banks are required to classify such assets into substandard, doubtful, and loss categories based on the period and nature of the default by the borrower.",
+  },
+  {
+    category: "Governance",
+    title: "Panchayati Raj",
+    text: "The Panchayati Raj system provides for a three-tier structure of local self-government in rural areas of India. The seventy-third Constitutional Amendment Act of 1992 gave constitutional status to these institutions and mandated elections, reservation of seats for women and scheduled castes and tribes.",
+  },
+  {
+    category: "Governance",
+    title: "E-Governance",
+    text: "Electronic governance refers to the use of information and communication technologies by government agencies to transform their relationships with citizens, businesses, and other arms of government. The Digital India initiative aims to ensure government services are made available digitally to empower citizens.",
+  },
+  {
+    category: "SSC",
+    title: "Combined Higher Secondary Level",
+    text: "The Staff Selection Commission Combined Higher Secondary Level Examination recruits candidates for posts of lower division clerk, junior secretariat assistant, postal assistant, and data entry operators in various central government ministries and departments. The selection is based on a computer-based examination and skill test.",
+  },
+  {
+    category: "Railways",
+    title: "RRB NTPC Examination",
+    text: "The Railway Recruitment Board conducts the Non-Technical Popular Categories examination to fill vacancies of junior clerk, accounts clerk, junior time keeper, trains clerk, commercial apprentice, station master, and goods guard posts across various railway zones of the Indian Railways network.",
+  },
+  {
+    category: "Police",
+    title: "SSC CPO Examination",
+    text: "The Staff Selection Commission Central Police Organisations examination recruits sub-inspectors in the Central Armed Police Forces including the Border Security Force, Central Reserve Police Force, and Indo-Tibetan Border Police. Candidates must clear written tests, physical endurance tests, and medical examinations.",
+  },
+  {
+    category: "Judiciary",
+    title: "High Court Typing Test",
+    text: "High Court stenographer and clerk examinations require candidates to demonstrate proficiency in English typewriting. The prescribed speed is generally forty words per minute with an accuracy of ninety-five percent. Candidates must practice regularly with authentic legal and administrative passage material.",
+  },
+  {
+    category: "Economy",
+    title: "NABARD and Agriculture",
+    text: "The National Bank for Agriculture and Rural Development was established in 1982 to provide credit and other facilities for the promotion and development of agriculture, small-scale industries, cottage industries, handicrafts, and other rural crafts and industries. It supervises regional rural banks across the country.",
+  },
+  {
+    category: "Polity",
+    title: "Parliamentary Procedure",
+    text: "The Indian Parliament consists of the President, the Council of States known as the Rajya Sabha, and the House of the People known as the Lok Sabha. Parliament exercises legislative powers, controls the executive, debates national policies, and can pass constitutional amendments with the required majority.",
+  },
+  {
+    category: "Economy",
+    title: "Financial Inclusion",
+    text: "Financial inclusion aims to ensure that individuals and businesses have access to affordable and useful financial products and services. The Pradhan Mantri Jan Dhan Yojana launched in 2014 opened millions of zero-balance savings accounts for the unbanked population across India, transforming access to banking services.",
+  },
 ];
 
 // ─── Timed test passages ─────────────────────────────────────────────────

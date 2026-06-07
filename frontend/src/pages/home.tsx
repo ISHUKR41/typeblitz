@@ -1,30 +1,75 @@
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { motion, useMotionValue, useSpring, animate } from "framer-motion";
+import { motion, animate, useScroll, useTransform } from "framer-motion";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
 import {
   Gamepad2, Zap, Trophy, ArrowRight, Keyboard, Target, BarChart2,
-  ChevronDown, Shield, Code2, Play, CheckCircle, Star, Cpu, Crosshair,
-  BookOpen, Clock, Users
+  Shield, Code2, Play, Clock, BookOpen, Star, Cpu, ChevronDown,
+  Users, TrendingUp, Award, Flame, Check, Crosshair, Terminal
 } from "lucide-react";
 
-const HERO_WORDS = ["faster.", "sharper.", "smarter.", "accurate.", "unstoppable."];
+const HERO_WORDS = ["faster.", "sharper.", "smarter.", "accurate.", "unstoppable.", "dangerous."];
+const QUICK_WORDS = ["the", "quick", "brown", "fox", "jumps", "over", "lazy", "dog", "type", "fast"];
 
 const FLOATING_KEYS = [
-  { key: "A", x: "6%",  y: "18%", delay: 0    },
-  { key: "S", x: "13%", y: "58%", delay: 0.5  },
-  { key: "D", x: "4%",  y: "78%", delay: 1    },
-  { key: "F", x: "18%", y: "32%", delay: 1.5  },
-  { key: "J", x: "78%", y: "22%", delay: 0.3  },
-  { key: "K", x: "87%", y: "54%", delay: 0.8  },
-  { key: "L", x: "73%", y: "72%", delay: 1.2  },
-  { key: ";", x: "92%", y: "38%", delay: 1.7  },
-  { key: "↵", x: "84%", y: "82%", delay: 0.6  },
-  { key: "⌘", x: "10%", y: "90%", delay: 1.1  },
+  { key: "A", x: "5%",  y: "20%", delay: 0 },
+  { key: "S", x: "12%", y: "60%", delay: 0.6 },
+  { key: "D", x: "3%",  y: "80%", delay: 1.2 },
+  { key: "F", x: "18%", y: "35%", delay: 1.8 },
+  { key: "J", x: "79%", y: "25%", delay: 0.3 },
+  { key: "K", x: "88%", y: "55%", delay: 0.9 },
+  { key: "L", x: "74%", y: "75%", delay: 1.5 },
+  { key: ";", x: "93%", y: "40%", delay: 2.1 },
+  { key: "↵", x: "85%", y: "85%", delay: 0.7 },
+  { key: "⌘", x: "9%",  y: "92%", delay: 1.3 },
+  { key: "⇧", x: "22%", y: "88%", delay: 0.4 },
+  { key: "⌫", x: "91%", y: "12%", delay: 1.6 },
 ];
 
-const QUICK_WORDS = ["the", "quick", "brown", "fox", "jumps", "over", "lazy", "dog", "and", "types"];
+const WPM_TIERS = [
+  { range: "10–25",  label: "Beginner",    desc: "Learning the basics",         color: "from-slate-500/20 to-slate-500/5",  badge: "bg-slate-500/20 text-slate-400 border-slate-500/30",  bar: "bg-slate-500", pct: 18 },
+  { range: "25–45",  label: "Average",     desc: "Typing conversations",         color: "from-blue-500/20 to-blue-500/5",    badge: "bg-blue-500/20 text-blue-400 border-blue-500/30",    bar: "bg-blue-500",  pct: 32 },
+  { range: "45–65",  label: "Proficient",  desc: "Exam ready",                   color: "from-primary/20 to-primary/5",      badge: "bg-primary/20 text-primary border-primary/30",       bar: "bg-primary",   pct: 52 },
+  { range: "65–90",  label: "Fast",        desc: "Professional typist",          color: "from-chart-2/20 to-chart-2/5",      badge: "bg-chart-2/20 text-chart-2 border-chart-2/30",       bar: "bg-chart-2",   pct: 70 },
+  { range: "90–120", label: "Expert",      desc: "Top 5% worldwide",             color: "from-yellow-500/20 to-yellow-500/5",badge: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",bar: "bg-yellow-500",pct: 85 },
+  { range: "120+",   label: "Elite",       desc: "Keyboard god",                 color: "from-red-500/20 to-red-500/5",      badge: "bg-red-500/20 text-red-400 border-red-500/30",       bar: "bg-red-500",   pct: 100 },
+];
+
+const EXAM_BOARDS = [
+  { icon: "🏛️", name: "SSC CGL",      speed: "35",  topic: "General / Administrative", color: "border-blue-500/30 hover:border-blue-400/60",     tag: "bg-blue-500/15 text-blue-400" },
+  { icon: "🏦", name: "IBPS Banking",  speed: "40",  topic: "Financial & Banking Terms", color: "border-emerald-500/30 hover:border-emerald-400/60", tag: "bg-emerald-500/15 text-emerald-400" },
+  { icon: "🚂", name: "RRB NTPC",     speed: "30",  topic: "Railway Technical Terms",   color: "border-orange-500/30 hover:border-orange-400/60",  tag: "bg-orange-500/15 text-orange-400" },
+  { icon: "📜", name: "UPSC Mains",   speed: "40",  topic: "Civil Services & Polity",   color: "border-purple-500/30 hover:border-purple-400/60",  tag: "bg-purple-500/15 text-purple-400" },
+  { icon: "⚖️", name: "High Court",    speed: "40",  topic: "Legal & Judiciary Terms",  color: "border-primary/30 hover:border-primary/60",        tag: "bg-primary/15 text-primary" },
+  { icon: "👮", name: "SSC CPO",      speed: "35",  topic: "Police & Defence Terms",    color: "border-red-500/30 hover:border-red-400/60",        tag: "bg-red-500/15 text-red-400" },
+];
+
+const GAME_HIGHLIGHTS = [
+  { id: "turbo-race",   name: "Turbo Race",   icon: "🏎️", color: "from-orange-500/20 to-orange-500/5", border: "border-orange-500/25 hover:border-orange-400/50", tag: "text-orange-400", desc: "Pseudo-3D neon highway racing. Type to accelerate. Ghost car tracks your target WPM." },
+  { id: "zombie-hunt",  name: "Zombie Hunt",  icon: "🧟", color: "from-lime-500/20 to-lime-500/5",    border: "border-lime-500/25 hover:border-lime-400/50",    tag: "text-lime-400",   desc: "Survive zombie waves — type the word floating on each enemy to shoot it before they reach you." },
+  { id: "cyber-heist",  name: "Cyber Heist",  icon: "🕵️", color: "from-green-500/20 to-green-500/5",  border: "border-green-500/25 hover:border-green-400/50",  tag: "text-green-300",  desc: "Breach a secured network node by typing access keys before the firewall expires." },
+  { id: "bubble-pop",   name: "Bubble Pop",   icon: "🫧", color: "from-pink-500/20 to-pink-500/5",    border: "border-pink-500/25 hover:border-pink-400/50",    tag: "text-pink-400",   desc: "Floating word-bubbles drift upward. Pop them all before they escape off-screen." },
+  { id: "galaxy-blitz", name: "Galaxy Blitz", icon: "🚀", color: "from-violet-500/20 to-violet-500/5", border: "border-violet-500/25 hover:border-violet-400/50", tag: "text-violet-400", desc: "Space shooter — alien invaders carry your practice words. Type to fire lasers." },
+  { id: "arena-blitz",  name: "Arena Blitz",  icon: "🎯", color: "from-chart-2/20 to-chart-2/5",      border: "border-chart-2/25 hover:border-chart-2/50",      tag: "text-chart-2",    desc: "Top-down turret combat. Multiple enemies circle you — type any word to destroy them." },
+];
+
+const FEATURES = [
+  { icon: Zap,      color: "text-primary",     bg: "bg-primary/10",     border: "border-primary/20",     title: "Strict WPM Engine",     desc: "Only perfectly typed words count. Wrong words = zero WPM. Industry-standard honesty." },
+  { icon: Gamepad2, color: "text-orange-400",  bg: "bg-orange-400/10",  border: "border-orange-400/20",  title: "20 Unique Games",       desc: "Racing, Fighters, Zombies, Space Shooters, Bubble Pop, Fruit Blitz, Snake, Matrix Rain." },
+  { icon: BarChart2,color: "text-chart-2",     bg: "bg-chart-2/10",     border: "border-chart-2/20",     title: "Deep Analytics",        desc: "Letter heatmap, WPM trend chart, session history, achievement badges — know your weak keys." },
+  { icon: Trophy,   color: "text-yellow-400",  bg: "bg-yellow-400/10",  border: "border-yellow-400/20",  title: "Global Rankings",       desc: "Leaderboard per game. Daily challenge streaks. 12 achievement badges. Compete worldwide." },
+  { icon: Shield,   color: "text-blue-400",    bg: "bg-blue-400/10",    border: "border-blue-400/20",    title: "Govt Exam Ready",       desc: "500+ authentic vocabulary words from SSC, UPSC, Banking, Railways, Police, High Court." },
+  { icon: Code2,    color: "text-emerald-400", bg: "bg-emerald-400/10", border: "border-emerald-400/20", title: "Coding Vocabulary",     desc: "TypeScript, Python, Go, SQL, Git, DevOps — real code snippets with brackets and symbols." },
+  { icon: Cpu,      color: "text-chart-3",     bg: "bg-chart-3/10",     border: "border-chart-3/20",     title: "Real-time Sound",       desc: "Mechanical keyboard, typewriter, and soft-touch audio themes. Every keystroke has weight." },
+  { icon: TrendingUp,color:"text-violet-400", bg: "bg-violet-400/10",  border: "border-violet-400/20",  title: "Progression System",    desc: "5 levels per game. Pass WPM + 90% accuracy to unlock the next tier. No shortcuts." },
+];
+
+const HOW_IT_WORKS = [
+  { icon: Play,      step: "01", title: "Pick a Game",      desc: "20 unique typing games — Zombie Hunt, Cyber Heist, Turbo Race, Galaxy Blitz, and 16 more. Each builds a different typing skill.", color: "text-primary",    bg: "bg-primary/10",    border: "border-primary/30" },
+  { icon: Zap,       step: "02", title: "Level Up",         desc: "5 progressively harder levels per game. You need both target WPM AND 90%+ accuracy to advance. Wrong words contribute zero.", color: "text-chart-2",   bg: "bg-chart-2/10",   border: "border-chart-2/30" },
+  { icon: BarChart2, step: "03", title: "See Your DNA",     desc: "Your dashboard shows WPM trends over time, per-letter heatmap, 12 achievement badges, streak counter, and full session history.",  color: "text-yellow-400",bg: "bg-yellow-400/10",border: "border-yellow-400/30" },
+];
 
 function FloatingKey({ keyChar, x, y, delay }: { keyChar: string; x: string; y: string; delay: number }) {
   return (
@@ -32,10 +77,10 @@ function FloatingKey({ keyChar, x, y, delay }: { keyChar: string; x: string; y: 
       className="absolute font-mono font-bold text-xs select-none pointer-events-none"
       style={{ left: x, top: y }}
       initial={{ opacity: 0, scale: 0.5 }}
-      animate={{ opacity: [0, 0.18, 0.08, 0.18], scale: [0.8, 1, 0.95, 1], y: [0, -14, 0, -8, 0] }}
-      transition={{ delay, duration: 6, repeat: Infinity, ease: "easeInOut" }}
+      animate={{ opacity: [0, 0.22, 0.10, 0.22], scale: [0.85, 1, 0.96, 1], y: [0, -18, 0, -10, 0] }}
+      transition={{ delay, duration: 7, repeat: Infinity, ease: "easeInOut" }}
     >
-      <div className="w-10 h-10 rounded-lg border border-primary/20 bg-primary/5 flex items-center justify-center text-primary/40 shadow-lg shadow-primary/10">
+      <div className="w-11 h-11 rounded-xl border border-primary/20 bg-gradient-to-b from-primary/10 to-primary/3 flex items-center justify-center text-primary/50 shadow-lg shadow-primary/10 backdrop-blur-sm">
         {keyChar}
       </div>
     </motion.div>
@@ -46,7 +91,7 @@ function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: str
   const [value, setValue] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   useEffect(() => {
-    const controls = animate(0, target, { duration: 2.2, delay: 0.5, ease: "easeOut", onUpdate(v) { setValue(Math.round(v)); } });
+    const controls = animate(0, target, { duration: 2.5, delay: 0.4, ease: "easeOut", onUpdate(v) { setValue(Math.round(v)); } });
     return controls.stop;
   }, [target]);
   return <span ref={ref}>{value.toLocaleString()}{suffix}</span>;
@@ -58,11 +103,11 @@ function TypingWord() {
   const [isDeleting, setIsDeleting] = useState(false);
   useEffect(() => {
     const word = HERO_WORDS[wordIdx];
-    const delay = isDeleting ? 55 : 115;
+    const delay = isDeleting ? 50 : 110;
     const timer = setTimeout(() => {
       if (!isDeleting) {
         if (displayed.length < word.length) setDisplayed(word.slice(0, displayed.length + 1));
-        else setTimeout(() => setIsDeleting(true), 2000);
+        else setTimeout(() => setIsDeleting(true), 2200);
       } else {
         if (displayed.length > 0) setDisplayed(displayed.slice(0, -1));
         else { setIsDeleting(false); setWordIdx(i => (i + 1) % HERO_WORDS.length); }
@@ -71,9 +116,9 @@ function TypingWord() {
     return () => clearTimeout(timer);
   }, [displayed, isDeleting, wordIdx]);
   return (
-    <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-chart-2 to-chart-3">
+    <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-chart-2 to-emerald-400">
       {displayed}
-      <span className="inline-block w-0.5 h-[0.85em] bg-primary ml-1 animate-pulse align-middle" />
+      <span className="inline-block w-0.5 h-[0.9em] bg-primary ml-1 animate-pulse align-middle" />
     </span>
   );
 }
@@ -85,10 +130,11 @@ function HeroTypingWidget() {
   const [wpm, setWpm] = useState<number | null>(null);
   const [correctWords, setCorrectWords] = useState(0);
   const [focused, setFocused] = useState(false);
+  const [errors, setErrors] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const reset = useCallback(() => {
-    setInput(""); setWordIdx(0); setStartTime(null); setWpm(null); setCorrectWords(0);
+    setInput(""); setWordIdx(0); setStartTime(null); setWpm(null); setCorrectWords(0); setErrors(0);
     setTimeout(() => inputRef.current?.focus(), 50);
   }, []);
 
@@ -100,10 +146,13 @@ function HeroTypingWidget() {
       const expected = QUICK_WORDS[wordIdx];
       const isCorrect = typed === expected;
       if (isCorrect) setCorrectWords(c => c + 1);
+      else setErrors(e => e + 1);
       const nextIdx = wordIdx + 1;
       if (nextIdx >= QUICK_WORDS.length) {
         const elapsed = (Date.now() - (startTime ?? Date.now())) / 1000 / 60;
-        const correctChars = QUICK_WORDS.reduce((s, w) => s + w.length + 1, 0);
+        const correctChars = QUICK_WORDS.filter((_, i) => {
+          return true;
+        }).reduce((s, w) => s + w.length + 1, 0);
         setWpm(Math.round(correctChars / 5 / Math.max(elapsed, 0.001)));
         setWordIdx(nextIdx);
       } else {
@@ -117,74 +166,79 @@ function HeroTypingWidget() {
 
   const isFinished = wordIdx >= QUICK_WORDS.length;
   const speed = wpm ?? 0;
-  const grade = speed >= 80 ? { label: "Elite", color: "text-yellow-400" } :
-                speed >= 60 ? { label: "Advanced", color: "text-primary" } :
-                speed >= 40 ? { label: "Intermediate", color: "text-chart-2" } :
-                              { label: "Beginner", color: "text-chart-3" };
+  const accuracy = correctWords > 0 ? Math.round((correctWords / (correctWords + errors)) * 100) : 0;
+  const grade = speed >= 80 ? { label: "Elite Typist 🔥", color: "text-yellow-400" } :
+                speed >= 60 ? { label: "Advanced Typist ⚡", color: "text-primary" } :
+                speed >= 40 ? { label: "Proficient Typist 💪", color: "text-chart-2" } :
+                              { label: "Beginner — Keep Going! 🎯", color: "text-chart-3" };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.55, duration: 0.6 }}
+      transition={{ delay: 0.65, duration: 0.6 }}
       className="w-full max-w-2xl mx-auto mt-8"
     >
-      <div className={`rounded-2xl border bg-card/80 backdrop-blur-sm p-5 transition-all duration-300 ${focused ? "border-primary/50 shadow-lg shadow-primary/10" : "border-card-border"}`}>
+      <div className={`rounded-2xl border bg-card/90 backdrop-blur-sm p-5 transition-all duration-300 ${focused ? "border-primary/60 shadow-xl shadow-primary/15" : "border-card-border"}`}>
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Keyboard className="w-4 h-4 text-primary" />
-            <span className="text-sm font-medium text-muted-foreground font-mono">Quick Test — try it now</span>
+            <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+            <span className="text-sm font-semibold text-muted-foreground font-mono">Live Demo — Type right now</span>
           </div>
-          {startTime && !isFinished && (
-            <span className="text-xs font-mono text-muted-foreground">
-              {wordIdx}/{QUICK_WORDS.length} words
-            </span>
-          )}
-          {isFinished && (
-            <button onClick={reset} className="text-xs text-primary hover:underline font-mono">↺ Reset</button>
-          )}
+          <div className="flex items-center gap-3">
+            {startTime && !isFinished && (
+              <span className="text-xs font-mono text-muted-foreground bg-muted/50 px-2 py-0.5 rounded-full">
+                {wordIdx}/{QUICK_WORDS.length}
+              </span>
+            )}
+            {isFinished && (
+              <button onClick={reset} className="text-xs text-primary hover:underline font-mono">↺ Reset</button>
+            )}
+          </div>
         </div>
 
         {!isFinished ? (
           <>
-            <div className="font-mono text-base sm:text-lg leading-relaxed mb-3 select-none flex flex-wrap gap-x-2 gap-y-1">
+            <div className="font-mono text-base sm:text-lg leading-relaxed mb-3 select-none flex flex-wrap gap-x-2.5 gap-y-1 p-3 rounded-xl bg-background/40">
               {QUICK_WORDS.map((word, i) => {
-                let cls = "text-muted-foreground/40";
-                if (i < wordIdx) cls = "text-emerald-400";
-                if (i === wordIdx) cls = "text-foreground underline decoration-primary/50 underline-offset-4";
-                return <span key={i} className={`${cls} transition-colors`}>{word}</span>;
+                let cls = "text-muted-foreground/35";
+                if (i < wordIdx) cls = "text-primary/80 line-through decoration-primary/30";
+                if (i === wordIdx) cls = "text-foreground font-bold underline decoration-primary/60 underline-offset-4";
+                return <span key={i} className={`${cls} transition-all duration-150`}>{word}</span>;
               })}
             </div>
-            <div className="relative">
-              <input
-                ref={inputRef}
-                value={input}
-                onChange={handleChange}
-                onFocus={() => setFocused(true)}
-                onBlur={() => setFocused(false)}
-                placeholder={wordIdx === 0 ? "Start typing here…" : QUICK_WORDS[wordIdx]}
-                className="w-full bg-background/50 border border-border rounded-xl px-4 py-3 font-mono text-sm outline-none focus:border-primary/50 transition-colors placeholder:text-muted-foreground/30"
-                autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
-              />
-              {!focused && wordIdx === 0 && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <span className="text-xs text-muted-foreground/50 font-mono">click to start typing</span>
-                </div>
-              )}
-            </div>
+            <input
+              ref={inputRef}
+              value={input}
+              onChange={handleChange}
+              onFocus={() => setFocused(true)}
+              onBlur={() => setFocused(false)}
+              placeholder={wordIdx === 0 ? "Click here and start typing…" : `Type: "${QUICK_WORDS[wordIdx]}"`}
+              className="w-full bg-background/60 border border-border rounded-xl px-4 py-3 font-mono text-sm outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/30"
+              autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
+            />
           </>
         ) : (
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-4">
-            <div className="text-5xl font-extrabold font-mono text-primary mb-1">{wpm} <span className="text-2xl font-bold text-muted-foreground">WPM</span></div>
-            <div className={`text-sm font-semibold mb-1 ${grade.color}`}>{grade.label} Typist</div>
-            <div className="text-xs text-muted-foreground mb-4">{correctWords}/{QUICK_WORDS.length} words correct</div>
-            <div className="flex gap-3 justify-center">
-              <Button size="sm" onClick={reset} variant="outline" className="font-mono text-xs gap-1.5">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-4 space-y-3">
+            <div className="flex items-end justify-center gap-4">
+              <div>
+                <div className="text-5xl font-extrabold font-mono text-primary">{wpm}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">WPM</div>
+              </div>
+              <div className="pb-1 text-muted-foreground/30 text-2xl">·</div>
+              <div>
+                <div className="text-3xl font-bold font-mono text-chart-3">{accuracy}%</div>
+                <div className="text-xs text-muted-foreground mt-0.5">Accuracy</div>
+              </div>
+            </div>
+            <div className={`text-sm font-bold ${grade.color}`}>{grade.label}</div>
+            <div className="flex gap-3 justify-center pt-1">
+              <Button size="sm" onClick={reset} variant="outline" className="font-mono text-xs gap-1.5 h-8">
                 ↺ Try Again
               </Button>
               <Link href="/games">
-                <Button size="sm" className="font-mono text-xs gap-1.5">
-                  <Gamepad2 className="w-3.5 h-3.5" /> Full Game
+                <Button size="sm" className="font-mono text-xs gap-1.5 h-8 shadow-sm shadow-primary/20">
+                  <Gamepad2 className="w-3.5 h-3.5" /> Play Full Game
                 </Button>
               </Link>
             </div>
@@ -196,49 +250,10 @@ function HeroTypingWidget() {
 }
 
 const STATS = [
-  { value: 20,  suffix: " Games",   label: "Unique Arcade Modes"   },
-  { value: 100, suffix: " Levels",  label: "Progressive Challenges" },
-  { value: 500, suffix: "+ Words",  label: "Govt Exam Vocabulary"  },
-  { value: 12,  suffix: " Lessons", label: "Touch-Type Lessons"    },
-];
-
-const FEATURES = [
-  { icon: Zap, color: "text-primary", bg: "bg-primary/10", border: "border-primary/20",
-    title: "Strict WPM Engine", desc: "Only perfectly typed words count. Wrong words contribute zero. No inflation — raw, honest speed." },
-  { icon: Gamepad2, color: "text-chart-2", bg: "bg-chart-2/10", border: "border-chart-2/20",
-    title: "20 Unique Games", desc: "Racing, Fighters, Zombies, Space Shooters, Bubble Pop, Fruit Blitz, Matrix Rain, Snake — all typing." },
-  { icon: BarChart2, color: "text-chart-3", bg: "bg-chart-3/10", border: "border-chart-3/20",
-    title: "Deep Analytics", desc: "Mechanical keyboard heatmap shows exactly which keys slow you down. Per-letter accuracy tracking." },
-  { icon: Trophy, color: "text-yellow-400", bg: "bg-yellow-400/10", border: "border-yellow-400/20",
-    title: "Global Rankings", desc: "Your personal best on a worldwide leaderboard. 12 achievement badges. Daily challenge streaks." },
-  { icon: Shield, color: "text-blue-400", bg: "bg-blue-400/10", border: "border-blue-400/20",
-    title: "Govt Exam Ready", desc: "SSC CGL, UPSC, Banking, Railways, Police vocabulary. 5 difficulty levels for every exam board." },
-  { icon: Code2, color: "text-emerald-400", bg: "bg-emerald-400/10", border: "border-emerald-400/20",
-    title: "Coding Vocabulary", desc: "JavaScript, TypeScript, Python, Go, SQL, Git, DevOps terms. Real code snippets to type." },
-];
-
-const HOW_IT_WORKS = [
-  { icon: Play, step: "01", title: "Pick a Game", desc: "20 unique typing games — from Zombie Hunt to Cyber Heist to Fruit Blitz. Each one trains a different skill.", color: "text-primary" },
-  { icon: Zap, step: "02", title: "Level Up", desc: "5 progressively harder levels per game. Speed AND 90%+ accuracy required. Wrong words = zero WPM.", color: "text-chart-2" },
-  { icon: BarChart2, step: "03", title: "See Your DNA", desc: "Your dashboard shows WPM trends, letter heatmaps, session history, streaks, and 12 achievement badges.", color: "text-chart-3" },
-];
-
-const EXAM_BOARDS = [
-  { icon: "🏛️", name: "SSC CGL",     speed: "35 WPM",  topic: "General / Admin"  },
-  { icon: "🏦", name: "IBPS Banking", speed: "40 WPM",  topic: "Financial Terms"  },
-  { icon: "🚂", name: "RRB NTPC",    speed: "30 WPM",  topic: "Railway Technical" },
-  { icon: "📜", name: "UPSC Mains",  speed: "40 WPM",  topic: "Civil Services"   },
-  { icon: "⚖️", name: "High Court",   speed: "40 WPM",  topic: "Legal / Judiciary"},
-  { icon: "👮", name: "SSC CPO",     speed: "35 WPM",  topic: "Police / Defence" },
-];
-
-const GAME_HIGHLIGHTS = [
-  { id: "turbo-race",    name: "Turbo Race",     icon: "🏎️", color: "text-orange-400", desc: "Race a ghost car on a pseudo-3D neon highway" },
-  { id: "zombie-hunt",   name: "Zombie Hunt",    icon: "🧟", color: "text-lime-400",   desc: "Survive zombie waves — type words to shoot" },
-  { id: "cyber-heist",   name: "Cyber Heist",    icon: "🕵️", color: "text-green-300",  desc: "Hack a secured node network with passkeys" },
-  { id: "bubble-pop",    name: "Bubble Pop",     icon: "🫧", color: "text-pink-400",   desc: "Pop floating word-bubbles before they drift away" },
-  { id: "fruit-blitz",   name: "Fruit Blitz",    icon: "🍉", color: "text-lime-500",   desc: "Slice flying fruits by typing their words" },
-  { id: "arena-blitz",   name: "Arena Blitz",    icon: "🎯", color: "text-violet-400", desc: "Top-down turret — destroy circular enemies" },
+  { value: 20,  suffix: "",      unit: "Games",    label: "Unique Arcade Modes",     icon: Gamepad2, color: "text-primary"     },
+  { value: 100, suffix: "",      unit: "Levels",   label: "Progressive Challenges",  icon: TrendingUp, color: "text-chart-2"   },
+  { value: 500, suffix: "+",     unit: "Words",    label: "Govt Exam Vocabulary",    icon: Shield,   color: "text-blue-400"   },
+  { value: 12,  suffix: "",      unit: "Lessons",  label: "Touch-Type Lessons",      icon: BookOpen, color: "text-yellow-400" },
 ];
 
 export default function Home() {
@@ -246,40 +261,46 @@ export default function Home() {
 
   return (
     <div className="flex flex-col">
-      {/* ── HERO ────────────────────────────────────────────────────── */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center p-6 md:p-12 overflow-hidden">
+
+      {/* ── HERO ──────────────────────────────────────────────────────────── */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center px-5 md:px-10 py-24 overflow-hidden">
+
+        {/* Background glows */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/4 left-1/3 w-[600px] h-[600px] bg-primary/10 rounded-full blur-[140px]" />
-          <div className="absolute bottom-1/4 right-1/3 w-[500px] h-[500px] bg-chart-2/8 rounded-full blur-[120px]" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-chart-3/5 rounded-full blur-[160px]" />
+          <div className="absolute top-1/4 left-1/3 w-[700px] h-[700px] bg-primary/8 rounded-full blur-[150px]" />
+          <div className="absolute bottom-1/4 right-1/3 w-[500px] h-[500px] bg-chart-2/6 rounded-full blur-[120px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[400px] bg-emerald-500/3 rounded-full blur-[180px]" />
         </div>
 
+        {/* Grid overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.03]"
+          style={{
+            backgroundImage: "linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)",
+            backgroundSize: "56px 56px",
+          }}
+        />
+
+        {/* Floating keyboard keys */}
         {FLOATING_KEYS.map(({ key, x, y, delay }) => (
           <FloatingKey key={key} keyChar={key} x={x} y={y} delay={delay} />
         ))}
 
-        <div
-          className="absolute inset-0 pointer-events-none opacity-[0.025]"
-          style={{
-            backgroundImage: "linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-          }}
-        />
-
+        {/* Hero content */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 32 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="max-w-5xl w-full text-center space-y-5 z-10"
+          className="max-w-5xl w-full text-center space-y-6 z-10"
         >
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-mono text-sm"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/25 font-mono text-xs sm:text-sm font-bold"
           >
             <Zap className="w-3.5 h-3.5" />
-            <span>The world's most addictive typing trainer — 20 games, zero compromise</span>
+            <span>20 arcade games · Govt Exam ready · Real-time analytics</span>
           </motion.div>
 
           <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-none">
@@ -287,9 +308,9 @@ export default function Home() {
             <TypingWord />
           </h1>
 
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Every keystroke has weight. Train through 20 arcade games. Master govt exam &amp; coding vocabulary.
-            TypeBlitz is where serious typists reach their peak.
+          <p className="text-base md:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            The most addictive typing platform ever built. Train through 20 arcade games.
+            Master government exam vocabulary. See your letter heatmap. Become unstoppable.
           </p>
 
           <motion.div
@@ -299,14 +320,16 @@ export default function Home() {
             className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2"
           >
             <Link href="/games">
-              <Button size="lg" className="h-14 px-10 text-lg font-bold gap-2 w-full sm:w-auto shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all">
+              <Button size="lg" className="h-14 px-10 text-base font-bold gap-2.5 w-full sm:w-auto shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all">
                 <Gamepad2 className="w-5 h-5" />
                 Start Playing Free
+                <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
             </Link>
             <Link href="/practice">
-              <Button size="lg" variant="outline" className="h-14 px-10 text-lg font-bold gap-2 w-full sm:w-auto border-border hover:border-primary/50 transition-colors">
-                <Clock className="w-5 h-5" /> Practice Mode
+              <Button size="lg" variant="outline" className="h-14 px-10 text-base font-bold gap-2.5 w-full sm:w-auto border-border hover:border-primary/50 transition-colors">
+                <Clock className="w-5 h-5" />
+                Practice Mode
               </Button>
             </Link>
           </motion.div>
@@ -314,61 +337,113 @@ export default function Home() {
           <HeroTypingWidget />
         </motion.div>
 
+        {/* Stats row */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9 }}
-          className="z-10 mt-12 grid grid-cols-2 md:grid-cols-4 gap-3 w-full max-w-3xl"
+          className="z-10 mt-14 grid grid-cols-2 md:grid-cols-4 gap-3 w-full max-w-3xl"
         >
           {STATS.map((s, i) => (
-            <div key={i} className="bg-card/80 backdrop-blur border border-card-border rounded-2xl p-4 text-center">
-              <div className="text-2xl md:text-3xl font-bold font-mono text-primary">
+            <div key={i} className="bg-card/80 backdrop-blur border border-card-border rounded-2xl p-4 text-center group hover:border-primary/30 transition-colors">
+              <div className={`text-2xl md:text-3xl font-black font-mono ${s.color} mb-0.5`}>
                 <AnimatedCounter target={s.value} suffix={s.suffix} />
+                <span className="text-base font-bold text-muted-foreground ml-1">{s.unit}</span>
               </div>
-              <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
+              <div className="text-xs text-muted-foreground">{s.label}</div>
             </div>
           ))}
         </motion.div>
 
+        {/* Scroll indicator */}
         <motion.div
           animate={{ y: [0, 8, 0] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 text-muted-foreground/40"
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 text-muted-foreground/30"
         >
           <ChevronDown className="w-6 h-6" />
         </motion.div>
       </section>
 
-      {/* ── HOW IT WORKS ─────────────────────────────────────────────── */}
-      <section className="px-6 md:px-12 py-20 max-w-6xl mx-auto w-full">
+      {/* ── WPM TIER GUIDE ──────────────────────────────────────────────────── */}
+      <section className="px-5 md:px-10 py-16 max-w-6xl mx-auto w-full">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-10"
+        >
+          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Where do you stand?</h2>
+          <p className="text-muted-foreground max-w-xl mx-auto text-sm sm:text-base">
+            Average typing speed is 40 WPM. Most government exams require 30–40. TypeBlitz trains you to surpass them all.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {WPM_TIERS.map((tier, i) => (
+            <motion.div
+              key={tier.label}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.07 }}
+              className={`p-5 rounded-2xl bg-gradient-to-br ${tier.color} border border-white/5 backdrop-blur-sm group`}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <span className={`text-xs font-bold px-2.5 py-1 rounded-full border font-mono ${tier.badge}`}>
+                  {tier.range} WPM
+                </span>
+                <span className="text-xs text-muted-foreground font-mono">{tier.pct}%</span>
+              </div>
+              <div className="font-bold text-lg mb-1">{tier.label}</div>
+              <div className="text-xs text-muted-foreground mb-3">{tier.desc}</div>
+              <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  whileInView={{ width: `${tier.pct}%` }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.07 + 0.3, duration: 0.8, ease: "easeOut" }}
+                  className={`h-full rounded-full ${tier.bar}`}
+                />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ────────────────────────────────────────────────────── */}
+      <section className="px-5 md:px-10 py-16 max-w-6xl mx-auto w-full">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">How it works</h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">A simple loop that actually makes you faster — no gimmicks, just deliberate practice.</p>
+          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">How TypeBlitz works</h2>
+          <p className="text-muted-foreground max-w-xl mx-auto text-sm sm:text-base">
+            A simple feedback loop that actually makes you faster — no tricks, just deliberate daily practice.
+          </p>
         </motion.div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
           {HOW_IT_WORKS.map((step, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className="relative p-6 rounded-2xl bg-card border border-card-border group"
+              transition={{ delay: i * 0.12 }}
+              className={`relative p-6 rounded-2xl bg-gradient-to-br from-card to-card/50 border ${step.border} group`}
             >
-              <div className={`text-5xl font-black font-mono opacity-10 absolute top-4 right-5 ${step.color}`}>{step.step}</div>
-              <div className={`w-12 h-12 rounded-xl bg-card border border-card-border flex items-center justify-center ${step.color} mb-4`}>
+              <div className={`text-6xl font-black font-mono opacity-[0.07] absolute top-3 right-4 ${step.color}`}>{step.step}</div>
+              <div className={`w-12 h-12 rounded-xl ${step.bg} border ${step.border} flex items-center justify-center ${step.color} mb-5`}>
                 <step.icon className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-bold mb-2">{step.title}</h3>
+              <h3 className="text-lg font-extrabold mb-2">{step.title}</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
               {i < HOW_IT_WORKS.length - 1 && (
-                <div className="hidden md:block absolute top-1/2 -right-3 z-10">
-                  <ArrowRight className="w-5 h-5 text-muted-foreground/30" />
+                <div className="hidden md:flex absolute top-1/2 -right-4 z-10 items-center justify-center">
+                  <ArrowRight className="w-5 h-5 text-muted-foreground/25" />
                 </div>
               )}
             </motion.div>
@@ -376,24 +451,28 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── GAME HIGHLIGHTS ──────────────────────────────────────────── */}
-      <section className="px-6 md:px-12 py-8 pb-16 max-w-6xl mx-auto w-full">
+      {/* ── ARCADE GAMES ────────────────────────────────────────────────────── */}
+      <section className="px-5 md:px-10 py-8 pb-16 max-w-6xl mx-auto w-full">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="flex items-end justify-between mb-8"
+          className="flex items-end justify-between mb-8 flex-wrap gap-4"
         >
           <div>
-            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Arcade Games</h2>
-            <p className="text-muted-foreground">Each game builds a different skill — speed, accuracy, rhythm, or reaction time.</p>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold mb-3 font-mono">
+              <Gamepad2 className="w-3.5 h-3.5" /> 13 Canvas Games + 7 Skill Trainers
+            </div>
+            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Arcade-grade typing games</h2>
+            <p className="text-muted-foreground text-sm sm:text-base">Every game uses real-time canvas rendering at 60fps — not just trivia widgets.</p>
           </div>
           <Link href="/games">
-            <Button variant="outline" size="sm" className="gap-1.5 hidden sm:flex border-primary/30 hover:border-primary/60">
-              All 20 games <ArrowRight className="w-3.5 h-3.5" />
+            <Button variant="outline" size="sm" className="gap-2 border-primary/30 hover:border-primary/60 text-sm">
+              All 20 Games <ArrowRight className="w-3.5 h-3.5" />
             </Button>
           </Link>
         </motion.div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {GAME_HIGHLIGHTS.map((game, i) => (
             <motion.div
@@ -402,24 +481,32 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.07 }}
-              whileHover={{ y: -4, transition: { duration: 0.2 } }}
+              whileHover={{ y: -5, transition: { duration: 0.2 } }}
             >
               <Link href={`/play/${game.id}/1`}>
-                <div className="p-5 rounded-2xl bg-card border border-card-border hover:border-primary/30 transition-all group cursor-pointer h-full">
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-2xl">{game.icon}</span>
-                    <div>
-                      <div className={`font-bold text-sm ${game.color}`}>{game.name}</div>
-                      <div className="text-xs text-muted-foreground">5 Levels</div>
+                <div className={`group p-5 rounded-2xl bg-gradient-to-br ${game.color} border ${game.border} cursor-pointer h-full transition-all duration-300 relative overflow-hidden`}>
+                  <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center">
+                      <ArrowRight className="w-3.5 h-3.5 text-white/70" />
                     </div>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-primary/60 ml-auto transition-colors" />
+                  </div>
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="text-3xl">{game.icon}</span>
+                    <div>
+                      <div className={`font-extrabold text-sm ${game.tag}`}>{game.name}</div>
+                      <div className="text-xs text-muted-foreground font-mono">5 Levels</div>
+                    </div>
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">{game.desc}</p>
+                  <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground group-hover:text-foreground/70 transition-colors">
+                    <Play className="w-3 h-3" /> Play Level 1
+                  </div>
                 </div>
               </Link>
             </motion.div>
           ))}
         </div>
+
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -427,66 +514,80 @@ export default function Home() {
           className="mt-6 sm:hidden text-center"
         >
           <Link href="/games">
-            <Button variant="outline" size="sm" className="gap-1.5 border-primary/30">All 20 games <ArrowRight className="w-3.5 h-3.5" /></Button>
+            <Button variant="outline" size="sm" className="gap-1.5 border-primary/30">
+              View All 20 Games <ArrowRight className="w-3.5 h-3.5" />
+            </Button>
           </Link>
         </motion.div>
       </section>
 
-      {/* ── GOVT EXAM READY ─────────────────────────────────────────── */}
-      <section className="px-6 md:px-12 py-8 pb-16 max-w-6xl mx-auto w-full">
+      {/* ── GOVT EXAM READY ─────────────────────────────────────────────────── */}
+      <section className="px-5 md:px-10 py-8 pb-16 max-w-6xl mx-auto w-full">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="relative overflow-hidden rounded-3xl border border-blue-500/25 bg-gradient-to-br from-blue-500/8 via-primary/5 to-transparent p-8 md:p-12"
+          className="relative overflow-hidden rounded-3xl border border-blue-500/20 bg-gradient-to-br from-blue-500/8 via-primary/5 to-transparent p-7 md:p-12"
         >
-          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-blue-500/6 rounded-full blur-[100px] pointer-events-none" />
-          <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-primary/5 rounded-full blur-[80px] pointer-events-none" />
+          <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-500/6 rounded-full blur-[120px] pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-[350px] h-[350px] bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
 
           <div className="relative flex flex-col lg:flex-row items-start gap-10">
-            {/* Left: Copy */}
             <div className="flex-1 min-w-0">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-500/15 border border-blue-500/30 rounded-full text-blue-400 text-xs font-bold uppercase tracking-widest mb-5">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-500/15 border border-blue-500/30 rounded-full text-blue-400 text-xs font-bold font-mono mb-5">
                 <Shield className="w-3.5 h-3.5" /> Government Exam Ready
               </div>
               <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4 leading-tight">
                 Crack SSC, UPSC, Banking<br className="hidden sm:block" /> &amp; Railway Typing Tests
               </h2>
-              <p className="text-muted-foreground mb-6 max-w-lg leading-relaxed">
+              <p className="text-muted-foreground mb-6 max-w-lg leading-relaxed text-sm sm:text-base">
                 TypeBlitz trains you with authentic vocabulary from real government exam papers.
-                SSC CGL, IBPS Banking, RRB NTPC, UPSC, High Court &amp; Police — master the words 
-                that actually appear in your test, then play arcade games to build unstoppable speed.
+                Not random word lists — words that <span className="text-foreground font-semibold">actually appear</span> in your exam.
+                Organized by difficulty, timed to your target, with progress tracking.
               </p>
+              <div className="flex flex-wrap gap-2 mb-6">
+                {["500+ Authentic Words", "5 Difficulty Levels", "Per-Exam Vocabulary", "Real Passages"].map(tag => (
+                  <span key={tag} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-full text-xs font-semibold">
+                    <Check className="w-3 h-3" /> {tag}
+                  </span>
+                ))}
+              </div>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Link href="/practice">
                   <Button size="lg" className="gap-2 shadow-lg shadow-primary/20 w-full sm:w-auto">
                     <BookOpen className="w-4 h-4" /> Start Exam Practice
                   </Button>
                 </Link>
-                <Link href="/challenge">
-                  <Button size="lg" variant="outline" className="gap-2 border-blue-500/30 hover:border-blue-500/60 text-blue-400 w-full sm:w-auto">
-                    <Trophy className="w-4 h-4" /> Daily Exam Challenge
+                <Link href="/play/govt-exam-sprint/1">
+                  <Button size="lg" variant="outline" className="gap-2 border-blue-500/30 hover:border-blue-500/60 text-blue-400 hover:text-blue-300 w-full sm:w-auto">
+                    <Gamepad2 className="w-4 h-4" /> Govt Exam Game
                   </Button>
                 </Link>
               </div>
             </div>
 
-            {/* Right: Exam board grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 xl:grid-cols-3 gap-3 w-full lg:w-auto lg:min-w-[360px]">
+            <div className="w-full lg:w-80 grid grid-cols-1 gap-2.5">
               {EXAM_BOARDS.map((exam, i) => (
                 <motion.div
-                  key={i}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
+                  key={exam.name}
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: i * 0.06 }}
-                  whileHover={{ y: -3, transition: { duration: 0.15 } }}
-                  className="bg-card/70 border border-card-border rounded-2xl p-4 text-center group cursor-default hover:border-blue-500/30 transition-colors"
+                  transition={{ delay: i * 0.07 }}
+                  whileHover={{ x: 4 }}
                 >
-                  <div className="text-2xl mb-2">{exam.icon}</div>
-                  <div className="font-bold text-sm text-white mb-0.5">{exam.name}</div>
-                  <div className="text-primary font-mono font-extrabold text-base">{exam.speed}</div>
-                  <div className="text-xs text-muted-foreground mt-1">{exam.topic}</div>
+                  <Link href="/practice">
+                    <div className={`flex items-center gap-3 p-3 rounded-xl bg-background/40 border ${exam.color} cursor-pointer transition-all`}>
+                      <span className="text-xl flex-shrink-0">{exam.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-sm">{exam.name}</div>
+                        <div className="text-xs text-muted-foreground truncate">{exam.topic}</div>
+                      </div>
+                      <div className={`text-xs font-black font-mono px-2 py-0.5 rounded-md ${exam.tag}`}>
+                        {exam.speed} WPM
+                      </div>
+                    </div>
+                  </Link>
                 </motion.div>
               ))}
             </div>
@@ -494,56 +595,162 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* ── FEATURES GRID ───────────────────────────────────────────── */}
-      <section className="px-6 md:px-12 pb-20 max-w-6xl mx-auto w-full">
+      {/* ── CODING SECTION ──────────────────────────────────────────────────── */}
+      <section className="px-5 md:px-10 py-8 pb-16 max-w-6xl mx-auto w-full">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="relative overflow-hidden rounded-3xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/8 via-chart-3/5 to-transparent p-7 md:p-12"
+        >
+          <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-[100px] pointer-events-none" />
+
+          <div className="relative flex flex-col lg:flex-row items-start gap-10">
+            <div className="flex-1 min-w-0">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/15 border border-emerald-500/30 rounded-full text-emerald-400 text-xs font-bold font-mono mb-5">
+                <Terminal className="w-3.5 h-3.5" /> Developer Mode
+              </div>
+              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4 leading-tight">
+                Type code at the<br className="hidden sm:block" /> speed of thought
+              </h2>
+              <p className="text-muted-foreground mb-6 max-w-lg leading-relaxed text-sm sm:text-base">
+                TypeBlitz includes real code snippets for TypeScript, Python, Go, SQL, and more.
+                Master brackets, symbols, and indentation. Build the muscle memory you need to write code faster.
+              </p>
+              <div className="bg-background/60 border border-emerald-500/20 rounded-2xl p-4 font-mono text-xs text-emerald-300/80 mb-6 leading-relaxed">
+                <span className="text-muted-foreground">// Level 4 example — type this exactly</span><br />
+                <span className="text-blue-400">async function</span> <span className="text-yellow-300">fetchWithRetry</span>
+                <span className="text-foreground">&lt;T&gt;(</span><br />
+                &nbsp;&nbsp;<span className="text-primary">url</span><span className="text-foreground">: </span><span className="text-orange-300">string</span><span className="text-foreground">,</span><br />
+                &nbsp;&nbsp;<span className="text-primary">retries</span><span className="text-foreground"> = </span><span className="text-chart-3">3</span><br />
+                <span className="text-foreground">): </span><span className="text-blue-400">Promise</span><span className="text-foreground">&lt;T&gt; &#123;</span><br />
+                &nbsp;&nbsp;<span className="text-blue-400">for</span><span className="text-foreground"> (</span><span className="text-blue-400">let</span> <span className="text-primary">i</span> <span className="text-foreground">= </span><span className="text-chart-3">0</span><span className="text-foreground">; </span><span className="text-primary">i</span><span className="text-foreground"> &lt; </span><span className="text-primary">retries</span><span className="text-foreground">; </span><span className="text-primary">i</span><span className="text-foreground">++) &#123;&#125;</span><br />
+                <span className="text-foreground">&#125;</span>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link href="/play/code-type/1">
+                  <Button size="lg" className="gap-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 hover:border-emerald-400/60 w-full sm:w-auto shadow-none">
+                    <Code2 className="w-4 h-4" /> Code Type Game
+                  </Button>
+                </Link>
+                <Link href="/play/code-vocab/1">
+                  <Button size="lg" variant="outline" className="gap-2 border-emerald-500/30 hover:border-emerald-400/60 text-emerald-400 w-full sm:w-auto">
+                    <Cpu className="w-4 h-4" /> Code Vocab Game
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            <div className="w-full lg:w-72 space-y-2.5">
+              {[
+                { lang: "TypeScript", icon: "🔷", words: "220+" },
+                { lang: "Python",     icon: "🐍", words: "180+" },
+                { lang: "Go",         icon: "🐹", words: "120+" },
+                { lang: "SQL",        icon: "🗄️", words: "140+" },
+                { lang: "DevOps",     icon: "⚙️", words: "160+" },
+                { lang: "Git",        icon: "🌿", words: "80+"  },
+              ].map((lang, i) => (
+                <motion.div
+                  key={lang.lang}
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.07 }}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-background/40 border border-emerald-500/15 hover:border-emerald-400/40 transition-all"
+                >
+                  <span className="text-lg">{lang.icon}</span>
+                  <div className="flex-1 font-semibold text-sm">{lang.lang}</div>
+                  <span className="text-xs font-mono text-emerald-400/80 bg-emerald-500/10 px-2 py-0.5 rounded-md">{lang.words}</span>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* ── FEATURES GRID ───────────────────────────────────────────────────── */}
+      <section className="px-5 md:px-10 py-8 pb-16 max-w-6xl mx-auto w-full">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          className="text-center mb-10"
         >
-          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">Everything a serious typist needs</h2>
-          <p className="text-muted-foreground max-w-xl mx-auto">Built for students preparing government exams, developers learning touch-typing, and anyone who wants to type at their peak.</p>
+          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Everything you need to master typing</h2>
+          <p className="text-muted-foreground max-w-xl mx-auto text-sm sm:text-base">
+            8 core features built for serious typists — from casual players to government exam aspirants to professional developers.
+          </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {FEATURES.map((f, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 24 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.08 }}
-              whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className={`p-6 rounded-2xl bg-card border ${f.border} group cursor-default`}
+              transition={{ delay: i * 0.07 }}
+              className={`p-5 rounded-2xl bg-card border ${f.border} hover:border-opacity-60 transition-all group`}
             >
-              <div className={`w-12 h-12 rounded-xl ${f.bg} border ${f.border} flex items-center justify-center ${f.color} mb-4 group-hover:scale-110 transition-transform`}>
-                <f.icon className="w-6 h-6" />
+              <div className={`w-11 h-11 rounded-xl ${f.bg} border ${f.border} flex items-center justify-center ${f.color} mb-4 group-hover:scale-110 transition-transform`}>
+                <f.icon className="w-5 h-5" />
               </div>
-              <h3 className="text-lg font-bold mb-2">{f.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+              <h3 className="font-extrabold text-sm mb-1.5">{f.title}</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">{f.desc}</p>
             </motion.div>
           ))}
         </div>
+      </section>
 
+      {/* ── FINAL CTA ───────────────────────────────────────────────────────── */}
+      <section className="px-5 md:px-10 py-8 pb-20 max-w-6xl mx-auto w-full">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mt-12 flex flex-col sm:flex-row gap-4 justify-center"
+          className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/10 via-chart-2/5 to-transparent p-8 md:p-14 text-center"
         >
-          <Link href="/practice">
-            <Button variant="outline" size="lg" className="gap-2 border-primary/30 hover:border-primary/60 w-full sm:w-auto">
-              <BookOpen className="w-4 h-4" /> Practice Modes <ArrowRight className="w-4 h-4" />
-            </Button>
-          </Link>
-          <Link href="/challenge">
-            <Button variant="outline" size="lg" className="gap-2 border-yellow-400/30 hover:border-yellow-400/60 w-full sm:w-auto text-yellow-400">
-              <Trophy className="w-4 h-4" /> Daily Challenge
-            </Button>
-          </Link>
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-chart-2/5 pointer-events-none" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-primary/8 rounded-full blur-[100px] pointer-events-none" />
+
+          <div className="relative space-y-6">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/15 border border-primary/30 rounded-full text-primary text-xs font-bold font-mono">
+              <Flame className="w-3.5 h-3.5" /> Free to play · No credit card required
+            </div>
+            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+              Your fastest typing<br />starts <span className="text-primary">right now.</span>
+            </h2>
+            <p className="text-muted-foreground text-base max-w-lg mx-auto">
+              Join thousands of typists who are breaking their WPM records every day.
+              Free to play. No limits. No excuses.
+            </p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <Link href={user ? "/games" : "/login"}>
+                <Button size="lg" className="h-14 px-12 text-base font-bold gap-2.5 shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-all">
+                  <Zap className="w-5 h-5" />
+                  {user ? "Play Now" : "Create Free Account"}
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
+              <Link href="/challenge">
+                <Button size="lg" variant="outline" className="h-14 px-12 text-base font-bold gap-2.5 border-primary/30 hover:border-primary/60">
+                  <Trophy className="w-5 h-5" />
+                  Daily Challenge
+                </Button>
+              </Link>
+            </div>
+            <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground/60 flex-wrap">
+              {["20 arcade games", "Govt exam vocabulary", "Real-time analytics", "Global leaderboard"].map(feat => (
+                <div key={feat} className="flex items-center gap-1.5">
+                  <Check className="w-3 h-3 text-primary/60" />
+                  <span>{feat}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </motion.div>
       </section>
+
     </div>
   );
 }

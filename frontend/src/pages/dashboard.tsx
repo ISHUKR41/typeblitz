@@ -200,12 +200,50 @@ export default function Dashboard() {
   });
 
   if (!user) {
+    const PREVIEW_FEATURES = [
+      { icon: Zap,           color: "text-primary bg-primary/10 border-primary/20",         title: "Real-time WPM Chart",    desc: "Track your typing speed over every session with a live trend line." },
+      { icon: Target,        color: "text-emerald-400 bg-emerald-400/10 border-emerald-400/20", title: "Mechanical Heatmap",   desc: "See exactly which keys you type slowly or inaccurately — fix them fast." },
+      { icon: Trophy,        color: "text-yellow-400 bg-yellow-400/10 border-yellow-400/20",  title: "12 Achievements",       desc: "Unlock badges from Speed Starter to Grandmaster as you improve." },
+      { icon: Flame,         color: "text-orange-400 bg-orange-400/10 border-orange-400/20",  title: "Daily Streak",          desc: "Keep a streak alive. Daily sessions compound into massive improvement." },
+      { icon: BarChart2,     color: "text-chart-2 bg-chart-2/10 border-chart-2/20",           title: "Session History",       desc: "Every game, level, WPM and accuracy stored. See how far you've come." },
+      { icon: Star,          color: "text-violet-400 bg-violet-400/10 border-violet-400/20",  title: "Global Rank",           desc: "Compete against every TypeBlitz player. See your percentile in real time." },
+    ];
     return (
-      <div className="min-h-full flex flex-col items-center justify-center p-8 text-center gap-6">
-        <Lock className="w-12 h-12 text-muted-foreground" />
-        <h2 className="text-2xl font-bold">Sign in to view your dashboard</h2>
-        <p className="text-muted-foreground max-w-sm">Track your WPM progress, accuracy heatmaps, and game level unlocks.</p>
-        <Link href="/login"><Button size="lg">Login / Register</Button></Link>
+      <div className="min-h-full flex flex-col items-center justify-center p-6 md:p-10 text-center gap-8">
+        <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          <div className="w-16 h-16 bg-primary/10 border border-primary/20 rounded-2xl flex items-center justify-center mx-auto">
+            <BarChart2 className="w-8 h-8 text-primary" />
+          </div>
+          <h2 className="text-3xl font-extrabold tracking-tight">Your performance dashboard</h2>
+          <p className="text-muted-foreground max-w-md mx-auto leading-relaxed">
+            Sign in to unlock full analytics — WPM trends, per-letter accuracy heatmap,
+            achievement badges, and session history across all 20 games.
+          </p>
+          <Link href="/login">
+            <Button size="lg" className="gap-2 shadow-lg shadow-primary/20">
+              <Shield className="w-4 h-4" /> Sign In to Access Dashboard
+            </Button>
+          </Link>
+        </motion.div>
+
+        <div className="w-full max-w-3xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {PREVIEW_FEATURES.map((f, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.07 + 0.2 }}
+              className="p-4 bg-card border border-card-border rounded-2xl text-left opacity-60 blur-[0.3px]"
+            >
+              <div className={`w-9 h-9 rounded-xl border flex items-center justify-center mb-3 ${f.color}`}>
+                <f.icon className="w-4 h-4" />
+              </div>
+              <div className="font-bold text-sm mb-1">{f.title}</div>
+              <div className="text-xs text-muted-foreground leading-relaxed">{f.desc}</div>
+            </motion.div>
+          ))}
+        </div>
+        <p className="text-xs text-muted-foreground">Free to create an account · No credit card required</p>
       </div>
     );
   }
