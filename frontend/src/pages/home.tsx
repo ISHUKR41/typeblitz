@@ -270,7 +270,7 @@ export default function Home() {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 font-mono text-sm"
           >
             <Zap className="w-3.5 h-3.5" />
-            <span>The world's most addictive typing trainer — 16 games, zero compromise</span>
+            <span>The world's most addictive typing trainer — 20 games, zero compromise</span>
           </motion.div>
 
           <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-none">
@@ -279,7 +279,7 @@ export default function Home() {
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Every keystroke has weight. Train through 16 arcade games. Master govt exam &amp; coding vocabulary.
+            Every keystroke has weight. Train through 20 arcade games. Master govt exam &amp; coding vocabulary.
             TypeBlitz is where serious typists reach their peak.
           </p>
 
@@ -381,7 +381,7 @@ export default function Home() {
           </div>
           <Link href="/games">
             <Button variant="outline" size="sm" className="gap-1.5 hidden sm:flex border-primary/30 hover:border-primary/60">
-              All 16 games <ArrowRight className="w-3.5 h-3.5" />
+              All 20 games <ArrowRight className="w-3.5 h-3.5" />
             </Button>
           </Link>
         </motion.div>
@@ -418,7 +418,7 @@ export default function Home() {
           className="mt-6 sm:hidden text-center"
         >
           <Link href="/games">
-            <Button variant="outline" size="sm" className="gap-1.5 border-primary/30">All 16 games <ArrowRight className="w-3.5 h-3.5" /></Button>
+            <Button variant="outline" size="sm" className="gap-1.5 border-primary/30">All 20 games <ArrowRight className="w-3.5 h-3.5" /></Button>
           </Link>
         </motion.div>
       </section>

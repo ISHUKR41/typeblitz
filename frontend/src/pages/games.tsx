@@ -29,6 +29,8 @@ const GAME_THEME: Record<string, { text: string; bg: string; border: string; sha
   "code-rain":        { text: "text-emerald-300",bg: "bg-emerald-300/10",border: "border-emerald-300/30",shadow: "hover:shadow-emerald-300/15" },
   "cyber-heist":      { text: "text-green-300",  bg: "bg-green-300/10",  border: "border-green-300/30",  shadow: "hover:shadow-green-300/15"  },
   "arena-blitz":      { text: "text-violet-400", bg: "bg-violet-400/10", border: "border-violet-400/30", shadow: "hover:shadow-violet-400/15" },
+  "bubble-pop":       { text: "text-pink-400",   bg: "bg-pink-400/10",   border: "border-pink-400/30",   shadow: "hover:shadow-pink-400/15"   },
+  "fruit-blitz":      { text: "text-lime-500",   bg: "bg-lime-500/10",   border: "border-lime-500/30",   shadow: "hover:shadow-lime-500/15"   },
 };
 
 const GAME_ICONS: Record<string, React.ElementType> = {
@@ -71,6 +73,8 @@ const CATEGORY_META: Record<string, { label: string; color: string }> = {
   "code-rain":        { label: "💻 Code Rain",              color: "text-emerald-300"},
   "cyber-heist":      { label: "🕵️ Cyber Heist",            color: "text-green-300"  },
   "arena-blitz":      { label: "🎯 Arena Blitz",            color: "text-violet-400" },
+  "bubble-pop":       { label: "🫧 Bubble Pop",             color: "text-pink-400"   },
+  "fruit-blitz":      { label: "🍉 Fruit Blitz",            color: "text-lime-500"   },
 };
 
 // ─── Single game card ────────────────────────────────────────────────────
@@ -224,7 +228,7 @@ export default function Games() {
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Game Modes</h1>
         <p className="text-muted-foreground mt-1 text-sm md:text-base">
-          13 games · 5 levels each · English, Govt Exam, Coding & Arcade
+          20 games · 5 levels each · English, Govt Exam, Coding & Arcade
         </p>
       </motion.div>
 

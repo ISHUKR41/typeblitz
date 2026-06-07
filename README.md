@@ -1,7 +1,7 @@
 <div align="center">
 
 <img src="https://img.shields.io/badge/TypeBlitz-v2.0-8b5cf6?style=for-the-badge&logo=keyboard&logoColor=white" />
-<img src="https://img.shields.io/badge/Games-18-22c55e?style=for-the-badge" />
+<img src="https://img.shields.io/badge/Games-20-22c55e?style=for-the-badge" />
 <img src="https://img.shields.io/badge/Stack-React%20%2B%20Express-38bdf8?style=for-the-badge" />
 <img src="https://img.shields.io/badge/Database-MongoDB%20Atlas-47a248?style=for-the-badge&logo=mongodb&logoColor=white" />
 <img src="https://img.shields.io/badge/License-MIT-f59e0b?style=for-the-badge" />
@@ -21,7 +21,7 @@
 TypeBlitz is a **professional typing training platform** built around a simple idea: if typing practice was as fun as gaming, people would actually do it every day.
 
 It combines:
-- **18 unique game modes** — canvas-rendered arcade games that train your fingers while keeping you hooked
+- **20 unique game modes** — canvas-rendered arcade games that train your fingers while keeping you hooked
 - **Government exam preparation** — SSC CGL/CHSL, Railways NTPC, Court Stenographer — complete with official scoring algorithms
 - **Developer vocabulary** — JavaScript, Python, React, SQL, Git, Architecture terms across all 5 levels
 - **Deep analytics** — per-letter accuracy heatmap, WPM trend chart, session history, and 12 achievement badges
@@ -29,11 +29,11 @@ It combines:
 
 ---
 
-## 🎮 Game Library — 18 Modes
+## 🎮 Game Library — 20 Modes
 
-### 🕹️ Arcade Canvas Games (11 total)
+### 🕹️ Arcade Canvas Games (13 total)
 
-Canvas-rendered games with real-time physics, particles, and animations:
+Canvas-rendered games with real-time physics, particles, and animations — all built on the raw HTML5 Canvas API, zero game engines:
 
 | Game | Theme | Unique Mechanic |
 |------|-------|-----------------|
@@ -48,6 +48,8 @@ Canvas-rendered games with real-time physics, particles, and animations:
 | 💻 **Code Rain** | Matrix Decrypt | Words glow gold in cascading matrix rain; type them to collapse columns in burst-of-light explosions |
 | 🕵️ **Cyber Heist** | Hacker Terminal | Network topology with 7 interconnected nodes; type passkeys to hack each node; animated data packets flow on hacked connections; glitch overlay on errors |
 | 🎯 **Arena Blitz** | Top-Down Shooter | You're a rotary weapons platform; grunt/tank/speeder enemies spiral inward from the edge; floor-bounce particles on kills |
+| 🫧 **Bubble Pop** | Chill Arcade | Colorful word-bubbles float upward — type each word before it drifts off the top; build combos for bonus points |
+| 🍉 **Fruit Blitz** | Slice Mechanic | Fruits arc through the air — type their word to slice them mid-flight; miss one and lose a life; split animations with juice particles |
 
 ### 📚 Classic Typing Modes (7 total)
 
@@ -152,7 +154,7 @@ typeblitz/
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── games/                  # 11 canvas arcade game components
+│   │   │   ├── games/                  # 13 canvas arcade game components
 │   │   │   │   ├── ArcadeArena.tsx     # Game session controller + routing
 │   │   │   │   ├── RacingGame.tsx      # Pseudo-3D Outrun + 3D roadside objects
 │   │   │   │   ├── FighterGame.tsx     # Cyberpunk dojo fighter
@@ -164,7 +166,9 @@ typeblitz/
 │   │   │   │   ├── WordInvadersGame.tsx# Space Invaders formation
 │   │   │   │   ├── CodeRainGame.tsx    # Matrix rain decrypt
 │   │   │   │   ├── CyberHeistGame.tsx  # Network hacking terminal
-│   │   │   │   └── ArenaBlitzGame.tsx  # Top-down arena shooter
+│   │   │   │   ├── ArenaBlitzGame.tsx  # Top-down arena shooter
+│   │   │   │   ├── BubblePopGame.tsx   # Floating bubble pop mechanic
+│   │   │   │   └── FruitBlitzGame.tsx  # Fruit slice with split animation
 │   │   │   ├── ui/                     # shadcn/ui components
 │   │   │   └── VirtualKeyboard.tsx     # On-screen keyboard for mobile
 │   │   ├── pages/
@@ -188,7 +192,7 @@ typeblitz/
 ├── backend/
 │   ├── src/
 │   │   ├── data/
-│   │   │   ├── games.ts         # 18 game definitions + 95 level configs
+│   │   │   ├── games.ts         # 20 game definitions + 105 level configs
 │   │   │   └── words.ts         # Word lists for every game × 5 levels
 │   │   ├── models/
 │   │   │   ├── User.ts          # Mongoose user schema
@@ -292,7 +296,7 @@ const accuracy = (correctChars / Math.max(expectedLength, typedLength)) * 100;
 ## 📈 Roadmap
 
 ### ✅ v2.0 — Current
-- [x] 18 game modes (11 arcade canvas + 7 classic)
+- [x] 20 game modes (13 arcade canvas + 7 classic)
 - [x] 5 levels per game with unique word lists (govt + code vocab)
 - [x] Strict WPM calculation — wrong words = 0 contribution
 - [x] Govt exam simulator with official SSC/Railway/Court scoring rules
@@ -300,7 +304,7 @@ const accuracy = (correctChars / Math.max(expectedLength, typedLength)) * 100;
 - [x] Blind Mode practice (type without seeing input)
 - [x] Interactive typing widget on home page
 - [x] 3D roadside objects in RacingGame (palm trees, neon signs, lamp posts, rain)
-- [x] Cyber Heist (hacker terminal) + Arena Blitz (top-down shooter) games
+- [x] Cyber Heist (hacker terminal) + Arena Blitz (top-down shooter) + Bubble Pop + Fruit Blitz games
 - [x] MongoDB Atlas production-ready with graceful demo fallback
 - [x] Fully responsive on all device sizes
 

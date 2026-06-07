@@ -360,6 +360,28 @@ export const wordLists: Record<string, string[][]> = {
   ],
 
   // ═══════════════════════════════════════════════════════════════
+  // BUBBLE POP — Floating bubbles, progressive vocab
+  // ═══════════════════════════════════════════════════════════════
+  "bubble-pop": [
+    ["the", "and", "for", "are", "but", "not", "you", "all", "can", "her", "was", "one", "our", "out", "day", "get", "has", "him", "his", "how", "man", "new", "now", "old", "see", "two", "way", "who", "boy", "did", "its", "let", "put", "say", "she", "too", "use", "aim", "act", "age", "ask"],
+    ["about", "after", "again", "could", "every", "first", "found", "great", "hands", "heard", "house", "large", "learn", "level", "light", "might", "never", "often", "other", "place", "point", "power", "right", "shall", "small", "sound", "still", "think", "three", "under", "water", "where", "which", "while", "world", "would", "write", "years", "clear", "drive"],
+    ["action", "always", "amount", "annual", "appeal", "around", "before", "behalf", "budget", "bureau", "census", "charge", "circle", "clause", "create", "decree", "deputy", "direct", "domain", "during", "employ", "ensure", "estate", "except", "formal", "future", "govern", "happen", "import", "income", "inland", "intent", "island", "issued", "justice", "labour", "launch", "leader"],
+    ["accountability", "achievement", "acquisition", "administration", "amendment", "applicant", "appointment", "assembly", "assessment", "authority", "benchmark", "candidate", "capability", "commission", "committee", "compliance", "compulsory", "constituency", "corporation", "credential", "cumulative", "department", "designation", "detention", "directory", "discharge", "disclosure"],
+    ["accountability", "adjudication", "administrative", "affidavit", "algorithm", "allocation", "ambiguous", "applicability", "appropriation", "arbitration", "authentication", "authorization", "bifurcation", "bureaucratic", "calibration", "categorization", "centralization", "circumvention", "classification", "codification", "collaboration"],
+  ],
+
+  // ═══════════════════════════════════════════════════════════════
+  // FRUIT BLITZ — Slicing fruits, progressive vocab
+  // ═══════════════════════════════════════════════════════════════
+  "fruit-blitz": [
+    ["the", "and", "for", "are", "but", "not", "you", "all", "can", "her", "was", "one", "our", "out", "day", "get", "has", "him", "his", "how", "man", "new", "now", "old", "see", "two", "way", "who", "boy", "did", "its", "let", "put", "say", "she", "too", "use", "aim", "act", "age", "ask"],
+    ["about", "after", "again", "could", "every", "first", "found", "great", "hands", "heard", "house", "large", "learn", "level", "light", "might", "never", "often", "other", "place", "point", "power", "right", "shall", "small", "sound", "still", "think", "three", "under", "water", "where", "which", "while", "world", "would", "write", "years"],
+    ["action", "always", "amount", "annual", "appeal", "around", "before", "behalf", "budget", "bureau", "census", "charge", "circle", "clause", "create", "decree", "deputy", "direct", "domain", "during", "employ", "ensure", "estate", "except", "formal", "future", "govern", "happen", "import", "income", "inland", "intent", "island"],
+    ["accountability", "achievement", "acquisition", "administration", "amendment", "applicant", "appointment", "assembly", "assessment", "authority", "benchmark", "candidate", "capability", "commission", "committee", "compliance", "compulsory", "constituency", "corporation", "credential", "cumulative", "department", "designation"],
+    ["accountability", "adjudication", "administrative", "affidavit", "algorithm", "allocation", "ambiguous", "applicability", "appropriation", "arbitration", "authentication", "authorization", "bifurcation", "bureaucratic", "calibration", "categorization", "centralization", "circumvention"],
+  ],
+
+  // ═══════════════════════════════════════════════════════════════
   // ARENA BLITZ — Top-down shooter; mixed vocab escalation
   // ═══════════════════════════════════════════════════════════════
   "arena-blitz": [

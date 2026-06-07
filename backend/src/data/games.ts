@@ -297,6 +297,36 @@ export const GAMES: Game[] = [
       { id: 95, number: 5, name: "Omega Protocol",    description: "Relentless assault. Expert CS + governance vocab.",    targetWpm: 76, targetAccuracy: 94, duration: 60, wordCount: 48 },
     ]
   },
+  {
+    id: "bubble-pop",
+    name: "Bubble Pop",
+    description: "Colorful word-bubbles float upward — type each word before the bubble drifts off screen! Build combos for bonus points. Relax, focus, and pop your way through all 5 levels.",
+    category: "game",
+    icon: "Target",
+    difficulty: "beginner",
+    levels: [
+      { id: 96, number: 1, name: "Soap Bubbles",    description: "Large slow bubbles with 3-4 letter words.",          targetWpm: 18, targetAccuracy: 85, duration: 60, wordCount: 20 },
+      { id: 97, number: 2, name: "Rising Fast",     description: "Faster drift. Common 4-5 letter words.",              targetWpm: 28, targetAccuracy: 87, duration: 60, wordCount: 26 },
+      { id: 98, number: 3, name: "Bubble Storm",    description: "Multiple simultaneous bubbles. Govt vocabulary.",     targetWpm: 38, targetAccuracy: 89, duration: 60, wordCount: 32 },
+      { id: 99, number: 4, name: "Ultra Pop",       description: "High-speed bubbles. Professional vocabulary.",        targetWpm: 50, targetAccuracy: 91, duration: 60, wordCount: 38 },
+      { id: 100, number: 5, name: "Pop Champion",   description: "Max speed. Expert vocab. Only the best survive.",    targetWpm: 62, targetAccuracy: 94, duration: 60, wordCount: 44 },
+    ]
+  },
+  {
+    id: "fruit-blitz",
+    name: "Fruit Blitz",
+    description: "Fruits fly through the air — type their word to slice them in half before they fall! Miss one and lose a life. Build your highest combo for the ultimate slice master score.",
+    category: "game",
+    icon: "Zap",
+    difficulty: "beginner",
+    levels: [
+      { id: 101, number: 1, name: "Easy Slice",     description: "Slow fruits with short 3-letter words.",             targetWpm: 18, targetAccuracy: 85, duration: 60, wordCount: 20 },
+      { id: 102, number: 2, name: "Fruit Rush",     description: "Faster arc. Common English words.",                  targetWpm: 28, targetAccuracy: 87, duration: 60, wordCount: 26 },
+      { id: 103, number: 3, name: "Blitz Mode",     description: "Multiple flying fruits. Govt vocabulary.",           targetWpm: 38, targetAccuracy: 89, duration: 60, wordCount: 32 },
+      { id: 104, number: 4, name: "Master Slicer",  description: "High-speed fruits. Professional terms.",             targetWpm: 50, targetAccuracy: 91, duration: 60, wordCount: 38 },
+      { id: 105, number: 5, name: "Fruit Ninja Pro","description": "Max speed, expert vocabulary. Ultimate challenge.", targetWpm: 62, targetAccuracy: 94, duration: 60, wordCount: 44 },
+    ]
+  },
 ];
 
 export const getGame = (gameId: string): Game | undefined => GAMES.find(g => g.id === gameId);
