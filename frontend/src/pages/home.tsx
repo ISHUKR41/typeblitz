@@ -74,13 +74,24 @@ const HOW_IT_WORKS = [
 function FloatingKey({ keyChar, x, y, delay }: { keyChar: string; x: string; y: string; delay: number }) {
   return (
     <motion.div
-      className="absolute font-mono font-bold text-xs select-none pointer-events-none"
+      className="absolute select-none pointer-events-none"
       style={{ left: x, top: y }}
       initial={{ opacity: 0, scale: 0.5 }}
-      animate={{ opacity: [0, 0.22, 0.10, 0.22], scale: [0.85, 1, 0.96, 1], y: [0, -18, 0, -10, 0] }}
+      animate={{ opacity: [0, 0.20, 0.08, 0.20], scale: [0.85, 1, 0.96, 1], y: [0, -18, 0, -10, 0] }}
       transition={{ delay, duration: 7, repeat: Infinity, ease: "easeInOut" }}
     >
-      <div className="w-11 h-11 rounded-xl border border-primary/20 bg-gradient-to-b from-primary/10 to-primary/3 flex items-center justify-center text-primary/50 shadow-lg shadow-primary/10 backdrop-blur-sm">
+      <div
+        className="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold"
+        style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          background: "linear-gradient(135deg, rgba(0,245,255,0.08), rgba(0,245,255,0.02))",
+          border: "1px solid rgba(0,245,255,0.18)",
+          borderBottom: "2px solid rgba(0,0,0,0.4)",
+          color: "rgba(0,245,255,0.4)",
+          boxShadow: "0 0 8px rgba(0,245,255,0.06), 0 4px 12px rgba(0,0,0,0.3)",
+          backdropFilter: "blur(4px)",
+        }}
+      >
         {keyChar}
       </div>
     </motion.div>
@@ -199,12 +210,12 @@ function HeroTypingWidget() {
 
         {!isFinished ? (
           <>
-            <div className="font-mono text-base sm:text-lg leading-relaxed mb-3 select-none flex flex-wrap gap-x-2.5 gap-y-1 p-3 rounded-xl bg-background/40">
+            <div className="text-base sm:text-lg leading-relaxed mb-3 select-none flex flex-wrap gap-x-2.5 gap-y-1 p-3 rounded-xl" style={{ fontFamily: "'JetBrains Mono', monospace", background: "rgba(13,13,15,0.6)" }}>
               {QUICK_WORDS.map((word, i) => {
-                let cls = "text-muted-foreground/35";
-                if (i < wordIdx) cls = "text-primary/80 line-through decoration-primary/30";
-                if (i === wordIdx) cls = "text-foreground font-bold underline decoration-primary/60 underline-offset-4";
-                return <span key={i} className={`${cls} transition-all duration-150`}>{word}</span>;
+                let style: React.CSSProperties = { color: "rgba(150,155,170,0.4)", transition: "all 150ms" };
+                if (i < wordIdx) style = { color: "#39FF14", textShadow: "0 0 6px rgba(57,255,20,0.4)", textDecoration: "line-through", textDecorationColor: "rgba(57,255,20,0.3)", transition: "all 150ms" };
+                if (i === wordIdx) style = { color: "#fff", fontWeight: "bold", textDecoration: "underline", textDecorationColor: "rgba(0,245,255,0.6)", textUnderlineOffset: "4px", transition: "all 150ms" };
+                return <span key={i} style={style}>{word}</span>;
               })}
             </div>
             <input
@@ -214,7 +225,13 @@ function HeroTypingWidget() {
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
               placeholder={wordIdx === 0 ? "Click here and start typing…" : `Type: "${QUICK_WORDS[wordIdx]}"`}
-              className="w-full bg-background/60 border border-border rounded-xl px-4 py-3 font-mono text-sm outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/30"
+              className="w-full rounded-xl px-4 py-3 text-sm outline-none transition-all placeholder:text-muted-foreground/30"
+              style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                background: "rgba(20,20,24,0.8)",
+                border: focused ? "1px solid rgba(0,245,255,0.5)" : "1px solid rgba(42,42,53,0.9)",
+                boxShadow: focused ? "0 0 0 2px rgba(0,245,255,0.08), 0 0 12px rgba(0,245,255,0.06)" : "none",
+              }}
               autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
             />
           </>

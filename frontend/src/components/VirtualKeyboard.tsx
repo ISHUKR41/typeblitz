@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import type React from "react";
 
 interface VirtualKeyboardProps {
   nextChar?: string;
@@ -79,12 +80,21 @@ export function VirtualKeyboard({ nextChar }: VirtualKeyboardProps) {
   }, [nextChar]);
 
   return (
-    <div className="w-full bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl p-3 sm:p-4 space-y-1.5 shadow-2xl select-none max-w-2xl mx-auto">
-      <div className="flex items-center justify-between px-1 mb-1 text-[10px] sm:text-xs font-mono font-bold text-muted-foreground">
-        <span>KEYBOARD PATHFINDER</span>
+    <div
+      className="w-full backdrop-blur-md rounded-2xl p-3 sm:p-4 space-y-1.5 shadow-2xl select-none max-w-2xl mx-auto"
+      style={{ background: "rgba(13,13,15,0.85)", border: "1px solid rgba(0,245,255,0.12)" }}
+    >
+      <div className="flex items-center justify-between px-1 mb-2 text-[10px] sm:text-xs font-bold" style={{ fontFamily: "'JetBrains Mono', monospace", color: "rgba(0,245,255,0.5)" }}>
+        <span>KEYBOARD GUIDE</span>
         {nextChar && (
-          <span className="text-primary animate-pulse">
-            Next key: <span className="bg-primary/20 text-primary border border-primary/30 px-1.5 py-0.5 rounded font-bold font-mono">{nextChar === " " ? "Space" : nextChar}</span>
+          <span style={{ color: "#00F5FF" }}>
+            Next:{" "}
+            <span
+              className="px-1.5 py-0.5 rounded font-bold"
+              style={{ background: "rgba(0,245,255,0.15)", border: "1px solid rgba(0,245,255,0.4)", color: "#00F5FF", boxShadow: "0 0 6px rgba(0,245,255,0.3)" }}
+            >
+              {nextChar === " " ? "Space" : nextChar}
+            </span>
           </span>
         )}
       </div>
@@ -95,18 +105,37 @@ export function VirtualKeyboard({ nextChar }: VirtualKeyboardProps) {
             {row.map((k) => {
               const isActive = activeKeys.has(k.key);
               const isShift = k.key.includes("shift");
-              
-              let highlightClass = "bg-muted/40 text-muted-foreground border-transparent";
-              if (isActive) {
-                highlightClass = isShift
-                  ? "bg-amber-500/20 text-amber-400 border-amber-500/50 shadow-[0_0_10px_rgba(245,158,11,0.2)] animate-pulse"
-                  : "bg-primary/25 text-primary border-primary/50 shadow-[0_0_12px_rgba(var(--primary-rgb),0.35)]";
-              }
+
+              const baseStyle: React.CSSProperties = {
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: "10px",
+                background: "linear-gradient(135deg, rgba(42,42,53,0.8), rgba(20,20,24,0.8))",
+                border: "1px solid rgba(42,42,53,0.9)",
+                borderBottom: "2px solid rgba(0,0,0,0.5)",
+                color: "rgba(150,155,170,0.7)",
+                transition: "all 80ms ease-out",
+              };
+
+              const activeStyle: React.CSSProperties = isShift ? {
+                background: "linear-gradient(135deg, rgba(255,184,0,0.2), rgba(255,184,0,0.06))",
+                border: "1px solid rgba(255,184,0,0.6)",
+                borderBottom: "2px solid rgba(255,184,0,0.3)",
+                color: "#FFB800",
+                boxShadow: "0 0 10px rgba(255,184,0,0.3)",
+              } : {
+                background: "linear-gradient(135deg, rgba(0,245,255,0.18), rgba(0,245,255,0.06))",
+                border: "1px solid rgba(0,245,255,0.65)",
+                borderBottom: "2px solid rgba(0,245,255,0.25)",
+                color: "#00F5FF",
+                boxShadow: "0 0 12px rgba(0,245,255,0.35)",
+                transform: "translateY(1px)",
+              };
 
               return (
                 <div
                   key={k.key}
-                  className={`h-7 sm:h-9 rounded sm:rounded-md border text-[10px] sm:text-xs font-bold font-mono flex items-center justify-center transition-all ${k.width || "w-7 sm:w-9"} ${highlightClass}`}
+                  className={`h-7 sm:h-9 rounded sm:rounded-md flex items-center justify-center font-bold ${k.width || "w-7 sm:w-9"}`}
+                  style={isActive ? { ...baseStyle, ...activeStyle } : baseStyle}
                 >
                   {k.display}
                 </div>

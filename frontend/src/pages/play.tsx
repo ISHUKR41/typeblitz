@@ -58,20 +58,25 @@ function WpmSparkline({ data }: { data: number[] }) {
 // ─── Render typed text char-by-char ──────────────────────────────────────
 function TypedText({ text, input }: { text: string; input: string }) {
   return (
-    <p className="font-mono text-lg md:text-xl lg:text-2xl leading-loose tracking-wide break-words select-none">
+    <p
+      className="text-lg md:text-xl lg:text-2xl leading-loose tracking-widest break-words select-none"
+      style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}
+    >
       {text.split("").map((char, i) => {
-        let cls = "text-muted-foreground/50";
+        let cls = "char-untyped";
         if (i < input.length) {
-          cls = input[i] === char
-            ? "text-foreground"
-            : char === " "
-              ? "bg-destructive/30 text-destructive rounded"
-              : "text-destructive bg-destructive/15 rounded-sm";
+          if (input[i] === char) {
+            cls = "char-correct";
+          } else if (char === " ") {
+            cls = "char-wrong-space";
+          } else {
+            cls = "char-wrong";
+          }
         } else if (i === input.length) {
-          cls = "border-b-2 border-primary text-foreground animate-pulse";
+          cls = "char-cursor";
         }
         return (
-          <span key={i} className={`transition-colors duration-75 ${cls}`}>
+          <span key={i} className={cls}>
             {char}
           </span>
         );
@@ -680,20 +685,37 @@ export default function Play() {
                   </div>
                 )}
                 {/* WPM — only correct words count */}
-                <div className="flex items-center gap-1 bg-card border border-border rounded-xl px-2.5 py-1.5 cursor-help" title="WPM = correct words only. Wrong words contribute ZERO to your score.">
-                  <Zap className="w-3.5 h-3.5 text-primary" />
-                  <span className="font-mono font-bold text-base">{wpm}</span>
+                <div
+                  className="flex items-center gap-1.5 bg-card border rounded-xl px-3 py-1.5 cursor-help transition-all duration-200"
+                  style={{ borderColor: "rgba(0,245,255,0.3)", boxShadow: "0 0 8px rgba(0,245,255,0.08)" }}
+                  title="WPM = correct words only. Wrong words = ZERO contribution."
+                >
+                  <Zap className="w-3.5 h-3.5" style={{ color: "#00F5FF" }} />
+                  <span className="font-mono font-extrabold text-base" style={{ color: "#00F5FF", textShadow: "0 0 8px rgba(0,245,255,0.6)" }}>{wpm}</span>
                   <span className="text-xs text-muted-foreground">WPM</span>
                 </div>
                 {/* Accuracy */}
-                <div className="flex items-center gap-1 bg-card border border-border rounded-xl px-2.5 py-1.5" title="Keystroke accuracy — every wrong key press permanently lowers this">
-                  <Target className={`w-3.5 h-3.5 ${accuracy >= 95 ? "text-emerald-400" : accuracy >= 80 ? "text-orange-400" : "text-red-400"}`} />
-                  <span className={`font-mono font-bold text-base ${accuracy >= 95 ? "text-emerald-400" : accuracy >= 80 ? "text-orange-400" : "text-red-400"}`}>{accuracy}%</span>
+                <div
+                  className="flex items-center gap-1.5 bg-card border rounded-xl px-3 py-1.5 transition-all duration-200"
+                  style={{
+                    borderColor: accuracy >= 95 ? "rgba(57,255,20,0.35)" : accuracy >= 80 ? "rgba(255,184,0,0.35)" : "rgba(255,32,121,0.35)",
+                    boxShadow: accuracy >= 95 ? "0 0 8px rgba(57,255,20,0.1)" : accuracy >= 80 ? "0 0 8px rgba(255,184,0,0.1)" : "0 0 8px rgba(255,32,121,0.1)"
+                  }}
+                  title="Keystroke accuracy — every wrong key press permanently lowers this"
+                >
+                  <Target className="w-3.5 h-3.5" style={{ color: accuracy >= 95 ? "#39FF14" : accuracy >= 80 ? "#FFB800" : "#FF2079" }} />
+                  <span
+                    className="font-mono font-extrabold text-base"
+                    style={{
+                      color: accuracy >= 95 ? "#39FF14" : accuracy >= 80 ? "#FFB800" : "#FF2079",
+                      textShadow: accuracy >= 95 ? "0 0 6px rgba(57,255,20,0.6)" : accuracy >= 80 ? "0 0 6px rgba(255,184,0,0.6)" : "0 0 6px rgba(255,32,121,0.6)"
+                    }}
+                  >{accuracy}%</span>
                 </div>
                 {/* Timer */}
-                <div className="flex items-center gap-1 bg-card border border-border rounded-xl px-2.5 py-1.5">
+                <div className="flex items-center gap-1.5 bg-card border border-border rounded-xl px-3 py-1.5">
                   <Clock className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="font-mono text-sm">
+                  <span className="font-mono text-sm tabular-nums">
                     {Math.floor(duration/60)}:{(duration%60).toString().padStart(2,"0")}
                   </span>
                 </div>
@@ -709,17 +731,18 @@ export default function Play() {
             </div>
 
             {/* Progress bar */}
-            <div className="relative h-1 bg-muted rounded-full overflow-hidden">
+            <div className="relative h-1.5 bg-muted/40 rounded-full overflow-hidden">
               <motion.div
-                className="absolute left-0 top-0 h-full bg-primary rounded-full"
+                className="absolute left-0 top-0 h-full typing-progress-bar rounded-full"
                 animate={{ width: `${progress}%` }}
-                transition={{ duration: 0.15 }}
+                transition={{ duration: 0.12 }}
               />
             </div>
 
             {/* Text display */}
             <div
-              className="relative p-4 md:p-6 lg:p-8 bg-card border border-border rounded-2xl shadow-xl cursor-text"
+              className="relative p-4 md:p-6 lg:p-8 bg-card rounded-2xl shadow-xl cursor-text transition-all duration-300"
+              style={{ border: "1px solid rgba(0,245,255,0.15)", boxShadow: "0 0 24px rgba(0,0,0,0.6), inset 0 0 24px rgba(0,245,255,0.02)" }}
               onClick={() => inputRef.current?.focus()}
             >
               <input
