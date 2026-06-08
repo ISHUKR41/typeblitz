@@ -34,6 +34,12 @@ export function BubblePopGame({
   const prevSubRef = useRef(submissionCount);
   const prevWidRef = useRef(wordIndex);
   const spawnedRef = useRef(-1);
+  // Stable refs so the animation loop never stale-closes over prop values
+  const wordIndexRef    = useRef(wordIndex);    wordIndexRef.current    = wordIndex;
+  const currentInputRef = useRef(currentInput); currentInputRef.current = currentInput;
+  const wpmRef          = useRef(wpm);          wpmRef.current          = wpm;
+  const accuracyRef     = useRef(accuracy);     accuracyRef.current     = accuracy;
+  const comboStreakRef  = useRef(comboStreak);  comboStreakRef.current  = comboStreak;
 
   function spawnFor(canvas: HTMLCanvasElement, wIdx: number) {
     if (wIdx < 0 || wIdx >= words.length) return;
@@ -149,7 +155,7 @@ export function BubblePopGame({
 
         if (b.y + b.r < 0) { livesRef.current = Math.max(0, livesRef.current-1); b.alive=false; continue; }
 
-        const isActive = b.wIdx === wordIndex;
+        const isActive = b.wIdx === wordIndexRef.current;
         const c2 = PALETTE[b.ci];
         const pulse = Math.sin(now/290)*0.5+0.5;
 
@@ -174,8 +180,8 @@ export function BubblePopGame({
         const fs = Math.max(10, Math.min(16, Math.floor(b.r*0.44)));
         ctx.font=`bold ${fs}px 'JetBrains Mono',monospace`;
         ctx.textAlign="center"; ctx.textBaseline="middle";
-        if (isActive && currentInput.length>0) {
-          const typed=currentInput, rest=b.word.slice(typed.length);
+        if (isActive && currentInputRef.current.length>0) {
+          const typed=currentInputRef.current, rest=b.word.slice(typed.length);
           const tw=ctx.measureText(b.word).width, sx=b.x-tw/2;
           ctx.fillStyle="#4ade80"; ctx.fillText(typed, sx+ctx.measureText(typed).width/2, b.y);
           ctx.fillStyle="#fff";    ctx.fillText(rest,  sx+ctx.measureText(typed).width+ctx.measureText(rest).width/2, b.y);
@@ -189,18 +195,19 @@ export function BubblePopGame({
       ctx.textAlign="left"; ctx.textBaseline="top"; ctx.font="14px system-ui"; ctx.fillStyle="#fff";
       ctx.fillText("❤️".repeat(Math.max(0,livesRef.current))+"🤍".repeat(Math.max(0,3-livesRef.current)), 10, 10);
       ctx.font="bold 13px 'JetBrains Mono',monospace";
-      ctx.textAlign="center"; ctx.fillStyle="#a78bfa"; ctx.fillText(`${wpm} WPM`, W/2, 10);
-      ctx.textAlign="right";  ctx.fillStyle="#34d399"; ctx.fillText(`${accuracy}%`, W-10, 10);
+      ctx.textAlign="center"; ctx.fillStyle="#a78bfa"; ctx.fillText(`${wpmRef.current} WPM`, W/2, 10);
+      ctx.textAlign="right";  ctx.fillStyle="#34d399"; ctx.fillText(`${accuracyRef.current}%`, W-10, 10);
 
-      if (comboStreak > 2) {
-        ctx.textAlign="center"; ctx.font=`bold ${Math.min(14+comboStreak,22)}px 'JetBrains Mono',monospace`;
-        ctx.fillStyle=`hsl(${40+comboStreak*6},100%,62%)`; ctx.globalAlpha=0.95;
-        ctx.fillText(`🔥 ${comboStreak}x COMBO`, W/2, 34); ctx.globalAlpha=1;
+      if (comboStreakRef.current > 2) {
+        const cs = comboStreakRef.current;
+        ctx.textAlign="center"; ctx.font=`bold ${Math.min(14+cs,22)}px 'JetBrains Mono',monospace`;
+        ctx.fillStyle=`hsl(${40+cs*6},100%,62%)`; ctx.globalAlpha=0.95;
+        ctx.fillText(`🔥 ${cs}x COMBO`, W/2, 34); ctx.globalAlpha=1;
       }
 
-      const ab = bubblesRef.current.find(b=>b.wIdx===wordIndex&&!b.popping);
+      const ab = bubblesRef.current.find(b=>b.wIdx===wordIndexRef.current&&!b.popping);
       if (ab) {
-        const typed=currentInput, rest=ab.word.slice(typed.length);
+        const typed=currentInputRef.current, rest=ab.word.slice(typed.length);
         const c2=PALETTE[ab.ci];
         ctx.font="bold 20px 'JetBrains Mono',monospace"; ctx.shadowColor=c2.main; ctx.shadowBlur=18;
         const fw=ctx.measureText(ab.word).width, sx=W/2-fw/2;
@@ -217,7 +224,7 @@ export function BubblePopGame({
 
     rafRef.current = requestAnimationFrame(draw);
     return () => { cancelAnimationFrame(rafRef.current); _roB.disconnect(); };
-  }, [words, wordIndex, currentInput, wpm, accuracy, levelNumber, comboStreak]); // eslint-disable-line
+  }, [words]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return <canvas ref={canvasRef} className="w-full rounded-2xl border border-violet-500/20 block" />;
 }

@@ -49,6 +49,8 @@ export function SnakeTyperGame({
   wpmRef.current = wpm;
   const accuracyRef = useRef(accuracy);
   accuracyRef.current = accuracy;
+  const progressRef = useRef(progress);
+  progressRef.current = progress;
 
   const stateRef = useRef({
     snake: [{ x: 11, y: 7 }, { x: 10, y: 7 }, { x: 9, y: 7 }, { x: 8, y: 7 }] as Pos[],
@@ -140,7 +142,7 @@ export function SnakeTyperGame({
         }
       }
 
-      const moveMs = Math.max(70, 320 - Math.max(wpm, 10) * 2.5);
+      const moveMs = Math.max(70, 320 - Math.max(wpmRef.current, 10) * 2.5);
       if (!s.dead && ts - lastMove > moveMs && s.snake.length > 0 && s.foods.length > 0) {
         lastMove = ts;
         const head = s.snake[0];
@@ -167,7 +169,7 @@ export function SnakeTyperGame({
         }
         for (const f of s.foods) f.timer = Math.max(0, f.timer - 1);
         s.foods = s.foods.filter(f => f.timer > 0);
-        if (s.foods.length < Math.ceil(progress / 35) + 1) {
+        if (s.foods.length < Math.ceil(progressRef.current / 35) + 1) {
           s.foods = spawnFood(s.foods, s.snake, words, wordIdxRef.current);
         }
       }
@@ -293,7 +295,7 @@ export function SnakeTyperGame({
       ctx.fillStyle = "#00ff88"; ctx.font = "bold 13px monospace"; ctx.textAlign = "left";
       ctx.fillText(`🐍 Length: ${s.snake.length}`, 18, 28);
       ctx.fillStyle = "#88ffcc"; ctx.font = "11px monospace";
-      ctx.fillText(`Score: ${s.score}  WPM: ${wpm}  Acc: ${accuracy}%`, 18, 48);
+      ctx.fillText(`Score: ${s.score}  WPM: ${wpmRef.current}  Acc: ${accuracyRef.current}%`, 18, 48);
 
       const tgt = words[wordIdxRef.current];
       if (tgt) {
@@ -306,7 +308,7 @@ export function SnakeTyperGame({
 
     animId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(animId);
-  }, [words, wpm, accuracy, progress]);
+  }, [words]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <canvas

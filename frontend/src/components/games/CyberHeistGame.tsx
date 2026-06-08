@@ -47,6 +47,12 @@ export function CyberHeistGame({
   const scanLineRef = useRef(0);
   const glitchRef = useRef(0);
   const [hackedCount, setHackedCount] = useState(0);
+  // Stable refs — keep animation loop from restarting on every prop change
+  const wpmRef         = useRef(wpm);         wpmRef.current         = wpm;
+  const accuracyRef    = useRef(accuracy);    accuracyRef.current    = accuracy;
+  const progressRef    = useRef(progress);    progressRef.current    = progress;
+  const comboStreakRef = useRef(comboStreak); comboStreakRef.current = comboStreak;
+  const hackedCountRef = useRef(hackedCount); hackedCountRef.current = hackedCount;
 
   const initNodes = useCallback(() => {
     if (!canvasRef.current) return;
@@ -355,9 +361,9 @@ export function CyberHeistGame({
       ctx.fillStyle = "#22c55e";
       ctx.font = "bold 8px monospace";
       ctx.textAlign = "left";
-      ctx.fillText(`// CYBER HEIST v2.0  |  NODES: ${hackedCount}/${nodesRef.current.length}  |  WPM: ${wpm}  |  ACC: ${accuracy}%  |  COMBO: x${comboStreak}`, 8, 14);
+      ctx.fillText(`// CYBER HEIST v2.0  |  NODES: ${hackedCountRef.current}/${nodesRef.current.length}  |  WPM: ${wpmRef.current}  |  ACC: ${accuracyRef.current}%  |  COMBO: x${comboStreakRef.current}`, 8, 14);
       ctx.fillStyle = "rgba(34,197,94,0.5)";
-      ctx.fillRect(0, 21, (progress / 100) * w, 1);
+      ctx.fillRect(0, 21, (progressRef.current / 100) * w, 1);
       ctx.restore();
 
       animId = requestAnimationFrame(render);
@@ -365,7 +371,7 @@ export function CyberHeistGame({
 
     animId = requestAnimationFrame(render);
     return () => cancelAnimationFrame(animId);
-  }, [wpm, accuracy, progress, comboStreak, hackedCount]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentWord = words[wordIndex] ?? "";
   const nextWords = words.slice(wordIndex + 1, wordIndex + 3);

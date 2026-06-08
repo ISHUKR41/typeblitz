@@ -61,6 +61,15 @@ export function RacingGame({
   wordIndexRef.current = wordIndex;
   const currentInputRef = useRef(currentInput);
   currentInputRef.current = currentInput;
+  const wpmRef = useRef(wpm);
+  wpmRef.current = wpm;
+  const progressRef = useRef(progress);
+  progressRef.current = progress;
+  const ghostPosRef = useRef(0);
+  const startTimeRef = useRef(startTime);
+  startTimeRef.current = startTime;
+  const comboStreakRef = useRef(comboStreak);
+  comboStreakRef.current = comboStreak;
 
   // Ghost progress calculation
   const [ghostPos, setGhostPos] = useState(0);
@@ -72,6 +81,7 @@ export function RacingGame({
     if (!startTime) return;
     const pos = Math.min((elapsedSeconds / targetSeconds) * 100, 100);
     setGhostPos(pos);
+    ghostPosRef.current = pos;
   }, [elapsedSeconds, targetSeconds, startTime]);
 
   // Audio trigger on submission
@@ -116,7 +126,7 @@ export function RacingGame({
       const h = canvas.height;
 
       // Dynamic speed based on WPM (frame-rate independent)
-      const speed = startTime ? (wpm / 15) + 2 : 1;
+      const speed = startTimeRef.current ? (wpmRef.current / 15) + 2 : 1;
       roadOffsetRef.current = (roadOffsetRef.current + speed * DT) % 200;
       curveRef.current = Math.sin(Date.now() / 2000) * 0.4; // scrolling road curves
 
@@ -459,7 +469,7 @@ export function RacingGame({
             vx: -speed * 0.5 - Math.random() * 3,
             vy: (Math.random() * 2 - 1) * 0.8,
             size: Math.random() * 4 + 2,
-            color: comboStreak >= 4 ? "#38bdf8" : "#ec4899", // Blue nitrox or pink smoke
+            color: comboStreakRef.current >= 4 ? "#38bdf8" : "#ec4899", // Blue nitrox or pink smoke
             alpha: 1,
             life: 0,
             maxLife: 20 + Math.random() * 15,
@@ -489,8 +499,8 @@ export function RacingGame({
 
       // 5. Draw Competitor (Ghost Car)
       // Ghost's lane is slightly offset right, player's lane slightly offset left
-      const relativeGhostProgress = ghostPos;
-      const relativePlayerProgress = progress;
+      const relativeGhostProgress = ghostPosRef.current;
+      const relativePlayerProgress = progressRef.current;
 
       // Position relative to player: if player is ahead, ghost is further back on canvas
       const ghostDelta = relativeGhostProgress - relativePlayerProgress; // positive if ghost is ahead
@@ -556,7 +566,7 @@ export function RacingGame({
 
       ctx.save();
       // Smooth speed-vibration using sinusoidal oscillation (not random — eliminates jitter)
-      const shakeIntensity = startTime ? Math.min(wpm / 200, 0.7) : 0;
+      const shakeIntensity = startTimeRef.current ? Math.min(wpmRef.current / 200, 0.7) : 0;
       const shakeX = shakeIntensity > 0 ? Math.sin(ts * 0.027) * Math.cos(ts * 0.019) * shakeIntensity * 1.5 : 0;
       const shakeY = shakeIntensity > 0 ? Math.sin(ts * 0.021) * Math.cos(ts * 0.013) * shakeIntensity * 0.8 : 0;
 
@@ -572,7 +582,7 @@ export function RacingGame({
       ctx.shadowBlur = 0;
 
       // Nitro booster exhaust fire (dual jets)
-      if (comboStreak >= 4) {
+      if (comboStreakRef.current >= 4) {
         const flameLen1 = 16 + Math.random() * 12;
         const flameLen2 = 14 + Math.random() * 10;
         // Left exhaust
@@ -723,7 +733,7 @@ export function RacingGame({
     animationId = requestAnimationFrame(render);
 
     return () => cancelAnimationFrame(animationId);
-  }, [wpm, progress, ghostPos, startTime, comboStreak]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentWord = words[wordIndex] ?? "";
   const nextWords = words.slice(wordIndex + 1, wordIndex + 4);

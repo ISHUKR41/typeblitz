@@ -54,6 +54,10 @@ export function GalaxyGame({
   const [score, setScore] = useState(0);
   const [screenFlash, setScreenFlash] = useState(false);
   const prevSubmission = useRef(submissionCount);
+  // Stable refs — keep animation loop from restarting on every prop change
+  const wordIndexRef    = useRef(wordIndex);    wordIndexRef.current    = wordIndex;
+  const currentInputRef = useRef(currentInput); currentInputRef.current = currentInput;
+  const screenFlashRef  = useRef(screenFlash);  screenFlashRef.current  = screenFlash;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const starsRef = useRef<StarData[]>([]);
@@ -69,6 +73,7 @@ export function GalaxyGame({
 
   const timeRatio = startTime ? Math.min(elapsedSeconds / targetSeconds(), 1) : 0;
   const descentPct = timeRatio * 65; // aliens descend up to 65% — creates real invasion threat
+  const descentPctRef = useRef(descentPct); descentPctRef.current = descentPct;
 
   function targetSeconds() {
     const avgLen = words.reduce((s, w) => s + w.length, 0) / Math.max(words.length, 1);
@@ -86,6 +91,7 @@ export function GalaxyGame({
     })),
     [gridStart, gridWords.join(",")]
   );
+  const shipLayoutRef = useRef(shipLayout); shipLayoutRef.current = shipLayout;
 
   // Initialize stars once
   useEffect(() => {
@@ -222,22 +228,22 @@ export function GalaxyGame({
       });
 
       // Screen Flash overlay
-      if (screenFlash) {
+      if (screenFlashRef.current) {
         ctx.fillStyle = "rgba(239, 68, 68, 0.25)";
         ctx.fillRect(0, 0, w, h);
       }
 
       // ─── DRAW ALIEN SHIPS ───
-      const currentAbsIdx = wordIndex;
+      const currentAbsIdx = wordIndexRef.current;
 
-      shipLayout.forEach(({ word, absIdx, col, row, color }) => {
+      shipLayoutRef.current.forEach(({ word, absIdx, col, row, color }) => {
         const isTarget = absIdx === currentAbsIdx;
         const isDestroyed = absIdx < currentAbsIdx;
 
         if (isDestroyed) return; // don't draw blown up ships
 
         const alienX = w * ((col + 0.5) / SHIP_COLS);
-        const alienY = 20 + descentPct + (row * 35);
+        const alienY = 20 + descentPctRef.current + (row * 35);
         const floatOffset = Math.sin(Date.now() / 200 + col) * 1.5;
 
         ctx.save();
@@ -295,7 +301,7 @@ export function GalaxyGame({
         // Draw alien word tag — typed (cyan) + remaining (grey/red)
         ctx.shadowBlur = 0;
         ctx.font = "bold 9px monospace";
-        const typedLen = isTarget ? Math.min(currentInput.length, word.length) : 0;
+        const typedLen = isTarget ? Math.min(currentInputRef.current.length, word.length) : 0;
         const typedPart = word.slice(0, typedLen);
         const remainPart = word.slice(typedLen);
         const fullW = ctx.measureText(word).width;
@@ -402,7 +408,7 @@ export function GalaxyGame({
       ctx.stroke();
 
       // Shield dome ripple overlay
-      if (screenFlash) {
+      if (screenFlashRef.current) {
         ctx.strokeStyle = "rgba(34, 211, 238, 0.6)";
         ctx.lineWidth = 2;
         ctx.beginPath();
@@ -418,7 +424,7 @@ export function GalaxyGame({
     animId = requestAnimationFrame(render);
 
     return () => cancelAnimationFrame(animId);
-  }, [wordIndex, currentInput, shipLayout, descentPct, screenFlash]);
+  }, [words]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentWord = words[wordIndex] ?? "";
 

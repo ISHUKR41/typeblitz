@@ -55,6 +55,12 @@ export function ArenaBlitzGame({
   const frameRef = useRef(0);
   const [shieldHp, setShieldHp] = useState(100);
   const [kills, setKills] = useState(0);
+  // Stable refs — keep animation loop from restarting on every prop change
+  const wpmRef          = useRef(wpm);          wpmRef.current          = wpm;
+  const accuracyRef     = useRef(accuracy);     accuracyRef.current     = accuracy;
+  const wordIndexRef    = useRef(wordIndex);    wordIndexRef.current    = wordIndex;
+  const comboStreakRef  = useRef(comboStreak);  comboStreakRef.current  = comboStreak;
+  const killsRef        = useRef(kills);        killsRef.current        = kills;
 
   const spawnEnemy = useCallback((wordForEnemy: string) => {
     const angle = Math.random() * Math.PI * 2;
@@ -64,7 +70,7 @@ export function ArenaBlitzGame({
     const r = Math.random();
     const type: Enemy["type"] = r < 0.6 ? "grunt" : r < 0.8 ? "tank" : "speeder";
     const speedBase = type === "speeder" ? 0.55 : type === "tank" ? 0.22 : 0.38;
-    const speed = speedBase + (wpm / 200) * 0.12;
+    const speed = speedBase + (wpmRef.current / 200) * 0.12;
     const dx = CENTER_X - x, dy = CENTER_Y - y;
     const len = Math.hypot(dx, dy);
     const hp = type === "tank" ? 2 : 1;
@@ -81,14 +87,14 @@ export function ArenaBlitzGame({
       pulse: Math.random() * Math.PI * 2,
       type,
     });
-  }, [wpm]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Spawn enemies periodically
   useEffect(() => {
     if (!startTime) return;
     const available = words.slice(wordIndex, wordIndex + 8);
     let spawnIdx = 0;
-    const baseInterval = Math.max(2000 - wpm * 12, 600);
+    const baseInterval = Math.max(2000 - wpmRef.current * 12, 600);
     const interval = setInterval(() => {
       if (enemiesRef.current.length < 6) {
         const w = available[spawnIdx % available.length] ?? words[0];
@@ -97,7 +103,7 @@ export function ArenaBlitzGame({
       }
     }, baseInterval);
     return () => clearInterval(interval);
-  }, [startTime, wpm, words, wordIndex, spawnEnemy]);
+  }, [startTime, words, spawnEnemy]); // wpm via ref
 
   // Initial spawn
   useEffect(() => {
@@ -405,14 +411,14 @@ export function ArenaBlitzGame({
       ctx.fillStyle = "rgba(0,0,0,0.5)";
       ctx.fillRect(w - 100, 0, 100, 20);
       ctx.fillStyle = "#a78bfa"; ctx.font = "bold 7px monospace"; ctx.textAlign = "right";
-      ctx.fillText(`${kills} KILLS  ${wpm} WPM`, w - 6, 13);
+      ctx.fillText(`${killsRef.current} KILLS  ${wpmRef.current} WPM`, w - 6, 13);
 
       animId = requestAnimationFrame(render);
     };
 
     animId = requestAnimationFrame(render);
     return () => cancelAnimationFrame(animId);
-  }, [wpm, accuracy, spawnEnemy, words, wordIndex, kills]);
+  }, [spawnEnemy, words]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentWord = words[wordIndex] ?? "";
   const nextWords = words.slice(wordIndex + 1, wordIndex + 4);

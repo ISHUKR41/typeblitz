@@ -33,6 +33,12 @@ export function FruitBlitzGame({
   const prevSubRef = useRef(submissionCount);
   const prevWidRef = useRef(wordIndex);
   const spawnedRef = useRef(-1);
+  // Stable refs so the animation loop never stale-closes over prop values
+  const wordIndexRef    = useRef(wordIndex);    wordIndexRef.current    = wordIndex;
+  const currentInputRef = useRef(currentInput); currentInputRef.current = currentInput;
+  const wpmRef          = useRef(wpm);          wpmRef.current          = wpm;
+  const accuracyRef     = useRef(accuracy);     accuracyRef.current     = accuracy;
+  const comboStreakRef  = useRef(comboStreak);  comboStreakRef.current  = comboStreak;
 
   function spawnFruit(canvas: HTMLCanvasElement, wIdx: number) {
     if (wIdx < 0 || wIdx >= words.length) return;
@@ -183,7 +189,7 @@ export function FruitBlitzGame({
         f.y+=f.vy*dt;
         if (f.y-f.r>H-55) { livesRef.current=Math.max(0,livesRef.current-1); f.alive=false; continue; }
 
-        const isActive=f.wIdx===wordIndex;
+        const isActive=f.wIdx===wordIndexRef.current;
         const ft=FRUITS[f.fi];
         const pulse=Math.sin(now/300)*0.5+0.5;
 
@@ -200,8 +206,8 @@ export function FruitBlitzGame({
         ctx.font=`bold ${fs}px 'JetBrains Mono',monospace`;
         ctx.textAlign="center"; ctx.textBaseline="top";
         const lY=f.y+f.r+6;
-        if (isActive && currentInput.length>0) {
-          const typed=currentInput, rest=f.word.slice(typed.length);
+        if (isActive && currentInputRef.current.length>0) {
+          const typed=currentInputRef.current, rest=f.word.slice(typed.length);
           const fw=ctx.measureText(f.word).width, sx=f.x-fw/2;
           ctx.textAlign="left";
           ctx.fillStyle="#4ade80"; ctx.fillText(typed, sx, lY);
@@ -217,18 +223,19 @@ export function FruitBlitzGame({
       ctx.textAlign="left"; ctx.textBaseline="top"; ctx.font="14px system-ui"; ctx.fillStyle="#fff";
       ctx.fillText("❤️".repeat(Math.max(0,livesRef.current))+"🤍".repeat(Math.max(0,3-livesRef.current)),10,10);
       ctx.font="bold 13px 'JetBrains Mono',monospace";
-      ctx.textAlign="center"; ctx.fillStyle="#fb923c"; ctx.fillText(`${wpm} WPM`,W/2,10);
-      ctx.textAlign="right";  ctx.fillStyle="#34d399"; ctx.fillText(`${accuracy}%`,W-10,10);
+      ctx.textAlign="center"; ctx.fillStyle="#fb923c"; ctx.fillText(`${wpmRef.current} WPM`,W/2,10);
+      ctx.textAlign="right";  ctx.fillStyle="#34d399"; ctx.fillText(`${accuracyRef.current}%`,W-10,10);
 
-      if (comboStreak>2) {
-        ctx.textAlign="center"; ctx.font=`bold ${Math.min(14+comboStreak,22)}px 'JetBrains Mono',monospace`;
-        ctx.fillStyle=`hsl(${40+comboStreak*6},100%,62%)`; ctx.globalAlpha=0.9;
-        ctx.fillText(`✂️ ${comboStreak}x SLICE COMBO`,W/2,34); ctx.globalAlpha=1;
+      if (comboStreakRef.current>2) {
+        const cs=comboStreakRef.current;
+        ctx.textAlign="center"; ctx.font=`bold ${Math.min(14+cs,22)}px 'JetBrains Mono',monospace`;
+        ctx.fillStyle=`hsl(${40+cs*6},100%,62%)`; ctx.globalAlpha=0.9;
+        ctx.fillText(`✂️ ${cs}x SLICE COMBO`,W/2,34); ctx.globalAlpha=1;
       }
 
-      const af=fruitsRef.current.find(f=>f.wIdx===wordIndex&&!f.slicing);
+      const af=fruitsRef.current.find(f=>f.wIdx===wordIndexRef.current&&!f.slicing);
       if (af) {
-        const typed=currentInput, rest=af.word.slice(typed.length);
+        const typed=currentInputRef.current, rest=af.word.slice(typed.length);
         const ft=FRUITS[af.fi];
         ctx.font="bold 20px 'JetBrains Mono',monospace"; ctx.shadowColor=ft.main; ctx.shadowBlur=16;
         const fw=ctx.measureText(af.word).width, sx=W/2-fw/2;
@@ -245,7 +252,7 @@ export function FruitBlitzGame({
 
     rafRef.current=requestAnimationFrame(draw);
     return () => { cancelAnimationFrame(rafRef.current); _roF.disconnect(); };
-  }, [words, wordIndex, currentInput, wpm, accuracy, levelNumber, comboStreak]); // eslint-disable-line
+  }, [words]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return <canvas ref={canvasRef} className="w-full rounded-2xl border border-orange-500/20 block" />;
 }

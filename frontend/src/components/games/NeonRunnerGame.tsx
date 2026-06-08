@@ -61,6 +61,12 @@ export function NeonRunnerGame({
   const collisionCooldownRef = useRef(0);
 
   const [screenShake, setScreenShake] = useState(false);
+  // Stable refs — keep animation loop from restarting on every prop change
+  const wordIndexRef    = useRef(wordIndex);    wordIndexRef.current    = wordIndex;
+  const currentInputRef = useRef(currentInput); currentInputRef.current = currentInput;
+  const startTimeRef    = useRef(startTime);    startTimeRef.current    = startTime;
+  const screenShakeRef  = useRef(screenShake);  screenShakeRef.current  = screenShake;
+  const scrollSpeedRef  = useRef(0);
 
   // Init stars
   useEffect(() => {
@@ -99,6 +105,7 @@ export function NeonRunnerGame({
 
   // Obstacle scroll speed
   const scrollSpeed = startTime ? 2.5 + (wpm / targetWpm) * 1.8 : 0;
+  scrollSpeedRef.current = scrollSpeed;
 
   // Handle word correct/wrong
   useEffect(() => {
@@ -207,7 +214,7 @@ export function NeonRunnerGame({
       }
 
       // ── Real obstacle–player collision detection ─────────────────────
-      if (startTime && Date.now() > collisionCooldownRef.current) {
+      if (startTimeRef.current && Date.now() > collisionCooldownRef.current) {
         const collY = playerYRef.current;
         const pLeft  = PLAYER_X - 16;
         const pRight = PLAYER_X + 16;
@@ -240,15 +247,15 @@ export function NeonRunnerGame({
       }
 
       // Scroll backgrounds — frame-rate independent
-      if (startTime) {
-        bgOffsetRef.current = (bgOffsetRef.current + scrollSpeed * 0.15 * DT) % 800;
-        groundOffsetRef.current = (groundOffsetRef.current + scrollSpeed * DT) % 80;
-        cityOffsetRef.current = (cityOffsetRef.current + scrollSpeed * 0.4 * DT) % 800;
+      if (startTimeRef.current) {
+        bgOffsetRef.current = (bgOffsetRef.current + scrollSpeedRef.current * 0.15 * DT) % 800;
+        groundOffsetRef.current = (groundOffsetRef.current + scrollSpeedRef.current * DT) % 80;
+        cityOffsetRef.current = (cityOffsetRef.current + scrollSpeedRef.current * 0.4 * DT) % 800;
       }
 
       // === SKY GRADIENT ===
       ctx.save();
-      if (screenShake) {
+      if (screenShakeRef.current) {
         const t = ts / 60;
         ctx.translate(Math.sin(t * 2.5) * 2.5, Math.cos(t * 1.8) * 1.8);
       }
@@ -360,8 +367,8 @@ export function NeonRunnerGame({
 
       // === OBSTACLES ===
       obstaclesRef.current.forEach(obs => {
-        if (!startTime) return;
-        if (!obs.cleared) obs.x -= scrollSpeed * DT;
+        if (!startTimeRef.current) return;
+        if (!obs.cleared) obs.x -= scrollSpeedRef.current * DT;
 
         if (obs.x + obs.w < -50) {
           obs.cleared = true;
@@ -370,7 +377,7 @@ export function NeonRunnerGame({
 
         if (obs.cleared) return;
 
-        const isTarget = obs.wordIdx === wordIndex;
+        const isTarget = obs.wordIdx === wordIndexRef.current;
         const pulseAlpha = isTarget ? 0.25 + Math.abs(Math.sin(t / 300)) * 0.2 : 0.1;
 
         ctx.save();
@@ -445,7 +452,7 @@ export function NeonRunnerGame({
         ctx.font = `bold ${isTarget ? 11 : 10}px monospace`;
         const labelY = obs.type === "platform" ? obs.y - 8 : obs.y + obs.h / 2 + 4;
         const word = obs.word;
-        const typedLen = isTarget ? Math.min(currentInput.length, word.length) : 0;
+        const typedLen = isTarget ? Math.min(currentInputRef.current.length, word.length) : 0;
         const typedPart = word.slice(0, typedLen);
         const remainPart = word.slice(typedLen);
         const fullW = ctx.measureText(word).width;
@@ -466,7 +473,7 @@ export function NeonRunnerGame({
         ctx.shadowBlur = 0;
         ctx.restore();
       });
-      obstaclesRef.current = obstaclesRef.current.filter(o => !o.cleared || o.wordIdx >= wordIndex);
+      obstaclesRef.current = obstaclesRef.current.filter(o => !o.cleared || o.wordIdx >= wordIndexRef.current);
 
       // === PLAYER CHARACTER ===
       const py = playerYRef.current;
@@ -600,7 +607,7 @@ export function NeonRunnerGame({
 
     animId = requestAnimationFrame(render);
     return () => cancelAnimationFrame(animId);
-  }, [wordIndex, currentInput, words, startTime, scrollSpeed, screenShake]);
+  }, [words]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentWord = words[wordIndex] ?? "";
 

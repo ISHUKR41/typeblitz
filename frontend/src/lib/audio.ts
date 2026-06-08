@@ -64,21 +64,59 @@ export const soundEffects = {
 
     if (theme === "mechanical") {
       if (isSpace) {
+        // Space bar: deep thud with noise burst (heavy stabilizer rattle)
         osc.type = "sine";
-        osc.frequency.setValueAtTime(140, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.08);
-        gain.gain.setValueAtTime(0.12, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.08);
+        osc.frequency.setValueAtTime(160, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(60, ctx.currentTime + 0.09);
+        gain.gain.setValueAtTime(0.14, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
         osc.start();
-        osc.stop(ctx.currentTime + 0.09);
+        osc.stop(ctx.currentTime + 0.10);
+
+        // Stabilizer rattle noise burst
+        try {
+          const bufSize = Math.floor(ctx.sampleRate * 0.055);
+          const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+          const data = buf.getChannelData(0);
+          for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.3));
+          const noise = ctx.createBufferSource();
+          noise.buffer = buf;
+          const hpf = ctx.createBiquadFilter();
+          hpf.type = "highpass";
+          hpf.frequency.value = 3000;
+          const ng = ctx.createGain();
+          ng.gain.setValueAtTime(0.08, ctx.currentTime);
+          ng.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.055);
+          noise.connect(hpf); hpf.connect(ng); ng.connect(ctx.destination);
+          noise.start(); noise.stop(ctx.currentTime + 0.055);
+        } catch { /* fallback */ }
       } else {
-        osc.type = "triangle";
-        osc.frequency.setValueAtTime(800, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.03);
-        gain.gain.setValueAtTime(0.06, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.03);
+        // Keyswitch: crisp tactile click = oscillator tone + short noise burst
+        osc.type = "square";
+        osc.frequency.setValueAtTime(1200, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.012);
+        gain.gain.setValueAtTime(0.04, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.018);
         osc.start();
-        osc.stop(ctx.currentTime + 0.04);
+        osc.stop(ctx.currentTime + 0.018);
+
+        // Plastic key noise transient (the "click" of the tactile bump)
+        try {
+          const bufSize = Math.floor(ctx.sampleRate * 0.018);
+          const buf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+          const data = buf.getChannelData(0);
+          for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufSize * 0.25));
+          const noise = ctx.createBufferSource();
+          noise.buffer = buf;
+          const hpf = ctx.createBiquadFilter();
+          hpf.type = "highpass";
+          hpf.frequency.value = 5500;
+          const ng = ctx.createGain();
+          ng.gain.setValueAtTime(0.055, ctx.currentTime);
+          ng.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.018);
+          noise.connect(hpf); hpf.connect(ng); ng.connect(ctx.destination);
+          noise.start(); noise.stop(ctx.currentTime + 0.018);
+        } catch { /* fallback */ }
       }
     } else if (theme === "typewriter") {
       if (isSpace) {

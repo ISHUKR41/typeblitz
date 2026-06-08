@@ -64,6 +64,11 @@ export function MeteorGame({
   const [shieldHp, setShieldHp] = useState(100);
   const [score, setScore] = useState(0);
   const [screenFlash, setScreenFlash] = useState<"red" | "green" | null>(null);
+  // Stable refs — keep animation loop from restarting on every prop change
+  const wordIndexRef    = useRef(wordIndex);    wordIndexRef.current    = wordIndex;
+  const currentInputRef = useRef(currentInput); currentInputRef.current = currentInput;
+  const shieldHpRef     = useRef(shieldHp);     shieldHpRef.current     = shieldHp;
+  const screenFlashRef  = useRef(screenFlash);  screenFlashRef.current  = screenFlash;
 
   // Init stars and city once
   useEffect(() => {
@@ -221,10 +226,10 @@ export function MeteorGame({
       ctx.fillRect(0, 0, w, h);
 
       // Screen flash overlay
-      if (screenFlash === "red") {
+      if (screenFlashRef.current === "red") {
         ctx.fillStyle = "rgba(239,68,68,0.18)";
         ctx.fillRect(0, 0, w, h);
-      } else if (screenFlash === "green") {
+      } else if (screenFlashRef.current === "green") {
         ctx.fillStyle = "rgba(52,211,153,0.10)";
         ctx.fillRect(0, 0, w, h);
       }
@@ -310,11 +315,11 @@ export function MeteorGame({
         ctx.restore();
 
         // Draw word tag ABOVE meteor — typed (neon green) + remaining (amber/white)
-        const isTarget = meteor.targetWordIdx === wordIndex;
+        const isTarget = meteor.targetWordIdx === wordIndexRef.current;
         ctx.save();
         ctx.font = `bold ${isTarget ? 12 : 10}px monospace`;
         const word = meteor.word;
-        const typedLen = isTarget ? Math.min(currentInput.length, word.length) : 0;
+        const typedLen = isTarget ? Math.min(currentInputRef.current.length, word.length) : 0;
         const typedPart = word.slice(0, typedLen);
         const remainPart = word.slice(typedLen);
         const fullW = ctx.measureText(word).width;
@@ -455,7 +460,7 @@ export function MeteorGame({
       ctx.stroke();
 
       // Cannon barrel (aims at current target)
-      const targetMet = meteorsRef.current.find(m => m.targetWordIdx === wordIndex && !m.destroyed);
+      const targetMet = meteorsRef.current.find(m => m.targetWordIdx === wordIndexRef.current && !m.destroyed);
       let aimAngle = -Math.PI / 2;
       if (targetMet) {
         aimAngle = Math.atan2(targetMet.y - groundY, targetMet.x - w / 2);
@@ -481,7 +486,7 @@ export function MeteorGame({
       ctx.restore();
 
       // Shield dome indicator (pulsing when low)
-      const shieldAlpha = shieldHp < 30 ? 0.15 + Math.abs(Math.sin(t / 200)) * 0.15 : 0.06;
+      const shieldAlpha = shieldHpRef.current < 30 ? 0.15 + Math.abs(Math.sin(t / 200)) * 0.15 : 0.06;
       ctx.strokeStyle = `rgba(56,189,248,${shieldAlpha * 4})`;
       ctx.lineWidth = 1;
       ctx.shadowBlur = 0;
@@ -496,7 +501,7 @@ export function MeteorGame({
 
     animId = requestAnimationFrame(render);
     return () => cancelAnimationFrame(animId);
-  }, [wordIndex, currentInput, words, shieldHp, screenFlash]);
+  }, [words]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const currentWord = words[wordIndex] ?? "";
   const wave = Math.ceil((wordIndex + 1) / 5);

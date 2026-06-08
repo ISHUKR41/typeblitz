@@ -159,7 +159,7 @@ export function WordInvadersGame({
       const t = Date.now() / 1000;
 
       s.descentTimer++;
-      const descentInterval = Math.max(120, 400 - wpm * 3);
+      const descentInterval = Math.max(120, 400 - wpmRef.current * 3);
       if (s.descentTimer >= descentInterval) {
         s.descentTimer = 0;
         s.descentY += 35;
@@ -275,7 +275,7 @@ export function WordInvadersGame({
       ctx.fillStyle = "#aaccff"; ctx.font = "bold 13px monospace"; ctx.textAlign = "left";
       ctx.fillText(`👾 Wave ${s.wave} | Score: ${s.score}`, 18, 28);
       ctx.fillStyle = "#ff6666"; ctx.font = "13px monospace";
-      ctx.fillText(`Lives: ${"❤️".repeat(s.lives)}  WPM: ${wpm}`, 18, 48);
+      ctx.fillText(`Lives: ${"❤️".repeat(s.lives)}  WPM: ${wpmRef.current}`, 18, 48);
 
       if (dangerFrac > 0.6) {
         ctx.fillStyle = `rgba(255,50,50,${(dangerFrac - 0.6) * 0.4})`;
@@ -294,7 +294,7 @@ export function WordInvadersGame({
 
     animId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(animId);
-  }, [words, wpm, accuracy]);
+  }, [words]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <canvas
