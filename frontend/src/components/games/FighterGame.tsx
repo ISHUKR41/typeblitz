@@ -337,8 +337,12 @@ export function FighterGame({
     if (!ctx) return;
 
     let animId: number;
+    let lastFrameT = 0;
 
-    const render = () => {
+    const render = (ts: number) => {
+      const dt = Math.min(ts - (lastFrameT || ts), 50);
+      lastFrameT = ts;
+      const DT = dt / 16.667;
       const w = canvas.width;
       const h = canvas.height;
 
@@ -469,10 +473,10 @@ export function FighterGame({
 
       // ─── PARTICLES SYSTEM ───
       particlesRef.current.forEach(p => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.15; // gravity
-        p.life++;
+        p.x += p.vx * DT;
+        p.y += p.vy * DT;
+        p.vy += 0.15 * DT; // gravity
+        p.life += DT;
         p.alpha = 1 - (p.life / p.maxLife);
 
         ctx.save();
@@ -487,8 +491,8 @@ export function FighterGame({
 
       // ─── FLOATING DAMAGE NUMBERS ───
       damagesRef.current.forEach(d => {
-        d.y -= 1.2;
-        d.life++;
+        d.y -= 1.2 * DT;
+        d.life += DT;
         d.alpha = 1 - (d.life / d.maxLife);
 
         ctx.save();
@@ -507,7 +511,7 @@ export function FighterGame({
       animId = requestAnimationFrame(render);
     };
 
-    render();
+    animId = requestAnimationFrame(render);
 
     return () => cancelAnimationFrame(animId);
   }, [playerHp, enemyHp, playerAttacking, enemyAttacking, playerHit, enemyHit, enemy.color]);

@@ -124,6 +124,7 @@ export function FruitBlitzGame({
     const draw = (ts:number) => {
       const dt = Math.min(ts-(lastTRef.current||ts),48);
       lastTRef.current=ts;
+      const DT_NORM = dt / 16.667; // normalize: 1.0 = 60fps
       const W=canvas.width, H=canvas.height, now=Date.now();
 
       const bg=ctx.createLinearGradient(0,0,0,H);
@@ -150,8 +151,8 @@ export function FruitBlitzGame({
           if (f.sliceT>=1) { f.alive=false; continue; }
           const alpha=1-f.sliceT;
           const ft=FRUITS[f.fi];
-          f.lx+=f.lvx; f.ly+=f.lvy; f.lvy+=0.16; f.lrot+=0.045;
-          f.rx+=f.rvx; f.ry+=f.rvy; f.rvy+=0.16; f.rrot-=0.045;
+          f.lx+=f.lvx*DT_NORM; f.ly+=f.lvy*DT_NORM; f.lvy+=0.16*DT_NORM; f.lrot+=0.045*DT_NORM;
+          f.rx+=f.rvx*DT_NORM; f.ry+=f.rvy*DT_NORM; f.rvy+=0.16*DT_NORM; f.rrot-=0.045*DT_NORM;
 
           ctx.save(); ctx.translate(f.lx,f.ly); ctx.rotate(f.lrot); ctx.globalAlpha=alpha;
           const lg=ctx.createRadialGradient(-f.r*0.2,-f.r*0.2,f.r*0.05,0,0,f.r);
@@ -168,7 +169,7 @@ export function FruitBlitzGame({
           ctx.restore(); ctx.globalAlpha=1;
 
           for (const p of f.pts) {
-            p.x+=p.vx; p.y+=p.vy; p.vy+=0.18; p.life-=dt/440;
+            p.x+=p.vx*DT_NORM; p.y+=p.vy*DT_NORM; p.vy+=0.18*DT_NORM; p.life-=dt/440;
             if (p.life<=0) continue;
             ctx.globalAlpha=p.life; ctx.fillStyle=ft.light;
             ctx.beginPath(); ctx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2); ctx.fill();

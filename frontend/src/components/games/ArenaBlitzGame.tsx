@@ -169,8 +169,12 @@ export function ArenaBlitzGame({
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     let animId: number;
+    let lastFrameT = 0;
 
-    const render = () => {
+    const render = (ts: number) => {
+      const dt = Math.min(ts - (lastFrameT || ts), 50);
+      lastFrameT = ts;
+      const DT = dt / 16.667;
       const w = canvas.width, h = canvas.height;
       frameRef.current++;
       const t = Date.now();
@@ -209,7 +213,7 @@ export function ArenaBlitzGame({
       // Update and draw bullets
       bulletsRef.current = bulletsRef.current.filter(b => b.life < b.maxLife);
       bulletsRef.current.forEach(b => {
-        b.x += b.vx; b.y += b.vy; b.life++;
+        b.x += b.vx * DT; b.y += b.vy * DT; b.life += DT;
         const alpha = 1 - b.life / b.maxLife;
         ctx.save();
         ctx.globalAlpha = alpha;
@@ -228,7 +232,7 @@ export function ArenaBlitzGame({
       // Update and draw ring explosions
       ringsRef.current = ringsRef.current.filter(r => r.alpha > 0.02);
       ringsRef.current.forEach(r => {
-        r.r += 3; r.alpha *= 0.88;
+        r.r += 3 * DT; r.alpha *= Math.pow(0.88, DT);
         ctx.save();
         ctx.globalAlpha = r.alpha;
         ctx.strokeStyle = r.color; ctx.lineWidth = 2;
@@ -239,8 +243,8 @@ export function ArenaBlitzGame({
 
       // Update and draw enemies
       enemiesRef.current.forEach(e => {
-        e.x += e.vx; e.y += e.vy;
-        e.pulse += 0.05;
+        e.x += e.vx * DT; e.y += e.vy * DT;
+        e.pulse += 0.05 * DT;
 
         // Check if reached center
         const dist = Math.hypot(e.x - CENTER_X, e.y - CENTER_Y);
@@ -318,9 +322,9 @@ export function ArenaBlitzGame({
 
       // Blast particles
       particlesRef.current.forEach(p => {
-        p.x += p.vx; p.y += p.vy; p.life++; p.vy += 0.08;
+        p.x += p.vx * DT; p.y += p.vy * DT; p.life += DT; p.vy += 0.08 * DT;
         // Floor bounce
-        if (p.y > h - 5 && p.vy > 0) { p.vy = -p.vy * 0.4; p.vx *= 0.8; }
+        if (p.y > h - 5 && p.vy > 0) { p.vy = -p.vy * 0.4; p.vx *= Math.pow(0.8, DT); }
         p.alpha = 1 - p.life / p.maxLife;
         ctx.save();
         ctx.globalAlpha = p.alpha;
@@ -393,7 +397,7 @@ export function ArenaBlitzGame({
       animId = requestAnimationFrame(render);
     };
 
-    render();
+    animId = requestAnimationFrame(render);
     return () => cancelAnimationFrame(animId);
   }, [wpm, accuracy, spawnEnemy, words, wordIndex, kills]);
 

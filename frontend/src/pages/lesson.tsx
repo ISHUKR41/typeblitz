@@ -145,10 +145,10 @@ export default function Lesson() {
       <div className="bg-card border border-card-border rounded-2xl p-8 space-y-6">
         <div className="font-mono text-2xl leading-relaxed tracking-widest text-center py-4">
           {currentLine.split("").map((char: string, i: number) => {
-            let cls = "text-muted-foreground";
-            if (i < input.length) cls = input[i] === char ? "text-primary" : "text-destructive bg-destructive/20";
-            else if (i === input.length) cls = "bg-primary/20 border-b-2 border-primary text-foreground";
-            return <span key={i} className={`${cls} transition-colors`}>{char}</span>;
+            let cls = "char-untyped";
+            if (i < input.length) cls = input[i] === char ? "char-correct" : (char === " " ? "char-wrong-space" : "char-wrong");
+            else if (i === input.length) cls = "char-cursor";
+            return <span key={i} className={cls}>{char}</span>;
           })}
         </div>
 
@@ -157,7 +157,13 @@ export default function Lesson() {
           type="text"
           value={input}
           onChange={handleInput}
-          className="w-full bg-background border border-border rounded-xl p-4 font-mono text-base text-center focus:outline-none focus:ring-2 focus:ring-primary"
+          className="w-full rounded-xl p-4 font-mono text-base text-center focus:outline-none transition"
+          style={{
+            background: "rgba(14,14,18,0.7)",
+            border: "1px solid rgba(0,245,255,0.2)",
+          }}
+          onFocus={e => { e.currentTarget.style.border = "1px solid rgba(0,245,255,0.5)"; e.currentTarget.style.boxShadow = "0 0 0 2px rgba(0,245,255,0.07)"; }}
+          onBlur={e => { e.currentTarget.style.border = "1px solid rgba(0,245,255,0.2)"; e.currentTarget.style.boxShadow = "none"; }}
           autoFocus
           autoComplete="off"
           autoCorrect="off"

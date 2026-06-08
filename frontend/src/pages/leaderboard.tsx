@@ -77,7 +77,9 @@ export default function Leaderboard() {
     <div className="p-8 max-w-4xl mx-auto space-y-8">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center gap-3 mb-2">
-          <Trophy className="w-8 h-8 text-yellow-400" />
+          <div className="w-10 h-10 rounded-xl bg-yellow-400/15 border border-yellow-400/30 flex items-center justify-center shadow-[0_0_12px_rgba(255,184,0,0.2)]">
+            <Trophy className="w-5 h-5 text-yellow-400" />
+          </div>
           <h1 className="text-3xl font-extrabold tracking-tight">Global Leaderboard</h1>
         </div>
         <p className="text-muted-foreground">The fastest typists on TypeBlitz. Are you on the list?</p>
@@ -155,12 +157,18 @@ export default function Leaderboard() {
                     {entry.gameId.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}
                   </span>
 
-                  <div className="flex items-center gap-1 font-mono font-bold text-primary text-lg text-right">
-                    <Zap className="w-4 h-4" />
+                  <div
+                    className="flex items-center gap-1 font-mono font-bold text-lg text-right"
+                    style={{ color: "#00F5FF", textShadow: "0 0 6px rgba(0,245,255,0.5)" }}
+                  >
+                    <Zap className="w-4 h-4" style={{ color: "#00F5FF" }} />
                     {entry.wpm}
                   </div>
 
-                  <div className="text-right font-mono text-muted-foreground text-sm">
+                  <div className={`text-right font-mono text-sm font-semibold ${
+                    Math.round(entry.accuracy) >= 95 ? "text-emerald-400" :
+                    Math.round(entry.accuracy) >= 80 ? "text-yellow-400" : "text-red-400"
+                  }`}>
                     {Math.round(entry.accuracy)}%
                   </div>
                 </motion.div>

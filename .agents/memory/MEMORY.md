@@ -4,3 +4,5 @@
 - [TypeBlitz MongoDB graceful fallback](typeblitz-mongodb-fallback.md) — server starts fine without MONGODB_URI; warns in log and returns empty arrays from DB routes
 - [TypeBlitz backend ports and auth](typeblitz-backend-ports.md) — backend PORT=8080, frontend PORT=3000; uses HMAC Bearer tokens (not JWT); challenge route added at /api/challenge with 28 challenges
 - [TypeBlitz project structure](typeblitz-project-structure.md) — non-standard monorepo: frontend/ + backend/ + lib/ (not artifacts/); no createArtifact needed; backend build via esbuild build.mjs → dist/index.mjs
+- [TypeBlitz canvas game physics pattern](typeblitz-canvas-physics.md) — ALL 13 canvas games use DT=dt/16.667 pattern; CodeRainGame uses 50ms timestamp throttle for column updates + ms-based spawn timer; glitchTimer is decremented once via DT in loop, not in render block
+- [TypeBlitz neon char styling](typeblitz-char-styling.md) — use CSS classes char-correct/char-wrong/char-wrong-space/char-cursor/char-untyped everywhere text is typed; use typing-progress-bar class for neon gradient progress bars

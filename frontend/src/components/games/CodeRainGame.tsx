@@ -105,7 +105,9 @@ export function CodeRainGame({
     if (!canvas) return;
     const ctx = canvas.getContext("2d")!;
     let animId: number;
-    let frameCount = 0;
+    let lastFrameT = 0;
+    let lastColUpdateT = 0;
+    let lastSpawnT = 0;
 
     const spawnTarget = () => {
       const s = stateRef.current;
@@ -127,16 +129,20 @@ export function CodeRainGame({
       s.targets.push({ col, row: startRow, word: word.toLowerCase(), id: twIdCounter++, typed: "", burst: 0, particles: [] });
     };
 
-    const loop = () => {
+    const loop = (ts: number) => {
       animId = requestAnimationFrame(loop);
-      frameCount++;
+      const dt = Math.min(ts - (lastFrameT || ts), 50);
+      lastFrameT = ts;
+      const DT = dt / 16.667;
       const s = stateRef.current;
       const W = canvas.width, H = canvas.height;
       const numRows = Math.floor(H / CHAR_H);
 
-      if (frameCount % 3 === 0) {
+      // Update columns at ~50ms intervals (3 frames at 60fps)
+      if (ts - lastColUpdateT >= 50) {
+        lastColUpdateT = ts;
         for (const col of s.cols) {
-          if (col.burst > 0) { col.burst--; continue; }
+          if (col.burst > 0) { col.burst -= DT; continue; }
           col.head = (col.head + col.speed) % numRows;
           const replaceRow = Math.floor(col.head);
           const isInTarget = s.targets.some(t => t.col === s.cols.indexOf(col) && replaceRow >= t.row && replaceRow < t.row + t.word.length);
@@ -144,16 +150,16 @@ export function CodeRainGame({
         }
       }
 
-      s.spawnTimer++;
-      const sInterval = Math.max(50, 100 - Math.floor(progress / 20) * 10);
-      if (s.spawnTimer >= sInterval) { s.spawnTimer = 0; spawnTarget(); }
+      // Spawn timer: interval in ms (1500ms default, down to 800ms at high progress)
+      const sIntervalMs = Math.max(800, 1600 - Math.floor(progress / 20) * 160);
+      if (ts - lastSpawnT >= sIntervalMs) { lastSpawnT = ts; spawnTarget(); }
+      if (s.glitchTimer > 0) s.glitchTimer -= DT;
 
       ctx.fillStyle = "rgba(1,4,1,0.85)";
       ctx.fillRect(0, 0, W, H);
 
       if (s.glitchTimer > 0) {
-        s.glitchTimer--;
-        ctx.fillStyle = `rgba(255,0,0,${s.glitchTimer / 60})`;
+        ctx.fillStyle = `rgba(255,0,0,${Math.min(s.glitchTimer / 15, 0.25)})`;
         ctx.fillRect(0, 0, W, H);
         for (let i = 0; i < 4; i++) {
           const gy = Math.random() * H, gh = 2 + Math.random() * 8;
@@ -219,7 +225,7 @@ export function CodeRainGame({
           ctx.globalAlpha = p.life; ctx.fillStyle = "#ffd700";
           ctx.shadowBlur = 8; ctx.shadowColor = "#ffaa00";
           ctx.beginPath(); ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2); ctx.fill();
-          p.x += p.vx; p.y += p.vy; p.vx *= 0.92; p.vy *= 0.92; p.life -= 0.025;
+          p.x += p.vx * DT; p.y += p.vy * DT; p.vx *= Math.pow(0.92, DT); p.vy *= Math.pow(0.92, DT); p.life -= 0.025 * DT;
         }
       }
       ctx.globalAlpha = 1; ctx.shadowBlur = 0;

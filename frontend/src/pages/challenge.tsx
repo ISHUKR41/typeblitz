@@ -297,15 +297,16 @@ function getStreak(results: ChallengeResult[], todayKey: string): number {
 
 function ChallengeText({ text, input }: { text: string; input: string }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 font-mono text-base leading-8 md:text-lg">
+    <div
+      className="rounded-2xl bg-card p-5 font-mono text-base leading-8 md:text-lg"
+      style={{ border: "1px solid rgba(0,245,255,0.15)", boxShadow: "0 0 20px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,245,255,0.02)" }}
+    >
       {text.split("").map((char, index) => {
-        let cls = "text-muted-foreground/55";
+        let cls = "char-untyped";
         if (index < input.length) {
-          cls = input[index] === char
-            ? "text-foreground"
-            : "rounded-sm bg-destructive/15 text-destructive";
+          cls = input[index] === char ? "char-correct" : (char === " " ? "char-wrong-space" : "char-wrong");
         } else if (index === input.length) {
-          cls = "border-b-2 border-primary text-foreground";
+          cls = "char-cursor";
         }
         return <span key={index} className={cls}>{char}</span>;
       })}
@@ -434,9 +435,9 @@ export default function ChallengePage() {
 
           <ChallengeText text={challenge.text} input={input} />
 
-          <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+          <div className="h-1.5 overflow-hidden rounded-full bg-muted/40 relative">
             <motion.div
-              className="h-full rounded-full bg-primary"
+              className="typing-progress-bar h-full rounded-full absolute left-0 top-0"
               animate={{ width: `${progress}%` }}
               transition={{ duration: 0.15 }}
             />
@@ -447,7 +448,20 @@ export default function ChallengePage() {
               ref={textareaRef}
               value={input}
               onChange={event => handleChange(event.target.value)}
-              className="min-h-32 w-full resize-none rounded-2xl border border-border bg-background p-4 font-mono text-sm leading-7 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30"
+              className="min-h-32 w-full resize-none rounded-2xl p-4 font-mono text-sm leading-7 outline-none transition"
+              style={{
+                background: "rgba(14,14,18,0.8)",
+                border: "1px solid rgba(0,245,255,0.2)",
+                boxShadow: "none",
+              }}
+              onFocus={e => {
+                e.currentTarget.style.border = "1px solid rgba(0,245,255,0.45)";
+                e.currentTarget.style.boxShadow = "0 0 0 2px rgba(0,245,255,0.07), 0 0 16px rgba(0,245,255,0.05)";
+              }}
+              onBlur={e => {
+                e.currentTarget.style.border = "1px solid rgba(0,245,255,0.2)";
+                e.currentTarget.style.boxShadow = "none";
+              }}
               placeholder="Start typing today's challenge..."
               autoFocus
               autoCapitalize="off"

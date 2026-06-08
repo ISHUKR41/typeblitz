@@ -129,10 +129,14 @@ export function CyberHeistGame({
       }
     }
 
-    const render = () => {
+    let lastFrameT = 0;
+    const render = (ts: number) => {
+      const dt = Math.min(ts - (lastFrameT || ts), 50);
+      lastFrameT = ts;
+      const DT = dt / 16.667;
       const w = canvas.width, h = canvas.height;
-      scanLineRef.current = (scanLineRef.current + 1) % h;
-      if (glitchRef.current > 0) glitchRef.current--;
+      scanLineRef.current = (scanLineRef.current + DT) % h;
+      if (glitchRef.current > 0) glitchRef.current -= DT;
       const t = Date.now();
 
       // Background — deep dark
@@ -141,7 +145,7 @@ export function CyberHeistGame({
 
       // Matrix rain background
       dropsRef.current.forEach(d => {
-        d.y += d.speed;
+        d.y += d.speed * DT;
         if (d.y > h + 60) { d.y = -60; d.x = Math.random() * w; }
         if (Math.random() < 0.06) d.chars[Math.floor(Math.random() * d.chars.length)] = MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)];
         d.chars.forEach((ch, ci) => {
@@ -309,8 +313,8 @@ export function CyberHeistGame({
 
       // Particles
       particlesRef.current.forEach(p => {
-        p.x += p.vx; p.y += p.vy; p.life++;
-        p.vy -= 0.05;
+        p.x += p.vx * DT; p.y += p.vy * DT; p.life += DT;
+        p.vy -= 0.05 * DT;
         p.alpha = 1 - p.life / p.maxLife;
         ctx.save();
         ctx.globalAlpha = p.alpha;
@@ -346,7 +350,7 @@ export function CyberHeistGame({
       animId = requestAnimationFrame(render);
     };
 
-    render();
+    animId = requestAnimationFrame(render);
     return () => cancelAnimationFrame(animId);
   }, [wpm, accuracy, progress, comboStreak, hackedCount]);
 

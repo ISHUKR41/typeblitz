@@ -158,7 +158,11 @@ export function GalaxyGame({
 
     let animId: number;
 
-    const render = () => {
+    let lastFrameT = 0;
+    const render = (ts: number) => {
+      const dt = Math.min(ts - (lastFrameT || ts), 50);
+      lastFrameT = ts;
+      const DT = dt / 16.667;
       const w = canvas.width;
       const h = canvas.height;
 
@@ -187,7 +191,7 @@ export function GalaxyGame({
 
       // Draw & Scroll Stars — twinkling with color variation for realism
       starsRef.current.forEach((star, si) => {
-        star.y = (star.y + star.speed) % h;
+        star.y = (star.y + star.speed * DT) % h;
         const twinkle = 0.25 + Math.abs(Math.sin(Date.now() / (700 + si * 60) + si)) * 0.75;
         const isBlue = si % 5 === 0;
         const isWarm = si % 7 === 0;
@@ -303,8 +307,8 @@ export function GalaxyGame({
       // ─── DRAW LASERS ───
       ctx.lineWidth = 2.5;
       lasersRef.current.forEach(l => {
-        l.y += l.vy;
-        l.life++;
+        l.y += l.vy * DT;
+        l.life += DT;
 
         ctx.strokeStyle = l.color;
         ctx.beginPath();
@@ -316,9 +320,9 @@ export function GalaxyGame({
 
       // ─── EXPLOSION PARTICLES ───
       particlesRef.current.forEach(p => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.life++;
+        p.x += p.vx * DT;
+        p.y += p.vy * DT;
+        p.life += DT;
         p.alpha = 1 - (p.life / p.maxLife);
 
         ctx.save();
@@ -398,7 +402,7 @@ export function GalaxyGame({
       animId = requestAnimationFrame(render);
     };
 
-    render();
+    animId = requestAnimationFrame(render);
 
     return () => cancelAnimationFrame(animId);
   }, [wordIndex, currentInput, shipLayout, descentPct, screenFlash]);

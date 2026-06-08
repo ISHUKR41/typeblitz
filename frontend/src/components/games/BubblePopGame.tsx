@@ -14,6 +14,7 @@ const PALETTE = [
 interface Bubble {
   wIdx: number; word: string;
   x: number; y: number; r: number;
+  baseX: number; // anchor for frame-rate-independent sinusoidal drift
   vy: number; driftAmp: number; driftPhase: number;
   ci: number;
   popping: boolean; popT: number;
@@ -41,12 +42,13 @@ export function BubblePopGame({
     const r  = Math.max(36, Math.min(62, 30 + word.length * 3.8));
     const ci = wIdx % PALETTE.length;
     const offset = Math.max(0, wIdx - wordIndex);
+    const bx = r + 20 + Math.random() * Math.max(1, (canvas.width) - 2 * r - 40);
     bubblesRef.current.push({
       wIdx, word, r, ci,
-      x: r + 20 + Math.random() * Math.max(1, (canvas.width) - 2 * r - 40),
+      x: bx, baseX: bx, // baseX is the anchor; x is derived each frame from baseX + sin(t)*amp
       y: canvas.height * 0.72 + Math.min(offset * 95, canvas.height * 0.38),
       vy: -(0.42 + (levelNumber - 1) * 0.09 + Math.random() * 0.06),
-      driftAmp: 0.3 + Math.random() * 0.5,
+      driftAmp: 28 + Math.random() * 18, // pixels amplitude — frame-rate independent
       driftPhase: Math.random() * Math.PI * 2,
       popping: false, popT: 0, pts: [], alive: true,
     });
@@ -98,6 +100,7 @@ export function BubblePopGame({
     const draw = (ts: number) => {
       const dt = Math.min(ts - (lastTRef.current || ts), 48);
       lastTRef.current = ts;
+      const DT_NORM = dt / 16.667; // normalize: 1.0 = 60fps, 0.46 = 144fps
       const W = canvas.width, H = canvas.height, now = Date.now();
 
       const bg = ctx.createLinearGradient(0, 0, 0, H);
@@ -129,7 +132,7 @@ export function BubblePopGame({
           ctx.beginPath(); ctx.arc(b.x,b.y,b.r*(1+b.popT*2.8),0,Math.PI*2); ctx.stroke();
           ctx.globalAlpha = 1;
           for (const p of b.pts) {
-            p.x+=p.vx; p.y+=p.vy; p.vy+=0.13; p.life-=dt/480;
+            p.x+=p.vx*DT_NORM; p.y+=p.vy*DT_NORM; p.vy+=0.13*DT_NORM; p.life-=dt/480;
             if (p.life<=0) continue;
             ctx.globalAlpha=p.life*(1-b.popT*0.7);
             ctx.fillStyle=c2.main; ctx.beginPath(); ctx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2); ctx.fill();
@@ -140,8 +143,8 @@ export function BubblePopGame({
         }
 
         b.y += b.vy * dt;
-        b.x += Math.sin(now/1400 + b.driftPhase) * b.driftAmp;
-        b.x  = Math.max(b.r+2, Math.min(W-b.r-2, b.x));
+        // Absolute position from anchor — fully frame-rate independent drift
+        b.x = Math.max(b.r+2, Math.min(W-b.r-2, b.baseX + Math.sin(now/1400 + b.driftPhase) * b.driftAmp));
 
         if (b.y + b.r < 0) { livesRef.current = Math.max(0, livesRef.current-1); b.alive=false; continue; }
 

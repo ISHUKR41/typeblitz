@@ -300,6 +300,24 @@ export default function Home() {
           }}
         />
 
+        {/* Scanline sweep — CRT feel */}
+        <div
+          className="absolute inset-0 pointer-events-none overflow-hidden"
+          style={{ zIndex: 1 }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              height: "120px",
+              background: "linear-gradient(to bottom, transparent 0%, rgba(0,245,255,0.022) 50%, transparent 100%)",
+              animation: "scanline 8s linear infinite",
+              willChange: "transform",
+            }}
+          />
+        </div>
+
         {/* Vignette overlay to darken edges */}
         <div
           className="absolute inset-0 pointer-events-none"

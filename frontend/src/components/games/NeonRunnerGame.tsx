@@ -155,6 +155,24 @@ export function NeonRunnerGame({
     }
   }, [lastWordCorrect, submissionCount, wordIndex, comboStreak, targetWpm]);
 
+  // Canvas resize — make canvas match CSS display size
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const onResize = () => {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      const ctx = canvas.getContext("2d");
+      if (ctx) ctx.scale(dpr, dpr);
+    };
+    onResize();
+    const ro = new ResizeObserver(onResize);
+    ro.observe(canvas);
+    return () => ro.disconnect();
+  }, []);
+
   // Canvas render loop
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -163,16 +181,22 @@ export function NeonRunnerGame({
     if (!ctx) return;
 
     let animId: number;
-    const w = canvas.width;
-    const h = canvas.height;
+    let lastFrameT = 0;
 
-    const render = () => {
+    const render = (ts: number) => {
+      // Frame-rate independent delta time (capped at 50ms = 20fps minimum)
+      const dt = Math.min(ts - (lastFrameT || ts), 50);
+      lastFrameT = ts;
+      const DT = dt / 16.667; // normalize: 1.0 = 60fps, 0.46 = 144fps
       const t = Date.now();
 
-      // Physics update
+      const w = canvas.width / (Math.min(window.devicePixelRatio || 1, 2));
+      const h = canvas.height / (Math.min(window.devicePixelRatio || 1, 2));
+
+      // Physics update — frame-rate independent
       if (isJumpingRef.current) {
-        jumpVelRef.current += 0.55; // gravity
-        playerYRef.current += jumpVelRef.current;
+        jumpVelRef.current += 0.55 * DT; // gravity (normalized to 60fps)
+        playerYRef.current += jumpVelRef.current * DT;
         if (playerYRef.current >= GROUND_Y) {
           playerYRef.current = GROUND_Y;
           jumpVelRef.current = 0;
@@ -215,11 +239,11 @@ export function NeonRunnerGame({
         }
       }
 
-      // Scroll backgrounds
+      // Scroll backgrounds — frame-rate independent
       if (startTime) {
-        bgOffsetRef.current = (bgOffsetRef.current + scrollSpeed * 0.15) % 800;
-        groundOffsetRef.current = (groundOffsetRef.current + scrollSpeed) % 80;
-        cityOffsetRef.current = (cityOffsetRef.current + scrollSpeed * 0.4) % 800;
+        bgOffsetRef.current = (bgOffsetRef.current + scrollSpeed * 0.15 * DT) % 800;
+        groundOffsetRef.current = (groundOffsetRef.current + scrollSpeed * DT) % 80;
+        cityOffsetRef.current = (cityOffsetRef.current + scrollSpeed * 0.4 * DT) % 800;
       }
 
       // === SKY GRADIENT ===
@@ -336,7 +360,7 @@ export function NeonRunnerGame({
       // === OBSTACLES ===
       obstaclesRef.current.forEach(obs => {
         if (!startTime) return;
-        if (!obs.cleared) obs.x -= scrollSpeed;
+        if (!obs.cleared) obs.x -= scrollSpeed * DT;
 
         if (obs.x + obs.w < -50) {
           obs.cleared = true;
@@ -536,9 +560,9 @@ export function NeonRunnerGame({
       ctx.shadowBlur = 0;
       ctx.restore();
 
-      // === PARTICLES ===
+      // === PARTICLES === (frame-rate independent)
       particlesRef.current.forEach(p => {
-        p.x += p.vx; p.y += p.vy; p.vy += 0.18;
+        p.x += p.vx * DT; p.y += p.vy * DT; p.vy += 0.18 * DT;
         p.life++; p.alpha = 1 - (p.life / p.maxLife);
         ctx.save();
         ctx.globalAlpha = p.alpha;
@@ -552,9 +576,9 @@ export function NeonRunnerGame({
       });
       particlesRef.current = particlesRef.current.filter(p => p.life < p.maxLife);
 
-      // === SCORE POPUPS ===
+      // === SCORE POPUPS === (frame-rate independent)
       popupsRef.current.forEach(pop => {
-        pop.y -= 1; pop.life++;
+        pop.y -= 1 * DT; pop.life++;
         pop.alpha = 1 - (pop.life / pop.maxLife);
         ctx.save();
         ctx.globalAlpha = pop.alpha;
@@ -573,7 +597,7 @@ export function NeonRunnerGame({
       animId = requestAnimationFrame(render);
     };
 
-    render();
+    animId = requestAnimationFrame(render);
     return () => cancelAnimationFrame(animId);
   }, [wordIndex, currentInput, words, startTime, scrollSpeed, screenShake]);
 
@@ -621,9 +645,8 @@ export function NeonRunnerGame({
       <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-purple-900/20">
         <canvas
           ref={canvasRef}
-          width={800}
-          height={220}
           className="w-full h-[220px] block"
+          style={{ imageRendering: "crisp-edges" }}
         />
         {!startTime && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

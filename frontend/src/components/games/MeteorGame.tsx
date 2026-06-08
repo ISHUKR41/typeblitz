@@ -166,8 +166,12 @@ export function MeteorGame({
     if (!ctx) return;
 
     let animId: number;
+    let lastFrameT = 0;
 
-    const render = () => {
+    const render = (ts: number) => {
+      const dt = Math.min(ts - (lastFrameT || ts), 50);
+      lastFrameT = ts;
+      const DT = dt / 16.667; // normalize to 60fps
       frameRef.current++;
       const w = canvas.width;
       const h = canvas.height;
@@ -183,7 +187,7 @@ export function MeteorGame({
 
       // Scrolling stars parallax
       starRef.current.forEach(star => {
-        star.y = (star.y + star.sp) % h;
+        star.y = (star.y + star.sp * DT) % h;
         const twinkle = 0.3 + Math.abs(Math.sin(t / 600 + star.x)) * 0.5;
         ctx.fillStyle = `rgba(255,255,255,${twinkle})`;
         ctx.beginPath();
@@ -216,8 +220,8 @@ export function MeteorGame({
       meteorsRef.current.forEach(meteor => {
         if (meteor.destroyed && !meteor.exploding) return;
         if (!meteor.destroyed) {
-          meteor.y += meteor.speed;
-          meteor.x += Math.sin(meteor.angle * 10 + meteor.y / 50) * 0.4;
+          meteor.y += meteor.speed * DT; // frame-rate independent
+          meteor.x += Math.sin(meteor.angle * 10 + meteor.y / 50) * 0.4 * DT;
         }
 
         if (meteor.exploding) {
@@ -477,7 +481,7 @@ export function MeteorGame({
       animId = requestAnimationFrame(render);
     };
 
-    render();
+    animId = requestAnimationFrame(render);
     return () => cancelAnimationFrame(animId);
   }, [wordIndex, currentInput, words, shieldHp, screenFlash]);
 
@@ -528,9 +532,8 @@ export function MeteorGame({
       <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-orange-900/20">
         <canvas
           ref={canvasRef}
-          width={800}
-          height={240}
           className="w-full h-[240px] block"
+          style={{ imageRendering: "crisp-edges" }}
         />
         {!startTime && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">

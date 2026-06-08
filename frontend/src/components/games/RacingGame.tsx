@@ -93,14 +93,18 @@ export function RacingGame({
     if (!ctx) return;
 
     let animationId: number;
+    let lastFrameT = 0;
 
-    const render = () => {
+    const render = (ts: number) => {
+      const dt = Math.min(ts - (lastFrameT || ts), 50);
+      lastFrameT = ts;
+      const DT = dt / 16.667;
       const w = canvas.width;
       const h = canvas.height;
 
-      // Dynamic speed based on WPM
+      // Dynamic speed based on WPM (frame-rate independent)
       const speed = startTime ? (wpm / 15) + 2 : 1;
-      roadOffsetRef.current = (roadOffsetRef.current + speed) % 200;
+      roadOffsetRef.current = (roadOffsetRef.current + speed * DT) % 200;
       curveRef.current = Math.sin(Date.now() / 2000) * 0.4; // scrolling road curves
 
       // 1. Draw Sky (Dark Cyberpunk Gradient with aurora band)
@@ -702,7 +706,7 @@ export function RacingGame({
       animationId = requestAnimationFrame(render);
     };
 
-    render();
+    animationId = requestAnimationFrame(render);
 
     return () => cancelAnimationFrame(animationId);
   }, [wpm, progress, ghostPos, startTime, comboStreak]);

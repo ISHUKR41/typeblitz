@@ -120,9 +120,9 @@ function GameCard({ game, index }: { game: any; index: number }) {
           <span className="text-muted-foreground">Local progress</span>
           <span className={theme.text}>{completedCount}/5 cleared · L{unlockedLevel} unlocked</span>
         </div>
-        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+        <div className="h-1.5 overflow-hidden rounded-full bg-muted/50">
           <div
-            className="h-full rounded-full bg-primary transition-all"
+            className="typing-progress-bar h-full rounded-full transition-all"
             style={{ width: `${(completedCount / Math.max(levels.length, 1)) * 100}%` }}
           />
         </div>

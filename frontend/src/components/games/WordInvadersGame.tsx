@@ -152,7 +152,8 @@ export function WordInvadersGame({
           s.lives = Math.max(0, s.lives - 1);
           s.descentY = 0;
           s.descentTimer = 0;
-          s.aliens = s.aliens.map(a => ({ ...a, alive: true }));
+          // Rebuild wave from current wordIndex — don't revive killed aliens
+          s.aliens = buildWave(words, wordIdxRef.current);
         }
       }
 

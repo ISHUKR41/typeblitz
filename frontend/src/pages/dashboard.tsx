@@ -77,14 +77,18 @@ function AchievementsPanel({ stats }: { stats: any }) {
   );
 }
 
-function StatCard({ label, value, icon: Icon, color }: { label: string; value: string | number; icon: React.ElementType; color: string }) {
+function StatCard({ label, value, icon: Icon, color, glowColor }: { label: string; value: string | number; icon: React.ElementType; color: string; glowColor?: string }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-card border border-card-border rounded-2xl p-6 flex items-center gap-5"
+      whileHover={{ y: -2, transition: { duration: 0.15 } }}
+      className="bg-card border border-card-border rounded-2xl p-6 flex items-center gap-5 transition-all card-neon-hover"
     >
-      <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}>
+      <div
+        className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${color}`}
+        style={glowColor ? { boxShadow: `0 0 16px ${glowColor}` } : undefined}
+      >
         <Icon className="w-6 h-6" />
       </div>
       <div>
@@ -265,11 +269,11 @@ export default function Dashboard() {
       </motion.div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        <StatCard label="Global Rank" value={stats?.rank ? `#${stats.rank}` : "—"} icon={Trophy} color="bg-yellow-500/20 text-yellow-500" />
-        <StatCard label="Best WPM" value={stats?.bestWpm ?? "—"} icon={Zap} color="bg-primary/20 text-primary" />
-        <StatCard label="Average WPM" value={stats?.averageWpm ?? "—"} icon={BarChart2} color="bg-chart-2/20 text-chart-2" />
-        <StatCard label="Total Sessions" value={stats?.totalSessions ?? "—"} icon={Clock} color="bg-chart-3/20 text-chart-3" />
-        <StatCard label="Day Streak" value={stats?.currentStreak ?? "—"} icon={Flame} color="bg-chart-4/20 text-chart-4" />
+        <StatCard label="Global Rank" value={stats?.rank ? `#${stats.rank}` : "—"} icon={Trophy} color="bg-yellow-500/20 text-yellow-500" glowColor="rgba(234,179,8,0.18)" />
+        <StatCard label="Best WPM" value={stats?.bestWpm ?? "—"} icon={Zap} color="bg-primary/20 text-primary" glowColor="rgba(0,245,255,0.18)" />
+        <StatCard label="Average WPM" value={stats?.averageWpm ?? "—"} icon={BarChart2} color="bg-chart-2/20 text-chart-2" glowColor="rgba(255,32,121,0.14)" />
+        <StatCard label="Total Sessions" value={stats?.totalSessions ?? "—"} icon={Clock} color="bg-chart-3/20 text-chart-3" glowColor="rgba(57,255,20,0.14)" />
+        <StatCard label="Day Streak" value={stats?.currentStreak ?? "—"} icon={Flame} color="bg-chart-4/20 text-chart-4" glowColor="rgba(255,184,0,0.14)" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
