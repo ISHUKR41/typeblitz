@@ -586,10 +586,46 @@ export function ZombieGame({
           className="w-full h-[200px] block"
         />
 
-        {/* Laser weapon warning glow */}
+        {/* Danger border flash when zombie pressure is high */}
         {targetZombiePressure > 0.4 && (
-          <div className="absolute inset-0 border border-red-500/30 animate-pulse pointer-events-none z-10" />
+          <div className="absolute inset-0 border border-red-500/30 animate-pulse pointer-events-none z-10 rounded-2xl" />
         )}
+
+        {/* ── GAME OVER overlay ──────────────────────────────── */}
+        <AnimatePresence>
+          {playerHp <= 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center z-20 rounded-2xl"
+            >
+              <motion.div
+                initial={{ scale: 0.6, opacity: 0, y: 10 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
+                className="text-center space-y-3"
+              >
+                <div className="text-6xl">💀</div>
+                <div
+                  className="font-black text-4xl font-mono tracking-widest"
+                  style={{ color: "#FF2079", textShadow: "0 0 30px #FF2079, 0 0 60px #FF207940" }}
+                >
+                  OVERRUN
+                </div>
+                <div className="text-white/50 font-mono text-sm">
+                  {wordIndex} zombie{wordIndex !== 1 ? "s" : ""} eliminated before the horde broke through
+                </div>
+                <div className="flex items-center justify-center gap-4 pt-1 text-xs font-mono text-white/30">
+                  <span>{wpm} WPM</span>
+                  <span>·</span>
+                  <span>{accuracy}% ACC</span>
+                  <span>·</span>
+                  <span>Wave {wave}</span>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Typing box */}

@@ -68,7 +68,7 @@ export function GalaxyGame({
   const gridWords = words.slice(gridStart, gridStart + gridSize);
 
   const timeRatio = startTime ? Math.min(elapsedSeconds / targetSeconds(), 1) : 0;
-  const descentPct = timeRatio * 26; // alien descent limit (0-26% Y position)
+  const descentPct = timeRatio * 65; // aliens descend up to 65% — creates real invasion threat
 
   function targetSeconds() {
     const avgLen = words.reduce((s, w) => s + w.length, 0) / Math.max(words.length, 1);
@@ -455,10 +455,16 @@ export function GalaxyGame({
           className="w-full h-[180px] block"
         />
 
-        {/* Fleet landing warning alert bar */}
-        {descentPct > 15 && (
-          <div className="absolute top-0 left-0 right-0 bg-red-500/20 border-b border-red-500/30 text-red-400 text-center font-mono text-[9px] py-0.5 animate-pulse select-none z-10">
-            ⚠️ WARNING: ALIEN FLEET APPROACHING DEFENSE LINE ⚠️
+        {/* Fleet invasion threat alert */}
+        {descentPct > 35 && (
+          <div className={`absolute top-0 left-0 right-0 border-b text-center font-mono text-[9px] py-0.5 animate-pulse select-none z-10 ${
+            descentPct > 55
+              ? "bg-red-600/40 border-red-500/60 text-red-300"
+              : "bg-red-500/20 border-red-500/30 text-red-400"
+          }`}>
+            {descentPct > 55
+              ? "🚨 CRITICAL — ALIEN FLEET BREACHING DEFENSE LINE! TYPE FASTER! 🚨"
+              : "⚠️ WARNING: ALIEN FLEET DESCENDING — ELIMINATE TARGETS! ⚠️"}
           </div>
         )}
       </div>

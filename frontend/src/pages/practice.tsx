@@ -1142,7 +1142,7 @@ export default function Practice() {
             12 progressive lessons covering every key group. Master the fundamentals, then build speed.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {(lessons ?? []).map((lesson, i) => (
+            {(lessons ?? []).map((lesson: any, i: number) => (
               <motion.div key={lesson.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
                 <Link href={`/lessons/${lesson.id}`}>
                   <div className="bg-card border border-border rounded-2xl p-5 hover:border-primary/50 transition-all cursor-pointer group">
@@ -1156,7 +1156,7 @@ export default function Practice() {
                     <p className="text-sm text-muted-foreground line-clamp-2">{lesson.description}</p>
                     {lesson.targetKeys && lesson.targetKeys.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-3">
-                        {lesson.targetKeys.slice(0, 6).map(k => (
+                        {lesson.targetKeys.slice(0, 6).map((k: string) => (
                           <span key={k} className="px-2 py-0.5 bg-muted rounded text-xs font-mono">{k.toUpperCase()}</span>
                         ))}
                       </div>

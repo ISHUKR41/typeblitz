@@ -70,7 +70,7 @@ export default function Leaderboard() {
 
   const gameFilters = [
     ...GAME_FILTERS,
-    ...(games ?? []).map(g => ({ id: g.id, name: g.name }))
+    ...(games ?? []).map((g: any) => ({ id: g.id, name: g.name }))
   ];
 
   return (
@@ -84,7 +84,7 @@ export default function Leaderboard() {
       </motion.div>
 
       <div className="flex flex-wrap gap-2">
-        {gameFilters.map(g => (
+        {gameFilters.map((g: any) => (
           <button
             key={g.id}
             data-testid={`filter-game-${g.id || "all"}`}
@@ -122,7 +122,7 @@ export default function Leaderboard() {
           </div>
         ) : (
           <div>
-            {(entries ?? []).map((entry, i) => {
+            {(entries ?? []).map((entry: any, i: number) => {
               const isCurrentUser = user?.id === entry.userId;
               return (
                 <motion.div
@@ -152,7 +152,7 @@ export default function Leaderboard() {
                   </div>
 
                   <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
-                    {entry.gameId.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())}
+                    {entry.gameId.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}
                   </span>
 
                   <div className="flex items-center gap-1 font-mono font-bold text-primary text-lg text-right">

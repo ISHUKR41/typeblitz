@@ -58,6 +58,7 @@ export function NeonRunnerGame({
   const playerYRef = useRef(GROUND_Y);
   const jumpVelRef = useRef(0);
   const isJumpingRef = useRef(false);
+  const collisionCooldownRef = useRef(0);
 
   const [screenShake, setScreenShake] = useState(false);
 
@@ -179,6 +180,39 @@ export function NeonRunnerGame({
           setIsJumping(false);
         }
         setPlayerY(playerYRef.current);
+      }
+
+      // ── Real obstacle–player collision detection ─────────────────────
+      if (startTime && Date.now() > collisionCooldownRef.current) {
+        const collY = playerYRef.current;
+        const pLeft  = PLAYER_X - 16;
+        const pRight = PLAYER_X + 16;
+        const pTop   = collY - 40;
+        const pBot   = collY + 6;
+        for (const obs of obstaclesRef.current) {
+          if (!obs.cleared
+              && obs.x < pRight && obs.x + obs.w > pLeft
+              && obs.y < pBot   && obs.y + obs.h > pTop) {
+            obs.cleared = true;
+            collisionCooldownRef.current = Date.now() + 900;
+            setHp(h => Math.max(h - 15, 0));
+            setScreenShake(true);
+            setTimeout(() => setScreenShake(false), 320);
+            // Collision particles burst
+            for (let pk = 0; pk < 12; pk++) {
+              particlesRef.current.push({
+                x: PLAYER_X + (Math.random() * 20 - 10),
+                y: collY - 20 + (Math.random() * 20 - 10),
+                vx: (Math.random() - 0.5) * 7,
+                vy: (Math.random() - 0.8) * 6,
+                size: Math.random() * 3 + 1.5,
+                color: obs.color,
+                alpha: 1, life: 0, maxLife: 22 + Math.random() * 12,
+              });
+            }
+            break;
+          }
+        }
       }
 
       // Scroll backgrounds

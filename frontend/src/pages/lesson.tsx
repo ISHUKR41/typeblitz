@@ -134,7 +134,7 @@ export default function Lesson() {
       {lesson.targetKeys && lesson.targetKeys.length > 0 && (
         <div className="flex flex-wrap gap-2">
           <span className="text-xs text-muted-foreground mr-2 self-center">Focus keys:</span>
-          {lesson.targetKeys.map(k => (
+          {lesson.targetKeys.map((k: string) => (
             <span key={k} className="px-3 py-1 bg-primary/10 text-primary border border-primary/30 rounded-lg font-mono text-sm font-bold">
               {k.toUpperCase()}
             </span>
@@ -144,7 +144,7 @@ export default function Lesson() {
 
       <div className="bg-card border border-card-border rounded-2xl p-8 space-y-6">
         <div className="font-mono text-2xl leading-relaxed tracking-widest text-center py-4">
-          {currentLine.split("").map((char, i) => {
+          {currentLine.split("").map((char: string, i: number) => {
             let cls = "text-muted-foreground";
             if (i < input.length) cls = input[i] === char ? "text-primary" : "text-destructive bg-destructive/20";
             else if (i === input.length) cls = "bg-primary/20 border-b-2 border-primary text-foreground";

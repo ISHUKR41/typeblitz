@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const registerMutation = useRegister();
   const logoutMutation = useLogout();
 
-  const handleLogin: typeof loginMutation.mutateAsync = async (vars, options) => {
+  const handleLogin: typeof loginMutation.mutateAsync = async (vars: any, options?: any) => {
     const res = await loginMutation.mutateAsync(vars, options);
     localStorage.setItem("token", res.token);
     setToken(res.token);
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return res;
   };
 
-  const handleRegister: typeof registerMutation.mutateAsync = async (vars, options) => {
+  const handleRegister: typeof registerMutation.mutateAsync = async (vars: any, options?: any) => {
     const res = await registerMutation.mutateAsync(vars, options);
     localStorage.setItem("token", res.token);
     setToken(res.token);

@@ -109,7 +109,8 @@ function LetterHeatmap({ userId }: { userId: string }) {
   });
 
   const letterMap = useMemo(() => {
-    return new Map((letters ?? []).map(l => [l.letter, { accuracy: l.accuracy, attempts: l.attempts, correct: l.correct }]));
+    type LS = { letter: string; accuracy: number; attempts: number; correct: number };
+    return new Map(((letters ?? []) as LS[]).map(l => [l.letter, { accuracy: l.accuracy, attempts: l.attempts, correct: l.correct }]));
   }, [letters]);
 
   const getKeycapStyles = (letter: string) => {
@@ -302,7 +303,7 @@ export default function Dashboard() {
         <div className="bg-card border border-card-border rounded-2xl p-6">
           <h3 className="font-bold text-lg mb-4">Game Level Progress</h3>
           <div className="space-y-3">
-            {(levelProgress ?? []).map(gp => (
+            {(levelProgress ?? []).map((gp: any) => (
               <div key={gp.gameId} className="flex items-center gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between text-sm mb-1">
@@ -330,10 +331,10 @@ export default function Dashboard() {
         <div className="bg-card border border-card-border rounded-2xl p-6">
           <h3 className="font-bold text-lg mb-4">Recent Sessions</h3>
           <div className="space-y-2">
-            {recentSessions.length > 0 ? recentSessions.map(s => (
+            {recentSessions.length > 0 ? recentSessions.map((s: any) => (
               <div key={s.id} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                 <div>
-                  <span className="text-sm font-medium">{s.gameMode.replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase())}</span>
+                  <span className="text-sm font-medium">{s.gameMode.replace(/-/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase())}</span>
                   <span className="text-xs text-muted-foreground ml-2">Lvl {s.level}</span>
                 </div>
                 <div className="flex items-center gap-4 text-sm font-mono">
