@@ -1,7 +1,7 @@
 import { useGetGames, getGetGamesQueryKey } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { memo, useMemo, useState } from "react";
 import {
   Zap, AlignLeft, Code2, Target, Timer, Shield, Terminal,
   ChevronRight, Star, Lock, TrendingUp, Car, Sword, Skull, Rocket, CalendarDays, Flame, Play,
@@ -78,25 +78,29 @@ const CATEGORY_META: Record<string, { label: string; color: string }> = {
 };
 
 // ─── Single game card ────────────────────────────────────────────────────
-function GameCard({ game, index }: { game: any; index: number }) {
+const GameCard = memo(function GameCard({ game, index }: { game: any; index: number }) {
   const [hoveredLevel, setHoveredLevel] = useState<number | null>(null);
   const theme  = GAME_THEME[game.id]    ?? GAME_THEME["word-sprint"];
   const diff   = DIFFICULTY[game.difficulty] ?? DIFFICULTY.beginner;
   const meta   = CATEGORY_META[game.id] ?? { label: "Game", color: "text-muted-foreground" };
   const Icon   = GAME_ICONS[game.icon]  ?? Zap;
   const levels: any[] = game.levels ?? [];
-  const progress = getGameProgress(game.id);
+  const progress = useMemo(() => getGameProgress(game.id), [game.id]);
   const unlockedLevel = progress.unlockedLevel;
-  const completedCount = levels.filter(level => progress.levels[level.number]?.passed).length;
+  const completedCount = useMemo(
+    () => levels.filter(level => progress.levels[level.number]?.passed).length,
+    [levels, progress]
+  );
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 28 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.07, duration: 0.45, ease: "easeOut" }}
-      whileHover={{ y: -5, transition: { duration: 0.18 } }}
+      transition={{ delay: Math.min(index * 0.05, 0.5), duration: 0.4, ease: "easeOut" }}
+      whileHover={{ y: -4, transition: { type: "spring", stiffness: 380, damping: 28 } }}
       className={`flex flex-col bg-card border ${theme.border} rounded-[22px] p-5 group
-                  hover:shadow-xl ${theme.shadow} transition-all duration-300`}
+                  transition-[box-shadow,border-color] duration-200`}
+      style={{ willChange: "transform" }}
     >
       {/* ── Header ── */}
       <div className="flex items-start justify-between mb-4">
@@ -129,7 +133,7 @@ function GameCard({ game, index }: { game: any; index: number }) {
       </div>
 
       {/* ── Level selector ── */}
-      <div>
+      <div className="relative">
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-2.5">
           <Star className="w-3 h-3" /> Choose Level
         </div>
@@ -142,22 +146,26 @@ function GameCard({ game, index }: { game: any; index: number }) {
               <motion.div
                 onHoverStart={() => setHoveredLevel(level.number)}
                 onHoverEnd={() => setHoveredLevel(null)}
-                whileHover={{ scale: 1.12 }}
+                whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.93 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
                 className={`relative h-9 rounded-xl flex items-center justify-center
-                            font-mono font-bold text-sm cursor-pointer transition-all duration-150
+                            font-mono font-bold text-sm cursor-pointer
+                            border transition-[background-color,border-color,color] duration-150
                             ${hoveredLevel === level.number
-                              ? `${theme.bg} ${theme.text} border ${theme.border} shadow-md`
-                              : "bg-muted/50 text-muted-foreground border border-transparent hover:border-border"
+                              ? `${theme.bg} ${theme.text} ${theme.border} shadow-md`
+                              : "bg-muted/50 text-muted-foreground border-transparent hover:border-border"
                             }`}
                 title={`${level.name} — ${level.targetWpm} WPM target`}
+                style={{ willChange: "transform" }}
                 >
                 {level.number}
                 {passed && (
                   <CheckMarkDot className="absolute -right-1 -top-1" />
                 )}
                 {!passed && level.number === unlockedLevel && (
-                  <span className={`absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full ${theme.bg.replace('/10', '')} animate-ping opacity-75`} />
+                  <span className="absolute -top-1 -right-1 w-1.5 h-1.5 rounded-full bg-primary"
+                    style={{ boxShadow: "0 0 4px rgba(0,245,255,0.8)", animation: "pulse 2s ease-in-out infinite" }} />
                 )}
               </motion.div>
             </Link>
@@ -173,23 +181,23 @@ function GameCard({ game, index }: { game: any; index: number }) {
           })}
         </div>
 
-        {/* Level tooltip */}
+        {/* Level tooltip — absolute so it never causes layout shifts */}
         <AnimatePresence>
           {hoveredLevel !== null && (() => {
             const lvl = levels.find((l: any) => l.number === hoveredLevel);
             return lvl ? (
               <motion.div
                 key="tooltip"
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.12 }}
-                className={`mt-2 px-3 py-2 ${theme.bg} border ${theme.border} rounded-lg`}
+                initial={{ opacity: 0, y: 4, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 4, scale: 0.97 }}
+                transition={{ duration: 0.1 }}
+                className={`absolute left-0 right-0 top-full z-50 mt-1 px-3 py-2 ${theme.bg} border ${theme.border} rounded-lg backdrop-blur-sm`}
               >
                 <div className="flex justify-between items-center text-xs">
                   <span className={`font-bold ${theme.text}`}>{lvl.name}</span>
                   <span className="text-muted-foreground flex items-center gap-1">
-                    <TrendingUp className="w-3 h-3" /> {lvl.targetWpm} WPM
+                    <TrendingUp className="w-3 h-3" /> {lvl.targetWpm} WPM target
                   </span>
                 </div>
               </motion.div>
@@ -201,17 +209,19 @@ function GameCard({ game, index }: { game: any; index: number }) {
       {/* ── Quick play CTA ── */}
       <Link href={`/play/${game.id}/1`} className="mt-4 block">
         <motion.div
-          whileHover={{ x: 3 }}
+          whileHover={{ x: 2 }}
+          transition={{ type: "spring", stiffness: 400, damping: 28 }}
           className={`flex items-center justify-between px-4 py-2.5 rounded-xl
                       ${theme.bg} border ${theme.border} cursor-pointer group/cta`}
+          style={{ willChange: "transform" }}
         >
           <span className={`text-sm font-bold ${theme.text}`}>Quick Play</span>
-          <ChevronRight className={`w-4 h-4 ${theme.text} group-hover/cta:translate-x-1 transition-transform`} />
+          <ChevronRight className={`w-4 h-4 ${theme.text} group-hover/cta:translate-x-1 transition-transform duration-150`} />
         </motion.div>
       </Link>
     </motion.div>
   );
-}
+});
 
 // ─── Page ────────────────────────────────────────────────────────────────
 export default function Games() {
