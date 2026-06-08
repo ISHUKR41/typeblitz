@@ -292,19 +292,30 @@ export function MeteorGame({
         ctx.shadowBlur = 0;
         ctx.restore();
 
-        // Draw word tag ABOVE meteor (unrotated)
+        // Draw word tag ABOVE meteor — typed (neon green) + remaining (amber/white)
         const isTarget = meteor.targetWordIdx === wordIndex;
         ctx.save();
         ctx.font = `bold ${isTarget ? 12 : 10}px monospace`;
-        ctx.textAlign = "center";
+        const word = meteor.word;
+        const typedLen = isTarget ? Math.min(currentInput.length, word.length) : 0;
+        const typedPart = word.slice(0, typedLen);
+        const remainPart = word.slice(typedLen);
+        const fullW = ctx.measureText(word).width;
+        let xCur = meteor.x - fullW / 2;
+        ctx.textAlign = "left";
+        if (typedPart) {
+          ctx.fillStyle = "#39FF14";
+          ctx.shadowColor = "#39FF14";
+          ctx.shadowBlur = 6;
+          ctx.fillText(typedPart, xCur, meteor.y - meteor.size - 8);
+          xCur += ctx.measureText(typedPart).width;
+        }
+        ctx.fillStyle = isTarget ? "#fef08a" : "rgba(255,255,255,0.5)";
         ctx.shadowColor = isTarget ? "#fbbf24" : "rgba(0,0,0,0.8)";
         ctx.shadowBlur = isTarget ? 8 : 4;
-        ctx.fillStyle = isTarget ? "#fef08a" : "rgba(255,255,255,0.5)";
-
-        const label = isTarget
-          ? (currentInput + (words[wordIndex]?.slice(currentInput.length) ? "_" : ""))
-          : meteor.word;
-        ctx.fillText(label, meteor.x, meteor.y - meteor.size - 8);
+        ctx.fillText(remainPart, xCur, meteor.y - meteor.size - 8);
+        ctx.textAlign = "center";
+        ctx.shadowBlur = 0;
         ctx.restore();
 
         // If meteor hits bottom (ground), damage shield

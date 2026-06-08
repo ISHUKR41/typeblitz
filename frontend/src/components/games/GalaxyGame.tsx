@@ -275,12 +275,27 @@ export function GalaxyGame({
           ctx.stroke();
         }
 
-        // Draw alien word tag
+        // Draw alien word tag — typed (cyan) + remaining (grey/red)
         ctx.shadowBlur = 0;
-        ctx.fillStyle = isTarget ? "#67e8f9" : "rgba(255, 255, 255, 0.25)";
         ctx.font = "bold 9px monospace";
+        const typedLen = isTarget ? Math.min(currentInput.length, word.length) : 0;
+        const typedPart = word.slice(0, typedLen);
+        const remainPart = word.slice(typedLen);
+        const fullW = ctx.measureText(word).width;
+        let xCur = -fullW / 2;
+        ctx.textAlign = "left";
+        if (typedPart) {
+          ctx.fillStyle = "#39FF14";
+          ctx.shadowColor = "#39FF14";
+          ctx.shadowBlur = 4;
+          ctx.fillText(typedPart, xCur, 14);
+          xCur += ctx.measureText(typedPart).width;
+        }
+        ctx.fillStyle = isTarget ? "#f87171" : "rgba(255,255,255,0.28)";
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
+        ctx.fillText(remainPart, xCur, 14);
         ctx.textAlign = "center";
-        ctx.fillText(isTarget ? currentInput + (word.slice(currentInput.length) ? "_" : "") : word, 0, 14);
 
         ctx.restore();
       });

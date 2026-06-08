@@ -464,12 +464,28 @@ export function ZombieGame({
         ctx.lineTo(-18, -7); // claw tip
         ctx.stroke();
 
-        // Draw text tag
+        // Draw text tag — typed part in neon green, remaining in red/grey
         ctx.shadowBlur = 0;
-        ctx.fillStyle = isTarget ? "#ff8888" : "rgba(255, 255, 255, 0.3)";
         ctx.font = "bold 11px monospace";
+        const typedLen = isTarget ? Math.min(currentInput.length, word.length) : 0;
+        const typedPart = word.slice(0, typedLen);
+        const remainPart = word.slice(typedLen);
+        const fullW = ctx.measureText(word).width;
+        let xCur = -fullW / 2;
+        ctx.textAlign = "left";
+        if (typedPart) {
+          ctx.fillStyle = "#39FF14";
+          ctx.shadowColor = "#39FF14";
+          ctx.shadowBlur = 5;
+          ctx.fillText(typedPart, xCur, -48);
+          xCur += ctx.measureText(typedPart).width;
+        }
+        ctx.fillStyle = isTarget ? "#ff7777" : "rgba(255,255,255,0.50)";
+        ctx.shadowColor = isTarget ? "#ff5555" : "transparent";
+        ctx.shadowBlur = isTarget ? 3 : 0;
+        ctx.fillText(remainPart, xCur, -48);
         ctx.textAlign = "center";
-        ctx.fillText(isTarget ? currentInput + (word.slice(currentInput.length) ? "_" : "") : word, 0, -48);
+        ctx.shadowBlur = 0;
 
         ctx.restore();
       });

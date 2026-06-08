@@ -382,17 +382,28 @@ export function NeonRunnerGame({
 
         ctx.shadowBlur = 0;
 
-        // Word label
+        // Word label: typed (neon green) + remaining (red/dimmed)
         ctx.font = `bold ${isTarget ? 11 : 10}px monospace`;
-        ctx.textAlign = "center";
-        ctx.fillStyle = isTarget ? "#ffffff" : `${obs.color}80`;
-        ctx.shadowColor = obs.color;
-        ctx.shadowBlur = isTarget ? 8 : 0;
         const labelY = obs.type === "platform" ? obs.y - 8 : obs.y + obs.h / 2 + 4;
-        const label = isTarget
-          ? (currentInput + (words[wordIndex]?.slice(currentInput.length) ? "▌" : ""))
-          : obs.word;
-        ctx.fillText(label, obs.x + obs.w / 2, labelY);
+        const word = obs.word;
+        const typedLen = isTarget ? Math.min(currentInput.length, word.length) : 0;
+        const typedPart = word.slice(0, typedLen);
+        const remainPart = word.slice(typedLen);
+        const fullW = ctx.measureText(word).width;
+        let xCur = obs.x + obs.w / 2 - fullW / 2;
+        ctx.textAlign = "left";
+        if (typedPart) {
+          ctx.fillStyle = "#39FF14";
+          ctx.shadowColor = "#39FF14";
+          ctx.shadowBlur = 5;
+          ctx.fillText(typedPart, xCur, labelY);
+          xCur += ctx.measureText(typedPart).width;
+        }
+        ctx.fillStyle = isTarget ? "#ff9999" : `${obs.color}80`;
+        ctx.shadowColor = isTarget ? "#ff5555" : obs.color;
+        ctx.shadowBlur = isTarget ? 4 : 0;
+        ctx.fillText(remainPart, xCur, labelY);
+        ctx.textAlign = "center";
         ctx.shadowBlur = 0;
         ctx.restore();
       });
