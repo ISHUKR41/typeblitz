@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useLocation } from "wouter";
 import { useGetGame, useGetLevelWords, useCreateSession, getGetLevelWordsQueryKey } from "@workspace/api-client-react";
 import { useAuth } from "@/context/AuthContext";
@@ -55,33 +55,87 @@ function WpmSparkline({ data }: { data: number[] }) {
   );
 }
 
-// ─── Render typed text char-by-char ──────────────────────────────────────
+// ─── Render typed text word-by-word with char-level accuracy + auto-scroll ──
 function TypedText({ text, input }: { text: string; input: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const cursorSpanRef = useRef<HTMLSpanElement>(null);
+
+  // Auto-scroll: keep cursor roughly in the second visible line
+  useEffect(() => {
+    const container = containerRef.current;
+    const cursor = cursorSpanRef.current;
+    if (!container || !cursor) return;
+    const lineH = cursor.offsetHeight || 36;
+    const targetScrollTop = Math.max(0, cursor.offsetTop - lineH * 1.1);
+    container.scrollTo({ top: targetScrollTop, behavior: "smooth" });
+  }, [input.length]);
+
+  // Pre-compute word start indices and submitted word correctness
+  const textWords = text.split(" ");
+  const inputParts = input.split(" ");
+  const submittedCount = inputParts.length - 1; // words submitted by pressing space
+
+  const wordStarts: number[] = [];
+  let ci = 0;
+  for (let wi = 0; wi < textWords.length; wi++) {
+    wordStarts.push(ci);
+    ci += textWords[wi].length + (wi < textWords.length - 1 ? 1 : 0);
+  }
+
   return (
-    <p
-      className="text-lg md:text-xl lg:text-2xl leading-loose tracking-widest break-words select-none"
-      style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace" }}
+    <div
+      ref={containerRef}
+      className="overflow-hidden select-none"
+      style={{ height: "6.2em" }}
     >
-      {text.split("").map((char, i) => {
-        let cls = "char-untyped";
-        if (i < input.length) {
-          if (input[i] === char) {
-            cls = "char-correct";
-          } else if (char === " ") {
-            cls = "char-wrong-space";
-          } else {
-            cls = "char-wrong";
-          }
-        } else if (i === input.length) {
-          cls = "char-cursor";
-        }
-        return (
-          <span key={i} className={cls}>
-            {char}
-          </span>
-        );
-      })}
-    </p>
+      <p
+        className="text-lg md:text-xl lg:text-2xl leading-loose break-words"
+        style={{ fontFamily: "'JetBrains Mono', 'Fira Code', monospace", letterSpacing: "0.025em" }}
+      >
+        {textWords.map((word, wi) => {
+          const start = wordStarts[wi];
+          const isSubmitted = wi < submittedCount;
+          const wordWrong = isSubmitted && (inputParts[wi] ?? "") !== word;
+
+          // Char-level spans for this word
+          const charSpans = word.split("").map((char, ci2) => {
+            const idx = start + ci2;
+            let cls = "char-untyped";
+            if (idx < input.length) cls = input[idx] === char ? "char-correct" : "char-wrong";
+            else if (idx === input.length) cls = "char-cursor";
+            return (
+              <span key={idx} className={cls} ref={idx === input.length ? cursorSpanRef : undefined}>
+                {char}
+              </span>
+            );
+          });
+
+          // Space char after each word except the last
+          const spaceIdx = start + word.length;
+          const spaceEl = wi < textWords.length - 1 ? (() => {
+            let spaceCls = "char-untyped";
+            if (spaceIdx < input.length) spaceCls = input[spaceIdx] === " " ? "char-correct" : "char-wrong-space";
+            else if (spaceIdx === input.length) spaceCls = "char-cursor";
+            return (
+              <span key={`s${spaceIdx}`} className={spaceCls} ref={spaceIdx === input.length ? cursorSpanRef : undefined}>{" "}</span>
+            );
+          })() : null;
+
+          const wordCorrect = isSubmitted && !wordWrong;
+
+          return (
+            <React.Fragment key={wi}>
+              {wordWrong
+                ? <span className="word-wrong-submitted">{charSpans}</span>
+                : wordCorrect
+                ? <span className="word-correct-submitted">{charSpans}</span>
+                : charSpans}
+              {spaceEl}
+            </React.Fragment>
+          );
+        })}
+      </p>
+    </div>
   );
 }
 
@@ -712,16 +766,32 @@ export default function Play() {
                     {wordStats.wrong > 0 && <span className="text-xs text-red-400 font-mono ml-0.5">✗{wordStats.wrong}</span>}
                   </div>
                 )}
-                {/* WPM — only correct words count */}
-                <div
-                  className="flex items-center gap-1.5 bg-card border rounded-xl px-3 py-1.5 cursor-help transition-all duration-200"
-                  style={{ borderColor: "rgba(0,245,255,0.3)", boxShadow: "0 0 8px rgba(0,245,255,0.08)" }}
-                  title="WPM = correct words only. Wrong words = ZERO contribution."
-                >
-                  <Zap className="w-3.5 h-3.5" style={{ color: "#00F5FF" }} />
-                  <span className="font-mono font-extrabold text-base" style={{ color: "#00F5FF", textShadow: "0 0 8px rgba(0,245,255,0.6)" }}>{wpm}</span>
-                  <span className="text-xs text-muted-foreground">WPM</span>
-                </div>
+                {/* WPM — color-coded vs target */}
+                {(() => {
+                  const wpmColor = startTime
+                    ? wpm >= targetWpm ? "#39FF14"
+                    : wpm >= targetWpm * 0.75 ? "#FFB800"
+                    : "#00F5FF"
+                    : "#00F5FF";
+                  const wpmBorder = startTime
+                    ? wpm >= targetWpm ? "rgba(57,255,20,0.35)"
+                    : wpm >= targetWpm * 0.75 ? "rgba(255,184,0,0.35)"
+                    : "rgba(0,245,255,0.3)"
+                    : "rgba(0,245,255,0.3)";
+                  const wpmGlow = wpmColor === "#39FF14" ? "0 0 8px rgba(57,255,20,0.15)" : wpmColor === "#FFB800" ? "0 0 8px rgba(255,184,0,0.12)" : "0 0 8px rgba(0,245,255,0.08)";
+                  return (
+                    <div
+                      className="flex items-center gap-1.5 bg-card border rounded-xl px-3 py-1.5 cursor-help transition-all duration-300"
+                      style={{ borderColor: wpmBorder, boxShadow: wpmGlow }}
+                      title={`${wpm} WPM — target: ${targetWpm} WPM. Only correct words count.`}
+                    >
+                      <Zap className="w-3.5 h-3.5 transition-colors duration-300" style={{ color: wpmColor }} />
+                      <span className="font-mono font-extrabold text-base transition-all duration-300" style={{ color: wpmColor, textShadow: `0 0 8px ${wpmColor}99` }}>{wpm}</span>
+                      <span className="text-xs text-muted-foreground">WPM</span>
+                      {startTime && wpm >= targetWpm && <span className="text-[10px] font-bold" style={{ color: "#39FF14" }}>✓</span>}
+                    </div>
+                  );
+                })()}
                 {/* Accuracy */}
                 <div
                   className="flex items-center gap-1.5 bg-card border rounded-xl px-3 py-1.5 transition-all duration-200"
@@ -769,10 +839,19 @@ export default function Play() {
 
             {/* Text display */}
             <div
-              className="relative p-4 md:p-6 lg:p-8 bg-card rounded-2xl shadow-xl cursor-text transition-all duration-300"
-              style={{ border: "1px solid rgba(0,245,255,0.15)", boxShadow: "0 0 24px rgba(0,0,0,0.6), inset 0 0 24px rgba(0,245,255,0.02)" }}
+              className={`relative p-5 md:p-7 lg:p-9 bg-card rounded-2xl shadow-xl cursor-text transition-all duration-500 word-stream-container${startTime ? " neon-border-animated" : ""}`}
+              style={{
+                border: startTime ? "1px solid rgba(0,245,255,0.35)" : "1px solid rgba(0,245,255,0.12)",
+                boxShadow: startTime
+                  ? "0 0 40px rgba(0,0,0,0.7), 0 0 18px rgba(0,245,255,0.08), inset 0 0 32px rgba(0,245,255,0.03)"
+                  : "0 0 32px rgba(0,0,0,0.7), inset 0 0 32px rgba(0,245,255,0.01)"
+              }}
               onClick={() => inputRef.current?.focus()}
             >
+              {/* Focus indicator — subtle scan line when active */}
+              {startTime && !isFinished && (
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+              )}
               <input
                 ref={inputRef}
                 type="text"

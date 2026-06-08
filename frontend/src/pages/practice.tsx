@@ -149,14 +149,74 @@ function calculateAccuracy(expected: string, typed: string): number {
 }
 
 function TypingDisplay({ text, input }: { text: string; input: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const cursorRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    const cur = cursorRef.current;
+    if (!el || !cur) return;
+    const lineH = cur.offsetHeight || 32;
+    el.scrollTo({ top: Math.max(0, cur.offsetTop - lineH * 1.1), behavior: "smooth" });
+  }, [input.length]);
+
+  // Word-level wrong highlighting for submitted words
+  const textWords = text.split(" ");
+  const inputParts = input.split(" ");
+  const submittedCount = inputParts.length - 1;
+
+  const wordStarts: number[] = [];
+  let ci2 = 0;
+  for (let wi = 0; wi < textWords.length; wi++) {
+    wordStarts.push(ci2);
+    ci2 += textWords[wi].length + (wi < textWords.length - 1 ? 1 : 0);
+  }
+
   return (
-    <div className="bg-card border border-border rounded-2xl p-5 font-mono text-base md:text-lg leading-loose select-none">
-      {text.split("").map((char, i) => {
-        let cls: string;
-        if (i < input.length)       cls = input[i] === char ? "char-correct" : (char === " " ? "char-wrong-space" : "char-wrong");
-        else if (i === input.length) cls = "char-cursor";
-        else                         cls = "char-untyped";
-        return <span key={i} className={cls}>{char}</span>;
+    <div
+      ref={containerRef}
+      className="bg-card border border-border rounded-2xl p-5 font-mono text-base md:text-lg leading-loose select-none overflow-hidden"
+      style={{ height: "6.2em" }}
+    >
+      {textWords.map((word, wi) => {
+        const start = wordStarts[wi];
+        const isSubmitted = wi < submittedCount;
+        const wordWrong = isSubmitted && (inputParts[wi] ?? "") !== word;
+
+        const charSpans = word.split("").map((char, ci3) => {
+          const idx = start + ci3;
+          let cls = "char-untyped";
+          if (idx < input.length) cls = input[idx] === char ? "char-correct" : "char-wrong";
+          else if (idx === input.length) cls = "char-cursor";
+          return (
+            <span key={idx} className={cls} ref={idx === input.length ? cursorRef : undefined}>
+              {char}
+            </span>
+          );
+        });
+
+        const spaceIdx = start + word.length;
+        const spaceEl = wi < textWords.length - 1 ? (() => {
+          let spaceCls = "char-untyped";
+          if (spaceIdx < input.length) spaceCls = input[spaceIdx] === " " ? "char-correct" : "char-wrong-space";
+          else if (spaceIdx === input.length) spaceCls = "char-cursor";
+          return (
+            <span key={`s${spaceIdx}`} className={spaceCls} ref={spaceIdx === input.length ? cursorRef : undefined}>{" "}</span>
+          );
+        })() : null;
+
+        const wordCorrect = isSubmitted && !wordWrong;
+
+        return (
+          <span key={wi}>
+            {wordWrong
+              ? <span className="word-wrong-submitted">{charSpans}</span>
+              : wordCorrect
+              ? <span className="word-correct-submitted">{charSpans}</span>
+              : charSpans}
+            {spaceEl}
+          </span>
+        );
       })}
     </div>
   );

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&family=Space+Grotesk:wght@500;700&display=swap&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
@@ -354,8 +354,8 @@
 }
 
 @keyframes cursor-blink {
-  0%, 100% { opacity: 1;   box-shadow: 0 0 6px #00F5FF, 0 0 14px rgba(0,245,255,0.6); }
-  50%       { opacity: 0;  box-shadow: none; }
+  0%, 100% { border-left-color: #00F5FF; box-shadow: -2px 0 8px rgba(0, 245, 255, 0.8); }
+  50%       { border-left-color: transparent; box-shadow: none; }
 }
 
 @keyframes key-correct {
@@ -410,6 +410,8 @@
   background-color: rgba(255, 32, 121, 0.12);
   border-radius: 2px;
   text-shadow: 0 0 6px #FF2079;
+  text-decoration: underline wavy rgba(255, 32, 121, 0.7);
+  text-underline-offset: 3px;
   animation: key-wrong 140ms ease-in-out;
 }
 
@@ -421,13 +423,43 @@
 }
 
 .char-cursor {
-  border-bottom: 2.5px solid #00F5FF;
-  box-shadow: 0 0 8px rgba(0, 245, 255, 0.7);
-  animation: cursor-blink 1s step-end infinite;
+  position: relative;
+  color: #fff;
+  border-left: 2px solid #00F5FF;
+  box-shadow: -2px 0 8px rgba(0, 245, 255, 0.8);
+  animation: cursor-blink 900ms ease-in-out infinite;
+  margin-left: -1px;
 }
 
 .char-untyped {
-  color: hsl(220 15% 48%);
+  color: hsl(220 15% 42%);
+}
+
+/* Submitted correct word — very subtle green bg with brief flash */
+.word-correct-submitted {
+  background-color: rgba(57, 255, 20, 0.05);
+  border-radius: 3px;
+  padding: 0 1px;
+  animation: correct-word-flash 300ms ease-out;
+}
+
+@keyframes correct-word-flash {
+  0%   { background-color: rgba(57, 255, 20, 0.18); }
+  100% { background-color: rgba(57, 255, 20, 0.05); }
+}
+
+/* Submitted wrong word — subtle red underline on the whole word group */
+.word-wrong-submitted {
+  background-color: rgba(255, 32, 121, 0.07);
+  border-radius: 3px;
+  border-bottom: 1.5px solid rgba(255, 32, 121, 0.5);
+  padding: 0 1px;
+  animation: wrong-word-flash 200ms ease-out;
+}
+
+@keyframes wrong-word-flash {
+  0% { background-color: rgba(255, 32, 121, 0.22); }
+  100% { background-color: rgba(255, 32, 121, 0.07); }
 }
 
 /* Typing progress bar neon */
@@ -445,6 +477,61 @@
 /* WPM counter roll animation */
 .wpm-tick {
   animation: count-up 200ms ease-out;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   WORD STREAM CONTAINER — getdesign.md spec
+   Max 3 visible lines, monospace, 0.02em letter-spacing
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.word-stream-container {
+  position: relative;
+}
+
+.word-stream-container::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2.5em;
+  background: linear-gradient(to bottom, transparent, hsl(var(--card)) 90%);
+  border-radius: 0 0 1rem 1rem;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Timer progress bar warn/critical states (getdesign.md spec) */
+.typing-progress-bar.warn {
+  background: linear-gradient(90deg, #FFB800 0%, #FF8C00 100%);
+  box-shadow: 0 0 6px rgba(255, 184, 0, 0.55);
+}
+
+.typing-progress-bar.critical {
+  background: linear-gradient(90deg, #FF2079 0%, #FF0000 100%);
+  box-shadow: 0 0 6px rgba(255, 32, 121, 0.55);
+  animation: pulse-glow-red 0.8s ease-in-out infinite;
+}
+
+@keyframes pulse-glow-red {
+  0%, 100% { box-shadow: 0 0 6px rgba(255, 32, 121, 0.4); }
+  50%       { box-shadow: 0 0 16px rgba(255, 32, 121, 0.8); }
+}
+
+/* Neon border animated (pulsing border) */
+.neon-border-animated {
+  animation: neon-border-pulse 3s ease-in-out infinite;
+}
+
+@keyframes neon-border-pulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(0,245,255,0.12), 0 4px 32px rgba(0,0,0,0.5); }
+  50%       { box-shadow: 0 0 22px rgba(0,245,255,0.22), 0 4px 32px rgba(0,0,0,0.5); }
+}
+
+/* Space Grotesk display headings */
+.font-display {
+  font-family: 'Space Grotesk', 'DM Sans', system-ui, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.025em;
 }
 
 /* Ambient neon grid overlay (used in hero) */
@@ -583,16 +670,6 @@
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ENHANCED NEON EFFECTS & GAME UTILITIES — v2
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-
-/* Animated neon border pulse */
-@keyframes neon-border-pulse {
-  0%, 100% { border-color: rgba(0, 245, 255, 0.25); box-shadow: 0 0 6px rgba(0,245,255,0.08); }
-  50%       { border-color: rgba(0, 245, 255, 0.65); box-shadow: 0 0 18px rgba(0,245,255,0.25), 0 0 36px rgba(0,245,255,0.08); }
-}
-
-.neon-border-animated {
-  animation: neon-border-pulse 3s ease-in-out infinite;
-}
 
 /* Speed streak — horizontal motion line */
 @keyframes speed-streak {
