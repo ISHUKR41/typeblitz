@@ -38,7 +38,7 @@ function NavLink({ item, active, onClick }: { item: NavItem; active: boolean; on
         {active && (
           <motion.div
             layoutId="nav-indicator"
-            className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-full"
+            className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-full shadow-[0_0_8px_rgba(0,245,255,0.5)]"
           />
         )}
         <item.icon className="w-5 h-5 flex-shrink-0" />
@@ -62,10 +62,10 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
             whileHover={{ scale: 1.02 }}
             className="flex items-center gap-2.5 text-primary font-mono text-xl font-bold cursor-pointer"
           >
-            <div className="w-8 h-8 bg-primary/15 rounded-lg flex items-center justify-center border border-primary/20">
-              <Keyboard className="w-4.5 h-4.5" />
+            <div className="w-8 h-8 bg-primary/15 rounded-lg flex items-center justify-center border border-primary/25 shadow-[0_0_10px_rgba(0,245,255,0.14)]">
+              <Keyboard className="w-4 h-4 text-primary" />
             </div>
-            <span>TypeBlitz</span>
+            <span className="drop-shadow-[0_0_8px_rgba(0,245,255,0.3)]">TypeBlitz</span>
           </motion.div>
         </Link>
         {onClose && (

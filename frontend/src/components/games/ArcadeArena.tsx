@@ -88,11 +88,12 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
             correct += exp.length + 1; // all chars + space separator
           }
         }
-        // Current (unsubmitted) word: count matching chars so the display
-        // isn't frozen while typing, but ONLY up to correct position
+        // Current (unsubmitted) word: SEQUENTIAL correct chars only.
+        // Break at FIRST mismatch — prevents scrambled chars from inflating WPM.
         const currExp = words[wordIndex] ?? "";
-        for (let i = 0; i < currentInput.length; i++) {
-          if (currentInput[i] === currExp[i]) correct++;
+        for (let i = 0; i < Math.min(currentInput.length, currExp.length); i++) {
+          if (currentInput[i] !== currExp[i]) break;
+          correct++;
         }
         correctCharsRef.current = correct;
 

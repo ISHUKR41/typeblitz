@@ -566,8 +566,8 @@ export function ZombieGame({
         <canvas
           ref={canvasRef}
           width={800}
-          height={160}
-          className="w-full h-[160px] block"
+          height={200}
+          className="w-full h-[200px] block"
         />
 
         {/* Laser weapon warning glow */}

@@ -226,9 +226,13 @@ export default function Games() {
 
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/22 text-primary text-xs font-bold mb-3 font-mono">
+          <Gamepad2 className="w-3.5 h-3.5" />
+          20 Games · 100 Levels
+        </div>
         <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Game Modes</h1>
         <p className="text-muted-foreground mt-1 text-sm md:text-base">
-          20 games · 5 levels each · English, Govt Exam, Coding & Arcade
+          13 canvas arcade games + 7 skill trainers · Govt Exam, Coding & Classic
         </p>
       </motion.div>
 

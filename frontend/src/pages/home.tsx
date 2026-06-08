@@ -161,9 +161,9 @@ function HeroTypingWidget() {
       const nextIdx = wordIdx + 1;
       if (nextIdx >= QUICK_WORDS.length) {
         const elapsed = (Date.now() - (startTime ?? Date.now())) / 1000 / 60;
-        const correctChars = QUICK_WORDS.filter((_, i) => {
-          return true;
-        }).reduce((s, w) => s + w.length + 1, 0);
+        const finalCorrectCount = isCorrect ? correctWords + 1 : correctWords;
+        const avgCharLen = QUICK_WORDS.reduce((s, w) => s + w.length + 1, 0) / QUICK_WORDS.length;
+        const correctChars = finalCorrectCount * avgCharLen;
         setWpm(Math.round(correctChars / 5 / Math.max(elapsed, 0.001)));
         setWordIdx(nextIdx);
       } else {
@@ -282,20 +282,28 @@ export default function Home() {
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
       <section className="relative min-h-screen flex flex-col items-center justify-center px-5 md:px-10 py-24 overflow-hidden">
 
-        {/* Background glows */}
+        {/* Background glows — layered depth */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/4 left-1/3 w-[700px] h-[700px] bg-primary/8 rounded-full blur-[150px]" />
-          <div className="absolute bottom-1/4 right-1/3 w-[500px] h-[500px] bg-chart-2/6 rounded-full blur-[120px]" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[400px] bg-emerald-500/3 rounded-full blur-[180px]" />
+          <div className="absolute top-1/4 left-1/3 w-[750px] h-[750px] bg-primary/10 rounded-full blur-[160px]" />
+          <div className="absolute bottom-1/4 right-1/3 w-[550px] h-[550px] bg-chart-2/9 rounded-full blur-[130px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[450px] bg-emerald-500/5 rounded-full blur-[190px]" />
+          <div className="absolute top-3/4 left-1/5 w-[400px] h-[400px] bg-violet-500/7 rounded-full blur-[140px]" />
+          <div className="absolute top-0 right-1/4 w-[350px] h-[350px] bg-primary/6 rounded-full blur-[120px]" />
         </div>
 
-        {/* Grid overlay */}
+        {/* Grid overlay — subtle perspective grid */}
         <div
-          className="absolute inset-0 pointer-events-none opacity-[0.03]"
+          className="absolute inset-0 pointer-events-none opacity-[0.045]"
           style={{
             backgroundImage: "linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)",
             backgroundSize: "56px 56px",
           }}
+        />
+
+        {/* Vignette overlay to darken edges */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: "radial-gradient(ellipse 80% 80% at 50% 50%, transparent 40%, rgba(13,13,15,0.5) 100%)" }}
         />
 
         {/* Floating keyboard keys */}

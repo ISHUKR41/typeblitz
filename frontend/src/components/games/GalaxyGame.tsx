@@ -162,15 +162,46 @@ export function GalaxyGame({
       const w = canvas.width;
       const h = canvas.height;
 
-      // Draw space sky
-      ctx.fillStyle = "#04040e";
+      // Draw deep space sky
+      ctx.fillStyle = "#03030c";
       ctx.fillRect(0, 0, w, h);
 
-      // Draw & Scroll Stars
-      ctx.fillStyle = "#ffffff";
-      starsRef.current.forEach(star => {
+      // Deep space nebula clouds — multi-layer atmospheric glow
+      ctx.save();
+      const neb1 = ctx.createRadialGradient(w * 0.25, h * 0.4, 0, w * 0.25, h * 0.4, 95);
+      neb1.addColorStop(0, "rgba(139, 92, 246, 0.10)");
+      neb1.addColorStop(1, "transparent");
+      ctx.fillStyle = neb1;
+      ctx.fillRect(0, 0, w, h);
+      const neb2 = ctx.createRadialGradient(w * 0.78, h * 0.25, 0, w * 0.78, h * 0.25, 75);
+      neb2.addColorStop(0, "rgba(6, 182, 212, 0.08)");
+      neb2.addColorStop(1, "transparent");
+      ctx.fillStyle = neb2;
+      ctx.fillRect(0, 0, w, h);
+      const neb3 = ctx.createRadialGradient(w * 0.55, h * 0.72, 0, w * 0.55, h * 0.72, 55);
+      neb3.addColorStop(0, "rgba(244, 114, 182, 0.06)");
+      neb3.addColorStop(1, "transparent");
+      ctx.fillStyle = neb3;
+      ctx.fillRect(0, 0, w, h);
+      ctx.restore();
+
+      // Draw & Scroll Stars — twinkling with color variation for realism
+      starsRef.current.forEach((star, si) => {
         star.y = (star.y + star.speed) % h;
-        ctx.fillRect(star.x, star.y, star.size, star.size);
+        const twinkle = 0.25 + Math.abs(Math.sin(Date.now() / (700 + si * 60) + si)) * 0.75;
+        const isBlue = si % 5 === 0;
+        const isWarm = si % 7 === 0;
+        if (isBlue) ctx.fillStyle = `rgba(147, 232, 249, ${twinkle})`;
+        else if (isWarm) ctx.fillStyle = `rgba(253, 224, 140, ${twinkle * 0.8})`;
+        else ctx.fillStyle = `rgba(255, 255, 255, ${twinkle * 0.75})`;
+        if (star.size > 1.5) {
+          ctx.shadowColor = isBlue ? "#93e8f9" : isWarm ? "#fde08c" : "#ffffff";
+          ctx.shadowBlur = 3;
+        }
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.size * 0.8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
       });
 
       // Screen Flash overlay

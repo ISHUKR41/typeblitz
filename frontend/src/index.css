@@ -506,3 +506,199 @@
   .no-default-hover-elevate {}
   .no-default-active-elevate {}
 }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ENHANCED NEON EFFECTS & GAME UTILITIES — v2
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* Animated neon border pulse */
+@keyframes neon-border-pulse {
+  0%, 100% { border-color: rgba(0, 245, 255, 0.25); box-shadow: 0 0 6px rgba(0,245,255,0.08); }
+  50%       { border-color: rgba(0, 245, 255, 0.65); box-shadow: 0 0 18px rgba(0,245,255,0.25), 0 0 36px rgba(0,245,255,0.08); }
+}
+
+.neon-border-animated {
+  animation: neon-border-pulse 3s ease-in-out infinite;
+}
+
+/* Speed streak — horizontal motion line */
+@keyframes speed-streak {
+  from { transform: scaleX(0); opacity: 0.9; }
+  to   { transform: scaleX(1); opacity: 0; }
+}
+.speed-streak {
+  animation: speed-streak 0.28s ease-out forwards;
+  transform-origin: left center;
+}
+
+/* Neon button ambient glow */
+@keyframes btn-neon-pulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(0,245,255,0.18), 0 4px 16px rgba(0,0,0,0.4); }
+  50%       { box-shadow: 0 0 22px rgba(0,245,255,0.38), 0 4px 24px rgba(0,0,0,0.4); }
+}
+.btn-neon { animation: btn-neon-pulse 2.5s ease-in-out infinite; }
+
+/* Shimmer text gradient */
+@keyframes text-shimmer {
+  from { background-position: -200% center; }
+  to   { background-position:  200% center; }
+}
+.text-shimmer {
+  background: linear-gradient(90deg, #00F5FF 0%, #39FF14 33%, #FF2079 66%, #00F5FF 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: text-shimmer 3s linear infinite;
+}
+
+/* Hero gradient text static */
+.hero-gradient-text {
+  background: linear-gradient(135deg, #00F5FF 0%, #39FF14 50%, #00F5FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Cyberpunk card */
+.card-cyber {
+  background: linear-gradient(135deg, hsl(240 8% 9% / 0.96), hsl(245 12% 8% / 0.92));
+  border: 1px solid hsl(245 12% 19%);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  transition: border-color 0.25s, box-shadow 0.25s, transform 0.2s;
+}
+.card-cyber:hover {
+  border-color: rgba(0,245,255,0.35);
+  box-shadow: 0 0 16px rgba(0,245,255,0.12), 0 8px 32px rgba(0,0,0,0.5);
+  transform: translateY(-2px);
+}
+
+/* Game stat box */
+.game-stat-box {
+  background: rgba(0,0,0,0.65);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 0.75rem;
+  padding: 0.45rem 0.875rem;
+  font-family: var(--app-font-mono);
+  backdrop-filter: blur(10px);
+}
+
+/* Game canvas wrapper */
+.game-canvas-wrap {
+  position: relative;
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.07);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.5), 0 8px 32px rgba(0,0,0,0.6);
+}
+
+/* Horizontal scanline overlay on game canvases */
+.game-canvas-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 3px,
+    rgba(0,0,0,0.05) 3px,
+    rgba(0,0,0,0.05) 4px
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Horizontal scan line animation */
+.scan-line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0,245,255,0.12), transparent);
+  animation: scan-h 5s linear infinite;
+  pointer-events: none;
+}
+@keyframes scan-h {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+/* Neon purple variant */
+.neon-text-purple  { color: #BF5FFF; text-shadow: 0 0 6px #BF5FFF, 0 0 18px rgba(191,95,255,0.5); }
+.neon-glow-purple  { box-shadow: 0 0 8px #BF5FFF, 0 0 24px rgba(191,95,255,0.35); }
+
+/* Combo explosion ring */
+@keyframes combo-ring {
+  from { transform: scale(0.5); opacity: 1; }
+  to   { transform: scale(2.5); opacity: 0; }
+}
+.combo-ring {
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  animation: combo-ring 0.55s ease-out forwards;
+}
+
+/* Progress bar neon sheen */
+.progress-neon { position: relative; overflow: hidden; }
+.progress-neon::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -100%; width: 55%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
+  animation: progress-sheen 2.2s ease-in-out infinite;
+}
+@keyframes progress-sheen {
+  0%   { left: -55%; }
+  100% { left: 160%; }
+}
+
+/* Neon divider */
+.neon-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,245,255,0.3), rgba(57,255,20,0.2), transparent);
+}
+
+/* Letter heatmap cells */
+.heatmap-cold  { background: rgba(0, 245, 255, 0.07); }
+.heatmap-cool  { background: rgba(0, 245, 255, 0.16); }
+.heatmap-warm  { background: rgba(255, 184, 0, 0.20); }
+.heatmap-hot   { background: rgba(255, 32, 121, 0.26); }
+.heatmap-fire  { background: rgba(255, 32, 121, 0.44); }
+
+/* Accuracy color classes */
+.accuracy-good { color: #39FF14; }
+.accuracy-mid  { color: #FFB800; }
+.accuracy-bad  { color: #FF2079; }
+
+/* Better text selection */
+::selection {
+  background: rgba(0, 245, 255, 0.22);
+  color: #fff;
+}
+
+/* Mobile: smaller char render */
+@media (max-width: 640px) {
+  .char-correct, .char-wrong, .char-cursor, .char-untyped {
+    font-size: 0.88em;
+  }
+}
+
+/* Game floating label bounce */
+@keyframes float-badge {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50%       { transform: translateY(-4px) scale(1.03); }
+}
+.float-badge { animation: float-badge 2.8s ease-in-out infinite; }
+
+/* Glow pulse for primary CTA buttons */
+@keyframes cta-glow {
+  0%, 100% { box-shadow: 0 0 16px rgba(0,245,255,0.20), 0 4px 20px rgba(0,0,0,0.5); }
+  50%       { box-shadow: 0 0 32px rgba(0,245,255,0.40), 0 4px 32px rgba(0,0,0,0.5); }
+}
+.cta-glow { animation: cta-glow 3s ease-in-out infinite; }
+
+/* Neon text on dark input focus */
+.input-neon:focus {
+  outline: none;
+  border-color: rgba(0,245,255,0.55);
+  box-shadow: 0 0 0 2px rgba(0,245,255,0.10), 0 0 14px rgba(0,245,255,0.08);
+}

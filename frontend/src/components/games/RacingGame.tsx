@@ -407,6 +407,27 @@ export function RacingGame({
         rainRef.current = [];
       }
 
+      // Speed motion-blur streaks — appear at WPM > 40, intensify with speed
+      if (startTime && wpm > 40) {
+        const intensity = Math.min((wpm - 40) / 60, 1);
+        ctx.save();
+        ctx.globalAlpha = intensity * 0.13;
+        ctx.strokeStyle = "#c7d2fe";
+        ctx.lineWidth = 0.7;
+        const streakCount = Math.floor(intensity * 16) + 5;
+        for (let si = 0; si < streakCount; si++) {
+          const seed = (si * 137 + Math.floor(roadOffsetRef.current / 6)) % 1000;
+          const sx = (seed / 1000) * w;
+          const sy = horizonY + (((si * 67) % 100) / 100) * roadH;
+          const len = 18 + intensity * 40;
+          ctx.beginPath();
+          ctx.moveTo(sx, sy);
+          ctx.lineTo(sx - len, sy + 0.5);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
       // 4. Emit Particles from player car exhaust
       if (startTime) {
         const emitCount = wpm > 40 ? 3 : 1;
@@ -690,8 +711,8 @@ export function RacingGame({
         <canvas
           ref={canvasRef}
           width={800}
-          height={220}
-          className="w-full h-[220px] block"
+          height={260}
+          className="w-full h-[260px] block"
         />
         {/* Flag finish tag overlay */}
         <div className="absolute right-4 top-1/2 -translate-y-1/2 flex flex-col items-center opacity-70 pointer-events-none">
