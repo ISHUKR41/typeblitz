@@ -30,6 +30,8 @@ export function WordInvadersGame({
   wordIdxRef.current = wordIndex;
   const currentInputRef = useRef(currentInput);
   currentInputRef.current = currentInput;
+  const wpmRef = useRef(wpm);
+  wpmRef.current = wpm;
 
   const stateRef = useRef({
     aliens: buildWave(words, 0),

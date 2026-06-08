@@ -45,6 +45,10 @@ export function SnakeTyperGame({
   wordIdxRef.current = wordIndex;
   const currentInputRef = useRef(currentInput);
   currentInputRef.current = currentInput;
+  const wpmRef = useRef(wpm);
+  wpmRef.current = wpm;
+  const accuracyRef = useRef(accuracy);
+  accuracyRef.current = accuracy;
 
   const stateRef = useRef({
     snake: [{ x: 11, y: 7 }, { x: 10, y: 7 }, { x: 9, y: 7 }, { x: 8, y: 7 }] as Pos[],

@@ -39,6 +39,14 @@ export function CodeRainGame({
   wordIdxRef.current = wordIndex;
   const currentInputRef = useRef(currentInput);
   currentInputRef.current = currentInput;
+  const wpmRef = useRef(wpm);
+  wpmRef.current = wpm;
+  const accuracyRef = useRef(accuracy);
+  accuracyRef.current = accuracy;
+  const progressRef = useRef(progress);
+  progressRef.current = progress;
+  const comboStreakRef = useRef(comboStreak);
+  comboStreakRef.current = comboStreak;
 
   const stateRef = useRef({
     cols: [] as Column[],
@@ -116,7 +124,7 @@ export function CodeRainGame({
       const numCols = Math.floor(W / CHAR_W);
       const numRows = Math.floor(H / CHAR_H);
       const widx = wordIdxRef.current;
-      const numTargets = Math.min(3, Math.max(1, Math.floor(progress / 35) + 1));
+      const numTargets = Math.min(3, Math.max(1, Math.floor(progressRef.current / 35) + 1));
       if (s.targets.length >= numTargets || widx >= words.length) return;
       const occupiedCols = new Set(s.targets.map(t => t.col));
       const availCols: number[] = [];
@@ -151,7 +159,7 @@ export function CodeRainGame({
       }
 
       // Spawn timer: interval in ms (1500ms default, down to 800ms at high progress)
-      const sIntervalMs = Math.max(800, 1600 - Math.floor(progress / 20) * 160);
+      const sIntervalMs = Math.max(800, 1600 - Math.floor(progressRef.current / 20) * 160);
       if (ts - lastSpawnT >= sIntervalMs) { lastSpawnT = ts; spawnTarget(); }
       if (s.glitchTimer > 0) s.glitchTimer -= DT;
 
@@ -237,9 +245,9 @@ export function CodeRainGame({
       ctx.fillStyle = "#00ff41"; ctx.font = "bold 13px monospace"; ctx.textAlign = "left";
       ctx.fillText(`💻 Score: ${s.score} | Decrypted: ${s.decryptedTotal}`, 18, 28);
       ctx.fillStyle = "#88ff88"; ctx.font = "11px monospace";
-      ctx.fillText(`WPM: ${wpm}  Acc: ${accuracy}%  Combo: ×${comboStreak}`, 18, 48);
+      ctx.fillText(`WPM: ${wpmRef.current}  Acc: ${accuracyRef.current}%  Combo: ×${comboStreakRef.current}`, 18, 48);
 
-      const numTargets = Math.min(3, Math.max(1, Math.floor(progress / 35) + 1));
+      const numTargets = Math.min(3, Math.max(1, Math.floor(progressRef.current / 35) + 1));
       ctx.fillStyle = "rgba(0,10,0,0.85)";
       ctx.beginPath(); ctx.roundRect(W - 190, 8, 182, 54, 8); ctx.fill();
       ctx.strokeStyle = "rgba(255,200,0,0.3)"; ctx.lineWidth = 1;
@@ -253,7 +261,7 @@ export function CodeRainGame({
 
     animId = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(animId);
-  }, [words, wpm, accuracy, progress]);
+  }, [words]);
 
   return (
     <canvas
