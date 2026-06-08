@@ -85,6 +85,19 @@ export function RacingGame({
     }
   }, [submissionCount, lastWordCorrect]);
 
+  // Responsive canvas sizing — match internal resolution to display width
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const parent = canvas.parentElement;
+    if (!parent) return;
+    const resize = () => { const cw = parent.clientWidth; if (cw > 0) canvas.width = cw; };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(parent);
+    return () => ro.disconnect();
+  }, []);
+
   // Canvas animation loop
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -542,9 +555,10 @@ export function RacingGame({
       const playerX = w / 2 + playerCurveOffset - playerRoadW * 0.15;
 
       ctx.save();
-      // Drift/shake effect based on WPM
-      const shakeX = startTime ? (Math.random() * 2 - 1) * (wpm / 60) : 0;
-      const shakeY = startTime ? (Math.random() * 1.5 - 0.75) * (wpm / 60) : 0;
+      // Smooth speed-vibration using sinusoidal oscillation (not random — eliminates jitter)
+      const shakeIntensity = startTime ? Math.min(wpm / 200, 0.7) : 0;
+      const shakeX = shakeIntensity > 0 ? Math.sin(ts * 0.027) * Math.cos(ts * 0.019) * shakeIntensity * 1.5 : 0;
+      const shakeY = shakeIntensity > 0 ? Math.sin(ts * 0.021) * Math.cos(ts * 0.013) * shakeIntensity * 0.8 : 0;
 
       ctx.translate(playerX + shakeX, playerY + shakeY);
 
@@ -750,7 +764,6 @@ export function RacingGame({
       <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
         <canvas
           ref={canvasRef}
-          width={800}
           height={260}
           className="w-full h-[260px] block"
         />

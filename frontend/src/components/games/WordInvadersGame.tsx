@@ -105,6 +105,19 @@ export function WordInvadersGame({
     }
   }, [submissionCount, lastWordCorrect, words, comboStreak]);
 
+  // Responsive canvas sizing
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const parent = canvas.parentElement;
+    if (!parent) return;
+    const resize = () => { const cw = parent.clientWidth; if (cw > 0) canvas.width = cw; };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(parent);
+    return () => ro.disconnect();
+  }, []);
+
   useEffect(() => {
     const canvas = canvasRef.current!;
     if (!canvas) return;
@@ -159,8 +172,8 @@ export function WordInvadersGame({
         }
       }
 
-      const sx = s.screenShake > 0 ? (Math.random() - 0.5) * s.screenShake : 0;
-      const sy = s.screenShake > 0 ? (Math.random() - 0.5) * s.screenShake : 0;
+      const sx = s.screenShake > 0 ? Math.sin(t * 3.1) * s.screenShake * 0.45 : 0;
+      const sy = s.screenShake > 0 ? Math.cos(t * 2.3) * s.screenShake * 0.45 : 0;
       if (s.screenShake > 0) s.screenShake -= 0.8;
 
       ctx.save(); ctx.translate(sx, sy);
@@ -286,7 +299,6 @@ export function WordInvadersGame({
   return (
     <canvas
       ref={canvasRef}
-      width={800}
       height={500}
       className="w-full rounded-xl border border-blue-500/20"
       style={{ background: "#01010d" }}

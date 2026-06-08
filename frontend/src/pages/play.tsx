@@ -191,9 +191,9 @@ function ResultsScreen({
               ? `Focus on accuracy first — aim for 95%+ before pushing speed.`
               : nextLevelUnlocked
                 ? `Level ${levelNumber + 1} unlocked. Keep the streak alive.`
-                : levelNumber < 5
+                : levelNumber < 8
                 ? `Level ${levelNumber + 1} unlocked — push for ${wpm + 10}+ WPM next!`
-                : "All levels complete — challenge your score again!"}
+                : "All 8 levels complete — you are a TypeBlitz master!"}
           </span>
         </div>
 
@@ -204,7 +204,7 @@ function ResultsScreen({
           <Button variant="outline" size="sm" onClick={onRetry} className="gap-1.5 text-xs">
             <RotateCcw className="w-3 h-3" /> Retry
           </Button>
-          <Button size="sm" onClick={onNext} className="gap-1.5 text-xs" disabled={!passed || levelNumber >= 5}>
+          <Button size="sm" onClick={onNext} className="gap-1.5 text-xs" disabled={!passed || levelNumber >= 8}>
             Next <ArrowRight className="w-3 h-3" />
           </Button>
         </div>
@@ -601,7 +601,7 @@ export default function Play() {
                 passed={levelResult?.passed ?? isPassingResult(wpm, accuracy, targetWpm)}
                 nextLevelUnlocked={levelResult?.nextLevelUnlocked ?? false}
                 onRetry={handleRetry}
-                onNext={() => setLocation(`/play/${gameId}/${Math.min(levelNumber + 1, 5)}`)}
+                onNext={() => setLocation(`/play/${gameId}/${Math.min(levelNumber + 1, 8)}`)}
                 onMenu={() => setLocation("/games")}
               />
             </motion.div>
@@ -834,7 +834,7 @@ export default function Play() {
               nextLevelUnlocked={levelResult?.nextLevelUnlocked ?? false}
               wordBreakdown={finalWordBreakdown}
               onRetry={handleRetry}
-              onNext={() => setLocation(`/play/${gameId}/${Math.min(levelNumber + 1, 5)}`)}
+              onNext={() => setLocation(`/play/${gameId}/${Math.min(levelNumber + 1, 8)}`)}
               onMenu={() => setLocation("/games")}
             />
           </motion.div>

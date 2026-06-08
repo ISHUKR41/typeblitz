@@ -329,6 +329,19 @@ export function FighterGame({
     }
   }, [lastWordCorrect, submissionCount, enemy.hp, totalWords, enemy.color]);
 
+  // Responsive canvas sizing
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const parent = canvas.parentElement;
+    if (!parent) return;
+    const resize = () => { const cw = parent.clientWidth; if (cw > 0) canvas.width = cw; };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(parent);
+    return () => ro.disconnect();
+  }, []);
+
   // Canvas render loop
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -349,9 +362,8 @@ export function FighterGame({
       // Screen Shake offset if hit
       ctx.save();
       if (playerHit || enemyHit) {
-        const shakeX = Math.random() * 10 - 5;
-        const shakeY = Math.random() * 8 - 4;
-        ctx.translate(shakeX, shakeY);
+        const t = ts / 60;
+        ctx.translate(Math.sin(t * 2.7) * 4.5, Math.cos(t * 1.9) * 3.5);
       }
 
       // Draw background (cyberpunk dojo/arena)
@@ -540,7 +552,6 @@ export function FighterGame({
       <div className="relative rounded-2xl overflow-hidden border border-white/10">
         <canvas
           ref={canvasRef}
-          width={800}
           height={220}
           className="w-full h-[220px] block"
         />

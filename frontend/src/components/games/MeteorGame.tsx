@@ -158,6 +158,19 @@ export function MeteorGame({
     }
   }, [lastWordCorrect, submissionCount, wordIndex, comboStreak]);
 
+  // Responsive canvas sizing
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const parent = canvas.parentElement;
+    if (!parent) return;
+    const resize = () => { const cw = parent.clientWidth; if (cw > 0) canvas.width = cw; };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(parent);
+    return () => ro.disconnect();
+  }, []);
+
   // Canvas render loop
   useEffect(() => {
     const canvas = canvasRef.current;

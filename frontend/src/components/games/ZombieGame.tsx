@@ -118,6 +118,19 @@ export function ZombieGame({
     }
   }, [lastWordCorrect, submissionCount, targetZombiePressure, wordIndex, zombieXPositions, visibleStart]);
 
+  // Responsive canvas sizing
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const parent = canvas.parentElement;
+    if (!parent) return;
+    const resize = () => { const cw = parent.clientWidth; if (cw > 0) canvas.width = cw; };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(parent);
+    return () => ro.disconnect();
+  }, []);
+
   // Canvas loop
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -137,7 +150,8 @@ export function ZombieGame({
 
       ctx.save();
       if (screenShake) {
-        ctx.translate(Math.random() * 8 - 4, Math.random() * 8 - 4);
+        const t = ts / 60;
+        ctx.translate(Math.sin(t * 2.3) * 3.5, Math.cos(t * 1.7) * 3.5);
       }
 
       // Draw background (atmospheric graveyard)
@@ -585,7 +599,6 @@ export function ZombieGame({
       <div className="relative rounded-2xl overflow-hidden border border-white/10">
         <canvas
           ref={canvasRef}
-          width={800}
           height={200}
           className="w-full h-[200px] block"
         />

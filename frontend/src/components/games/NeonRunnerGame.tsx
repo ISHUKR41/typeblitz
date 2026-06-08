@@ -249,7 +249,8 @@ export function NeonRunnerGame({
       // === SKY GRADIENT ===
       ctx.save();
       if (screenShake) {
-        ctx.translate(Math.random() * 6 - 3, Math.random() * 4 - 2);
+        const t = ts / 60;
+        ctx.translate(Math.sin(t * 2.5) * 2.5, Math.cos(t * 1.8) * 1.8);
       }
 
       const skyGrad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);

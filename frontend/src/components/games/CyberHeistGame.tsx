@@ -108,6 +108,19 @@ export function CyberHeistGame({
     soundEffects.playLaser();
   }, [submissionCount, lastWordCorrect, words, wordIndex]);
 
+  // Responsive canvas sizing
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const parent = canvas.parentElement;
+    if (!parent) return;
+    const resize = () => { const cw = parent.clientWidth; if (cw > 0) canvas.width = cw; };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(parent);
+    return () => ro.disconnect();
+  }, []);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -386,7 +399,7 @@ export function CyberHeistGame({
 
       {/* Canvas */}
       <div className="relative rounded-2xl overflow-hidden border border-green-500/20 shadow-2xl shadow-green-500/10">
-        <canvas ref={canvasRef} width={800} height={220} className="w-full h-[220px] block" />
+        <canvas ref={canvasRef} height={220} className="w-full h-[220px] block" />
       </div>
 
       {/* Terminal typing tray */}

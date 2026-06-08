@@ -71,7 +71,7 @@ export function recordLevelResult(input: LevelResultInput): {
   const previousAttempt = current.levels[input.level];
   const passed = isPassingResult(input.wpm, input.accuracy, input.targetWpm);
   const nextUnlockedLevel = passed
-    ? Math.max(current.unlockedLevel, Math.min(input.level + 1, 5))
+    ? Math.max(current.unlockedLevel, Math.min(input.level + 1, 8))
     : current.unlockedLevel;
 
   progress[input.gameId] = {

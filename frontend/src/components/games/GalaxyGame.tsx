@@ -149,6 +149,19 @@ export function GalaxyGame({
     }
   }, [lastWordCorrect, submissionCount, wordIndex, gridStart, descentPct, gridSize]);
 
+  // Responsive canvas sizing
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const parent = canvas.parentElement;
+    if (!parent) return;
+    const resize = () => { const cw = parent.clientWidth; if (cw > 0) canvas.width = cw; };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(parent);
+    return () => ro.disconnect();
+  }, []);
+
   // Canvas loop
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -454,7 +467,6 @@ export function GalaxyGame({
       <div className="relative rounded-2xl overflow-hidden border border-white/10">
         <canvas
           ref={canvasRef}
-          width={800}
           height={180}
           className="w-full h-[180px] block"
         />

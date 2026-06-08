@@ -163,6 +163,19 @@ export function ArenaBlitzGame({
     }
   }, [submissionCount, lastWordCorrect, comboStreak, spawnEnemy, words, wordIndex]);
 
+  // Responsive canvas sizing
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const parent = canvas.parentElement;
+    if (!parent) return;
+    const resize = () => { const cw = parent.clientWidth; if (cw > 0) canvas.width = cw; };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(parent);
+    return () => ro.disconnect();
+  }, []);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -425,7 +438,7 @@ export function ArenaBlitzGame({
       </div>
 
       <div className="relative rounded-2xl overflow-hidden border border-violet-500/20 shadow-2xl shadow-violet-500/10">
-        <canvas ref={canvasRef} width={800} height={240} className="w-full h-[240px] block" />
+        <canvas ref={canvasRef} height={240} className="w-full h-[240px] block" />
       </div>
 
       <div className="bg-gray-950/90 border border-violet-500/20 rounded-2xl p-4 md:p-5 space-y-3 shadow-inner">

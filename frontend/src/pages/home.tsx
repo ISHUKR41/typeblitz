@@ -98,7 +98,7 @@ const FEATURES = [
   { icon: Shield,   color: "text-blue-400",    bg: "bg-blue-400/10",    border: "border-blue-400/20",    title: "Govt Exam Ready",       desc: "500+ authentic vocabulary words from SSC, UPSC, Banking, Railways, Police, High Court." },
   { icon: Code2,    color: "text-emerald-400", bg: "bg-emerald-400/10", border: "border-emerald-400/20", title: "Coding Vocabulary",     desc: "TypeScript, Python, Go, SQL, Git, DevOps — real code snippets with brackets and symbols." },
   { icon: Cpu,      color: "text-chart-3",     bg: "bg-chart-3/10",     border: "border-chart-3/20",     title: "Real-time Sound",       desc: "Mechanical keyboard, typewriter, and soft-touch audio themes. Every keystroke has weight." },
-  { icon: TrendingUp,color:"text-violet-400", bg: "bg-violet-400/10",  border: "border-violet-400/20",  title: "Progression System",    desc: "5 levels per game. Pass WPM + 90% accuracy to unlock the next tier. No shortcuts." },
+  { icon: TrendingUp,color:"text-violet-400", bg: "bg-violet-400/10",  border: "border-violet-400/20",  title: "Progression System",    desc: "8 levels per game. Pass WPM + 90% accuracy to unlock the next tier. No shortcuts." },
 ];
 
 const HOW_IT_WORKS = [
@@ -608,7 +608,7 @@ export default function Home() {
                     {/* CTA row */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 text-xs font-bold" style={{ color: game.tag }}>
-                        <Play className="w-3 h-3" /> Play Now · 5 Levels
+                        <Play className="w-3 h-3" /> Play Now · 8 Levels
                       </div>
                       <div className="text-xs px-2.5 py-1 rounded-full font-semibold"
                         style={{ background: `${game.border.replace('0.35', '0.18')}`, color: game.tag, border: `1px solid ${game.border}` }}>

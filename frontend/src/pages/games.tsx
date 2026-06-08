@@ -118,7 +118,7 @@ function GameCard({ game, index }: { game: any; index: number }) {
       <div className="mb-4 rounded-xl border border-border bg-background/60 p-3">
         <div className="mb-2 flex items-center justify-between text-xs font-semibold">
           <span className="text-muted-foreground">Local progress</span>
-          <span className={theme.text}>{completedCount}/5 cleared · L{unlockedLevel} unlocked</span>
+          <span className={theme.text}>{completedCount}/8 cleared · L{unlockedLevel} unlocked</span>
         </div>
         <div className="h-1.5 overflow-hidden rounded-full bg-muted/50">
           <div
@@ -228,7 +228,7 @@ export default function Games() {
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/22 text-primary text-xs font-bold mb-3 font-mono">
           <Gamepad2 className="w-3.5 h-3.5" />
-          20 Games · 100 Levels
+          20 Games · 160 Levels
         </div>
         <h1 className="display-md mt-1">Game Modes</h1>
         <p className="text-muted-foreground mt-2 text-sm md:text-base">
@@ -296,7 +296,7 @@ export default function Games() {
         className="flex items-center justify-center gap-2 text-xs text-muted-foreground pt-4"
       >
         <Lock className="w-3.5 h-3.5" />
-        Progress is saved locally. Sign in to sync across devices and appear on the leaderboard. Complete all 5 levels to master each game.
+        Progress is saved locally. Sign in to sync across devices and appear on the leaderboard. Complete all 8 levels to master each game.
       </motion.p>
     </div>
   );
