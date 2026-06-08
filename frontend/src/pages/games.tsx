@@ -95,7 +95,7 @@ function GameCard({ game, index }: { game: any; index: number }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.07, duration: 0.45, ease: "easeOut" }}
       whileHover={{ y: -5, transition: { duration: 0.18 } }}
-      className={`flex flex-col bg-card border ${theme.border} rounded-2xl p-5 group
+      className={`flex flex-col bg-card border ${theme.border} rounded-[22px] p-5 group
                   hover:shadow-xl ${theme.shadow} transition-all duration-300`}
     >
       {/* ── Header ── */}
@@ -230,9 +230,9 @@ export default function Games() {
           <Gamepad2 className="w-3.5 h-3.5" />
           20 Games · 100 Levels
         </div>
-        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">Game Modes</h1>
-        <p className="text-muted-foreground mt-1 text-sm md:text-base">
-          13 canvas arcade games + 7 skill trainers · Govt Exam, Coding & Classic
+        <h1 className="display-md mt-1">Game Modes</h1>
+        <p className="text-muted-foreground mt-2 text-sm md:text-base">
+          13 canvas arcade games + 7 skill trainers · Govt Exam, Coding &amp; Classic
         </p>
       </motion.div>
 

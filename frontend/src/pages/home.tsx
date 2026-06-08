@@ -46,12 +46,48 @@ const EXAM_BOARDS = [
 ];
 
 const GAME_HIGHLIGHTS = [
-  { id: "turbo-race",   name: "Turbo Race",   icon: "🏎️", color: "from-orange-500/20 to-orange-500/5", border: "border-orange-500/25 hover:border-orange-400/50", tag: "text-orange-400", desc: "Pseudo-3D neon highway racing. Type to accelerate. Ghost car tracks your target WPM." },
-  { id: "zombie-hunt",  name: "Zombie Hunt",  icon: "🧟", color: "from-lime-500/20 to-lime-500/5",    border: "border-lime-500/25 hover:border-lime-400/50",    tag: "text-lime-400",   desc: "Survive zombie waves — type the word floating on each enemy to shoot it before they reach you." },
-  { id: "cyber-heist",  name: "Cyber Heist",  icon: "🕵️", color: "from-green-500/20 to-green-500/5",  border: "border-green-500/25 hover:border-green-400/50",  tag: "text-green-300",  desc: "Breach a secured network node by typing access keys before the firewall expires." },
-  { id: "bubble-pop",   name: "Bubble Pop",   icon: "🫧", color: "from-pink-500/20 to-pink-500/5",    border: "border-pink-500/25 hover:border-pink-400/50",    tag: "text-pink-400",   desc: "Floating word-bubbles drift upward. Pop them all before they escape off-screen." },
-  { id: "galaxy-blitz", name: "Galaxy Blitz", icon: "🚀", color: "from-violet-500/20 to-violet-500/5", border: "border-violet-500/25 hover:border-violet-400/50", tag: "text-violet-400", desc: "Space shooter — alien invaders carry your practice words. Type to fire lasers." },
-  { id: "arena-blitz",  name: "Arena Blitz",  icon: "🎯", color: "from-chart-2/20 to-chart-2/5",      border: "border-chart-2/25 hover:border-chart-2/50",      tag: "text-chart-2",    desc: "Top-down turret combat. Multiple enemies circle you — type any word to destroy them." },
+  {
+    id: "turbo-race", name: "Turbo Race", icon: "🏎️",
+    gradient: "linear-gradient(140deg, rgba(251,146,60,0.38) 0%, rgba(234,88,12,0.18) 55%, rgba(0,0,0,0) 100%)",
+    border: "rgba(251,146,60,0.35)", glow: "0 0 40px rgba(251,146,60,0.18), 0 8px 32px rgba(0,0,0,0.6)",
+    tag: "#fb923c", label: "🏎 Arcade Racing",
+    desc: "Pseudo-3D neon highway. Type to accelerate — ghost car tracks your target WPM in real time.",
+  },
+  {
+    id: "zombie-hunt", name: "Zombie Hunt", icon: "🧟",
+    gradient: "linear-gradient(140deg, rgba(163,230,53,0.36) 0%, rgba(101,163,13,0.18) 55%, rgba(0,0,0,0) 100%)",
+    border: "rgba(163,230,53,0.33)", glow: "0 0 40px rgba(163,230,53,0.16), 0 8px 32px rgba(0,0,0,0.6)",
+    tag: "#a3e635", label: "🧟 Zombie Survival",
+    desc: "Zombie waves approach. Type the word on each enemy to blast them before they reach you.",
+  },
+  {
+    id: "cyber-heist", name: "Cyber Heist", icon: "🕵️",
+    gradient: "linear-gradient(140deg, rgba(52,211,153,0.36) 0%, rgba(16,185,129,0.18) 55%, rgba(0,0,0,0) 100%)",
+    border: "rgba(52,211,153,0.33)", glow: "0 0 40px rgba(52,211,153,0.16), 0 8px 32px rgba(0,0,0,0.6)",
+    tag: "#34d399", label: "🕵️ Cyber Heist",
+    desc: "Breach a secured node by typing access keys before the firewall timer expires. Speed is the key.",
+  },
+  {
+    id: "bubble-pop", name: "Bubble Pop", icon: "🫧",
+    gradient: "linear-gradient(140deg, rgba(244,114,182,0.36) 0%, rgba(219,39,119,0.18) 55%, rgba(0,0,0,0) 100%)",
+    border: "rgba(244,114,182,0.33)", glow: "0 0 40px rgba(244,114,182,0.16), 0 8px 32px rgba(0,0,0,0.6)",
+    tag: "#f472b6", label: "🫧 Bubble Pop",
+    desc: "Word-bubbles drift upward. Pop them all before they escape — calm, satisfying, and fast.",
+  },
+  {
+    id: "galaxy-blitz", name: "Galaxy Blitz", icon: "🚀",
+    gradient: "linear-gradient(140deg, rgba(167,139,250,0.36) 0%, rgba(124,58,237,0.18) 55%, rgba(0,0,0,0) 100%)",
+    border: "rgba(167,139,250,0.33)", glow: "0 0 40px rgba(167,139,250,0.16), 0 8px 32px rgba(0,0,0,0.6)",
+    tag: "#a78bfa", label: "🚀 Space Shooter",
+    desc: "Alien invaders each carry a practice word. Type it to fire lasers and destroy them.",
+  },
+  {
+    id: "arena-blitz", name: "Arena Blitz", icon: "🎯",
+    gradient: "linear-gradient(140deg, rgba(139,92,246,0.36) 0%, rgba(99,102,241,0.18) 55%, rgba(0,0,0,0) 100%)",
+    border: "rgba(139,92,246,0.33)", glow: "0 0 40px rgba(139,92,246,0.16), 0 8px 32px rgba(0,0,0,0.6)",
+    tag: "#8b5cf6", label: "🎯 Arena Combat",
+    desc: "Top-down turret. Multiple enemies circle from all directions — type any word to destroy them.",
+  },
 ];
 
 const FEATURES = [
@@ -346,14 +382,14 @@ export default function Home() {
             <span>20 arcade games · Govt Exam ready · Real-time analytics</span>
           </motion.div>
 
-          <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-none">
-            <span className="text-foreground">Type </span>
+          <h1 className="display-hero text-foreground">
+            Type{" "}
             <TypingWord />
           </h1>
 
           <p className="text-base md:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            The most addictive typing platform ever built. Train through 20 arcade games.
-            Master government exam vocabulary. See your letter heatmap. Become unstoppable.
+            The most addictive typing platform ever built. 20 arcade games, government exam vocabulary,
+            real-time analytics, and a WPM engine that never lies. Become unstoppable.
           </p>
 
           <motion.div
@@ -416,7 +452,7 @@ export default function Home() {
           viewport={{ once: true }}
           className="text-center mb-10"
         >
-          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Where do you stand?</h2>
+          <h2 className="display-md mb-2">Where do you stand?</h2>
           <p className="text-muted-foreground max-w-xl mx-auto text-sm sm:text-base">
             Average typing speed is 40 WPM. Most government exams require 30–40. TypeBlitz trains you to surpass them all.
           </p>
@@ -462,7 +498,7 @@ export default function Home() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">How TypeBlitz works</h2>
+          <h2 className="display-md mb-3">How TypeBlitz works</h2>
           <p className="text-muted-foreground max-w-xl mx-auto text-sm sm:text-base">
             A simple feedback loop that actually makes you faster — no tricks, just deliberate daily practice.
           </p>
@@ -506,7 +542,7 @@ export default function Home() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold mb-3 font-mono">
               <Gamepad2 className="w-3.5 h-3.5" /> 13 Canvas Games + 7 Skill Trainers
             </div>
-            <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Arcade-grade typing games</h2>
+            <h2 className="display-md mb-2">Arcade-grade typing games</h2>
             <p className="text-muted-foreground text-sm sm:text-base">Every game uses real-time canvas rendering at 60fps — not just trivia widgets.</p>
           </div>
           <Link href="/games">
@@ -516,35 +552,71 @@ export default function Home() {
           </Link>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {GAME_HIGHLIGHTS.map((game, i) => (
             <motion.div
               key={game.id}
-              initial={{ opacity: 0, y: 24 }}
+              initial={{ opacity: 0, y: 28 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.07 }}
-              whileHover={{ y: -5, transition: { duration: 0.2 } }}
+              transition={{ delay: i * 0.08, duration: 0.5, ease: "easeOut" }}
             >
               <Link href={`/play/${game.id}/1`}>
-                <div className={`group p-5 rounded-2xl bg-gradient-to-br ${game.color} border ${game.border} cursor-pointer h-full transition-all duration-300 relative overflow-hidden`}>
-                  <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center">
-                      <ArrowRight className="w-3.5 h-3.5 text-white/70" />
+                <motion.div
+                  whileHover={{ y: -7, transition: { duration: 0.18 } }}
+                  className="group cursor-pointer h-full"
+                  style={{
+                    background: game.gradient,
+                    border: `1px solid ${game.border}`,
+                    borderRadius: "28px",
+                    padding: "28px",
+                    boxShadow: game.glow,
+                    transition: "box-shadow 0.25s ease",
+                    position: "relative",
+                    overflow: "hidden",
+                  }}
+                >
+                  {/* Inner radial glow */}
+                  <div className="absolute top-0 right-0 w-48 h-48 rounded-full pointer-events-none"
+                    style={{ background: `radial-gradient(ellipse, ${game.border.replace('0.35', '0.12')} 0%, transparent 70%)` }} />
+
+                  <div className="relative">
+                    {/* Top row: emoji + label + arrow */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="text-4xl" style={{ filter: "drop-shadow(0 0 8px rgba(255,255,255,0.2))" }}>
+                        {game.icon}
+                      </div>
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity w-8 h-8 rounded-full flex items-center justify-center"
+                        style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.18)" }}>
+                        <ArrowRight className="w-3.5 h-3.5 text-white/80" />
+                      </div>
+                    </div>
+
+                    {/* Category label */}
+                    <div className="text-xs font-bold mb-1 uppercase tracking-widest" style={{ color: game.tag }}>
+                      {game.label}
+                    </div>
+
+                    {/* Game name */}
+                    <h3 className="text-xl font-black mb-2 text-white leading-tight" style={{ fontFamily: "'DM Sans', sans-serif", letterSpacing: "-0.02em" }}>
+                      {game.name}
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-sm text-white/60 leading-relaxed mb-5">{game.desc}</p>
+
+                    {/* CTA row */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs font-bold" style={{ color: game.tag }}>
+                        <Play className="w-3 h-3" /> Play Now · 5 Levels
+                      </div>
+                      <div className="text-xs px-2.5 py-1 rounded-full font-semibold"
+                        style={{ background: `${game.border.replace('0.35', '0.18')}`, color: game.tag, border: `1px solid ${game.border}` }}>
+                        Free
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 mb-3">
-                    <span className="text-3xl">{game.icon}</span>
-                    <div>
-                      <div className={`font-extrabold text-sm ${game.tag}`}>{game.name}</div>
-                      <div className="text-xs text-muted-foreground font-mono">5 Levels</div>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed">{game.desc}</p>
-                  <div className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground group-hover:text-foreground/70 transition-colors">
-                    <Play className="w-3 h-3" /> Play Level 1
-                  </div>
-                </div>
+                </motion.div>
               </Link>
             </motion.div>
           ))}
@@ -580,7 +652,7 @@ export default function Home() {
               <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-500/15 border border-blue-500/30 rounded-full text-blue-400 text-xs font-bold font-mono mb-5">
                 <Shield className="w-3.5 h-3.5" /> Government Exam Ready
               </div>
-              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4 leading-tight">
+              <h2 className="display-md mb-4 leading-tight">
                 Crack SSC, UPSC, Banking<br className="hidden sm:block" /> &amp; Railway Typing Tests
               </h2>
               <p className="text-muted-foreground mb-6 max-w-lg leading-relaxed text-sm sm:text-base">
@@ -653,7 +725,7 @@ export default function Home() {
               <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500/15 border border-emerald-500/30 rounded-full text-emerald-400 text-xs font-bold font-mono mb-5">
                 <Terminal className="w-3.5 h-3.5" /> Developer Mode
               </div>
-              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4 leading-tight">
+              <h2 className="display-md mb-4 leading-tight">
                 Type code at the<br className="hidden sm:block" /> speed of thought
               </h2>
               <p className="text-muted-foreground mb-6 max-w-lg leading-relaxed text-sm sm:text-base">
@@ -719,7 +791,7 @@ export default function Home() {
           viewport={{ once: true }}
           className="text-center mb-10"
         >
-          <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-2">Everything you need to master typing</h2>
+          <h2 className="display-md mb-2">Everything you need to master typing</h2>
           <p className="text-muted-foreground max-w-xl mx-auto text-sm sm:text-base">
             8 core features built for serious typists — from casual players to government exam aspirants to professional developers.
           </p>
@@ -760,8 +832,8 @@ export default function Home() {
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-primary/15 border border-primary/30 rounded-full text-primary text-xs font-bold font-mono">
               <Flame className="w-3.5 h-3.5" /> Free to play · No credit card required
             </div>
-            <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">
-              Your fastest typing<br />starts <span className="text-primary">right now.</span>
+            <h2 className="display-lg">
+              Your fastest typing<br />starts <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-chart-3">right now.</span>
             </h2>
             <p className="text-muted-foreground text-base max-w-lg mx-auto">
               Join thousands of typists who are breaking their WPM records every day.

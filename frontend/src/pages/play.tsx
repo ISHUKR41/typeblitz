@@ -98,34 +98,62 @@ function ResultsScreen({
   const grade = wpm >= 80 ? "S" : wpm >= 60 ? "A" : wpm >= 40 ? "B" : wpm >= 25 ? "C" : "D";
   const gradeColor = grade === "S" ? "text-yellow-400" : grade === "A" ? "text-primary" : grade === "B" ? "text-chart-2" : "text-muted-foreground";
 
+  const passedGlow = passed
+    ? "0 0 60px rgba(0,245,255,0.18), 0 8px 40px rgba(0,0,0,0.7)"
+    : "0 0 40px rgba(255,32,121,0.12), 0 8px 32px rgba(0,0,0,0.7)";
+
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.92, y: 20 }}
+      initial={{ opacity: 0, scale: 0.90, y: 28 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
-      transition={{ type: "spring", damping: 22 }}
-      className="max-w-lg w-full bg-card border border-border rounded-2xl shadow-2xl overflow-hidden mx-4"
+      transition={{ type: "spring", damping: 20, stiffness: 280 }}
+      className="max-w-lg w-full overflow-hidden mx-4"
+      style={{
+        background: "rgb(20,20,24)",
+        border: passed ? "1px solid rgba(0,245,255,0.22)" : "1px solid rgba(255,32,121,0.22)",
+        borderRadius: "28px",
+        boxShadow: passedGlow,
+      }}
     >
-      <div className={`${passed ? "bg-primary/10 border-primary/20" : "bg-destructive/10 border-destructive/20"} border-b px-5 py-4 flex items-center gap-3`}>
-        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${passed ? "bg-primary/20 text-primary" : "bg-destructive/20 text-destructive"}`}>
-          <Trophy className="w-6 h-6" />
+      {/* Pass/Fail banner */}
+      <div
+        className="px-6 py-5 flex items-center gap-4 relative overflow-hidden"
+        style={{
+          background: passed
+            ? "linear-gradient(135deg, rgba(0,245,255,0.14) 0%, rgba(57,255,20,0.06) 100%)"
+            : "linear-gradient(135deg, rgba(255,32,121,0.14) 0%, rgba(255,0,0,0.05) 100%)",
+          borderBottom: passed ? "1px solid rgba(0,245,255,0.15)" : "1px solid rgba(255,32,121,0.15)",
+        }}
+      >
+        <div className="absolute right-6 top-1/2 -translate-y-1/2"
+          style={{ fontFamily: "'DM Sans', sans-serif", fontSize: "72px", fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1, opacity: 0.12, color: passed ? "#00F5FF" : "#FF2079" }}>
+          {grade}
+        </div>
+        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0`}
+          style={{ background: passed ? "rgba(0,245,255,0.18)" : "rgba(255,32,121,0.18)" }}>
+          <Trophy className="w-6 h-6" style={{ color: passed ? "#00F5FF" : "#FF2079" }} />
         </div>
         <div className="flex-1 min-w-0">
-          <h2 className="text-xl font-extrabold font-mono">{passed ? "LEVEL CLEARED" : "KEEP TRAINING"}</h2>
-          <p className="text-xs text-muted-foreground">Target: {targetWpm} WPM + {MIN_PASSING_ACCURACY}% accuracy</p>
+          <h2 className="text-lg font-black tracking-tight" style={{ fontFamily: "'DM Sans', sans-serif", color: passed ? "#00F5FF" : "#FF2079" }}>
+            {passed ? "LEVEL CLEARED" : "KEEP TRAINING"}
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5">Target: {targetWpm} WPM + {MIN_PASSING_ACCURACY}% accuracy</p>
         </div>
-        <div className={`text-4xl font-black font-mono ${gradeColor}`}>{grade}</div>
+        <div className={`text-5xl font-black relative z-10 ${gradeColor}`}
+          style={{ fontFamily: "'DM Sans', sans-serif", letterSpacing: "-0.04em" }}>{grade}</div>
       </div>
 
       <div className="p-5 space-y-4">
+        {/* Main stats */}
         <div className="grid grid-cols-3 gap-2">
           {[
-            { label: "WPM", value: wpm, color: "text-primary", icon: Zap },
-            { label: "Accuracy", value: `${accuracy}%`, color: accuracy >= 95 ? "text-emerald-400" : accuracy >= 80 ? "text-chart-2" : "text-destructive", icon: Target },
-            { label: "Time", value: `${Math.floor(duration/60)}:${(duration%60).toString().padStart(2,"0")}`, color: "text-chart-3", icon: Clock },
+            { label: "WPM", value: wpm, rawColor: "#00F5FF", shadow: "rgba(0,245,255,0.5)", icon: Zap },
+            { label: "Accuracy", value: `${accuracy}%`, rawColor: accuracy >= 95 ? "#39FF14" : accuracy >= 80 ? "#FFB800" : "#FF2079", shadow: accuracy >= 95 ? "rgba(57,255,20,0.5)" : accuracy >= 80 ? "rgba(255,184,0,0.5)" : "rgba(255,32,121,0.5)", icon: Target },
+            { label: "Time", value: `${Math.floor(duration/60)}:${(duration%60).toString().padStart(2,"0")}`, rawColor: "#a78bfa", shadow: "rgba(167,139,250,0.4)", icon: Clock },
           ].map(s => (
-            <div key={s.label} className="bg-background rounded-xl border border-border p-3 text-center">
-              <s.icon className={`w-4 h-4 ${s.color} mx-auto mb-1`} />
-              <div className={`text-xl font-bold font-mono ${s.color}`}>{s.value}</div>
+            <div key={s.label} className="rounded-[14px] border border-border/60 p-3 text-center" style={{ background: "rgba(255,255,255,0.03)" }}>
+              <s.icon className="w-4 h-4 mx-auto mb-1" style={{ color: s.rawColor }} />
+              <div className="text-xl font-black font-mono" style={{ color: s.rawColor, textShadow: `0 0 8px ${s.shadow}` }}>{s.value}</div>
               <div className="text-xs text-muted-foreground mt-0.5">{s.label}</div>
             </div>
           ))}
