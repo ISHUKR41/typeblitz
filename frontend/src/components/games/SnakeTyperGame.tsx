@@ -37,12 +37,14 @@ function dirToward(from: Pos, to: Pos, body: Set<string>, current: Dir): Dir {
 let foodIdCounter = 0;
 
 export function SnakeTyperGame({
-  words, wordIndex, wpm, accuracy, progress,
+  words, wordIndex, currentInput, wpm, accuracy, progress,
   lastWordCorrect, submissionCount, comboStreak,
 }: ArcadeProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wordIdxRef = useRef(wordIndex);
   wordIdxRef.current = wordIndex;
+  const currentInputRef = useRef(currentInput);
+  currentInputRef.current = currentInput;
 
   const stateRef = useRef({
     snake: [{ x: 11, y: 7 }, { x: 10, y: 7 }, { x: 9, y: 7 }, { x: 8, y: 7 }] as Pos[],
@@ -51,6 +53,8 @@ export function SnakeTyperGame({
     particles: [] as Particle[],
     popTexts: [] as PopText[],
     score: 0,
+    dead: false,
+    deathTimer: 0,
     stars: Array.from({ length: 60 }, () => ({
       x: Math.random() * COLS * CELL, y: Math.random() * ROWS * CELL,
       r: Math.random() * 1.2 + 0.3, a: Math.random() * 0.4 + 0.1,
@@ -121,8 +125,19 @@ export function SnakeTyperGame({
       const W = COLS * CELL, H = ROWS * CELL;
       const now = Date.now() / 1000;
 
+      // ── Death timer ────────────────────────────────────────────────
+      if (s.dead) {
+        s.deathTimer--;
+        if (s.deathTimer <= 0) {
+          s.dead = false;
+          s.snake = [{ x: 11, y: 7 }, { x: 10, y: 7 }, { x: 9, y: 7 }, { x: 8, y: 7 }];
+          s.dir = "right";
+          s.foods = spawnFood([], s.snake, words, wordIdxRef.current);
+        }
+      }
+
       const moveMs = Math.max(70, 320 - Math.max(wpm, 10) * 2.5);
-      if (ts - lastMove > moveMs && s.snake.length > 0 && s.foods.length > 0) {
+      if (!s.dead && ts - lastMove > moveMs && s.snake.length > 0 && s.foods.length > 0) {
         lastMove = ts;
         const head = s.snake[0];
         const bodySet = new Set(s.snake.slice(0, -1).map(p => `${p.x},${p.y}`));
@@ -133,8 +148,19 @@ export function SnakeTyperGame({
         }, s.foods[0]);
         s.dir = dirToward(head, target.pos, bodySet, s.dir);
         const nh = nextPos(head, s.dir);
-        s.snake.unshift(nh);
-        s.snake.pop();
+        // ── Body collision check ──────────────────────────────────────
+        if (s.snake.length > 4 && bodySet.has(`${nh.x},${nh.y}`)) {
+          s.dead = true;
+          s.deathTimer = 90;
+          s.popTexts.push({ x: COLS * CELL / 2, y: ROWS * CELL / 2 - 20, text: "💀 COLLISION!", life: 1, color: "#FF2079" });
+          for (let i = 0; i < 30; i++) {
+            const angle = (i / 30) * Math.PI * 2;
+            s.particles.push({ x: head.x * CELL + CELL / 2, y: head.y * CELL + CELL / 2, vx: Math.cos(angle) * (2 + Math.random() * 4), vy: Math.sin(angle) * (2 + Math.random() * 4), life: 1, color: "#FF2079", size: 3 + Math.random() * 3 });
+          }
+        } else {
+          s.snake.unshift(nh);
+          s.snake.pop();
+        }
         for (const f of s.foods) f.timer = Math.max(0, f.timer - 1);
         s.foods = s.foods.filter(f => f.timer > 0);
         if (s.foods.length < Math.ceil(progress / 35) + 1) {
@@ -197,12 +223,28 @@ export function SnakeTyperGame({
         ctx.font = `bold ${isNext ? 13 : 11}px 'Courier New', monospace`;
         const tw = ctx.measureText(food.word).width;
         const bw = tw + 18, bh = 22, bx = fx - bw / 2, by = fy - CELL + 2;
-        ctx.fillStyle = isNext ? "rgba(255,240,50,0.18)" : "rgba(0,200,100,0.12)";
-        ctx.strokeStyle = isNext ? "rgba(255,240,80,0.7)" : "rgba(0,200,100,0.4)";
+        ctx.fillStyle = isNext ? "rgba(57,255,20,0.14)" : "rgba(0,200,100,0.12)";
+        ctx.strokeStyle = isNext ? "rgba(57,255,20,0.8)" : "rgba(0,200,100,0.4)";
         ctx.lineWidth = isNext ? 1.5 : 1;
         ctx.beginPath(); ctx.roundRect(bx, by, bw, bh, 5); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = isNext ? "#fff964" : `hsl(${food.hue},100%,75%)`;
-        ctx.textAlign = "center"; ctx.fillText(food.word, fx, by + 15);
+        if (isNext) {
+          const inp = currentInputRef.current;
+          const chars = food.word.split("");
+          ctx.textAlign = "left";
+          let cx2 = fx - tw / 2;
+          for (let ci = 0; ci < chars.length; ci++) {
+            const isTyped = ci < inp.length;
+            ctx.fillStyle = isTyped ? (inp[ci] === chars[ci] ? "#39FF14" : "#FF2079") : "#fff964";
+            ctx.shadowBlur = isTyped && inp[ci] === chars[ci] ? 8 : 0;
+            ctx.shadowColor = "#39FF14";
+            ctx.fillText(chars[ci], cx2, by + 15);
+            cx2 += ctx.measureText(chars[ci]).width;
+          }
+          ctx.shadowBlur = 0; ctx.textAlign = "center";
+        } else {
+          ctx.fillStyle = `hsl(${food.hue},100%,75%)`;
+          ctx.textAlign = "center"; ctx.fillText(food.word, fx, by + 15);
+        }
 
         ctx.fillStyle = timerFrac > 0.4 ? "#00ff88" : timerFrac > 0.2 ? "#ffaa00" : "#ff4444";
         ctx.fillRect(bx, by + bh + 3, bw * timerFrac, 3);
@@ -226,6 +268,19 @@ export function SnakeTyperGame({
         pt.life -= 0.018;
       }
       ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+
+      // ── Death flash overlay ──────────────────────────────────────
+      if (s.dead) {
+        const pulse = Math.sin(s.deathTimer * 0.25) * 0.5 + 0.5;
+        ctx.fillStyle = `rgba(255,32,121,${pulse * 0.28})`;
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = `rgba(255,32,121,${0.8 + pulse * 0.2})`;
+        ctx.font = `bold ${22 + pulse * 4}px monospace`;
+        ctx.textAlign = "center";
+        ctx.shadowBlur = 20; ctx.shadowColor = "#FF2079";
+        ctx.fillText("💀 COLLISION — Respawning…", W / 2, H / 2 + 20);
+        ctx.shadowBlur = 0;
+      }
 
       ctx.fillStyle = "rgba(5,5,16,0.75)";
       ctx.beginPath(); ctx.roundRect(8, 8, 200, 52, 8); ctx.fill();

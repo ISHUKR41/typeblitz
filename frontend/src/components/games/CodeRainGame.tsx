@@ -31,12 +31,14 @@ let twIdCounter = 0;
 function rndChar() { return CHAR_POOL[Math.floor(Math.random() * CHAR_POOL.length)]; }
 
 export function CodeRainGame({
-  words, wordIndex, wpm, accuracy, progress,
+  words, wordIndex, currentInput, wpm, accuracy, progress,
   lastWordCorrect, submissionCount, comboStreak,
 }: ArcadeProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wordIdxRef = useRef(wordIndex);
   wordIdxRef.current = wordIndex;
+  const currentInputRef = useRef(currentInput);
+  currentInputRef.current = currentInput;
 
   const stateRef = useRef({
     cols: [] as Column[],
@@ -176,10 +178,16 @@ export function CodeRainGame({
 
           if (tgt && r >= tgt.row && r < tgt.row + tgt.word.length) {
             const isDecrypted = tgt.burst > 0;
+            const charIdx = r - tgt.row;
+            const isActiveTarget = tgt.word === (words[wordIdxRef.current] ?? "");
+            const inp = currentInputRef.current;
             ctx.globalAlpha = 1;
             ctx.font = "bold 13px 'Courier New', monospace";
             if (isDecrypted) {
               ctx.fillStyle = "#ffffff"; ctx.shadowBlur = 24; ctx.shadowColor = "#ffffff";
+            } else if (isActiveTarget && charIdx < inp.length) {
+              ctx.fillStyle = inp[charIdx] === tgt.word[charIdx] ? "#39FF14" : "#FF2079";
+              ctx.shadowBlur = 16; ctx.shadowColor = inp[charIdx] === tgt.word[charIdx] ? "#39FF14" : "#FF2079";
             } else {
               ctx.fillStyle = "#ffd700"; ctx.shadowBlur = 14; ctx.shadowColor = "#ffa500";
             }

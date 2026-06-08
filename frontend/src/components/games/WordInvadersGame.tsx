@@ -22,12 +22,14 @@ function buildWave(words: string[], startIdx: number): Alien[] {
 }
 
 export function WordInvadersGame({
-  words, wordIndex, wpm, accuracy,
+  words, wordIndex, currentInput, wpm, accuracy,
   lastWordCorrect, submissionCount, comboStreak,
 }: ArcadeProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wordIdxRef = useRef(wordIndex);
   wordIdxRef.current = wordIndex;
+  const currentInputRef = useRef(currentInput);
+  currentInputRef.current = currentInput;
 
   const stateRef = useRef({
     aliens: buildWave(words, 0),
@@ -191,12 +193,28 @@ export function WordInvadersGame({
         ctx.font = `${isTarget ? "bold " : ""}11px 'Courier New', monospace`;
         const tw = ctx.measureText(alien.word).width;
         const bx = ax - tw / 2 - 8, bw = tw + 16, bh = 18;
-        ctx.fillStyle = isTarget ? "rgba(255,238,0,0.15)" : "rgba(100,100,200,0.15)";
-        ctx.strokeStyle = isTarget ? "rgba(255,238,0,0.6)" : "rgba(100,100,255,0.3)";
+        ctx.fillStyle = isTarget ? "rgba(57,255,20,0.13)" : "rgba(100,100,200,0.15)";
+        ctx.strokeStyle = isTarget ? "rgba(57,255,20,0.75)" : "rgba(100,100,255,0.3)";
         ctx.lineWidth = 1;
         ctx.beginPath(); ctx.roundRect(bx, ay + 20, bw, bh, 4); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = isTarget ? "#ffee00" : "#aaccff";
-        ctx.textAlign = "center"; ctx.fillText(alien.word, ax, ay + 33);
+        if (isTarget) {
+          const inp = currentInputRef.current;
+          const chars = alien.word.split("");
+          ctx.textAlign = "left";
+          let cx2 = ax - tw / 2;
+          for (let ci = 0; ci < chars.length; ci++) {
+            const isTyped = ci < inp.length;
+            ctx.fillStyle = isTyped ? (inp[ci] === chars[ci] ? "#39FF14" : "#FF2079") : "#ffee00";
+            ctx.shadowBlur = isTyped && inp[ci] === chars[ci] ? 8 : 0;
+            ctx.shadowColor = "#39FF14";
+            ctx.fillText(chars[ci], cx2, ay + 33);
+            cx2 += ctx.measureText(chars[ci]).width;
+          }
+          ctx.shadowBlur = 0; ctx.textAlign = "center";
+        } else {
+          ctx.fillStyle = "#aaccff";
+          ctx.textAlign = "center"; ctx.fillText(alien.word, ax, ay + 33);
+        }
       }
 
       s.lasers = s.lasers.filter(l => l.life > 0);

@@ -57,6 +57,10 @@ export function RacingGame({
   const rainRef = useRef<RainDrop[]>([]);
   const lastSpawnRef = useRef(0);
   const prevSubmissionRef = useRef(submissionCount);
+  const wordIndexRef = useRef(wordIndex);
+  wordIndexRef.current = wordIndex;
+  const currentInputRef = useRef(currentInput);
+  currentInputRef.current = currentInput;
 
   // Ghost progress calculation
   const [ghostPos, setGhostPos] = useState(0);
@@ -662,6 +666,38 @@ export function RacingGame({
       ctx.shadowBlur = 0;
 
       ctx.restore();
+
+      // ── Word overlay panel on road ──────────────────────────────────
+      const cw = words[wordIndexRef.current] ?? "";
+      if (cw) {
+        const inp = currentInputRef.current;
+        ctx.font = "bold 20px 'Courier New', monospace";
+        const totalWordW = ctx.measureText(cw).width;
+        const panelW = Math.max(totalWordW + 60, 220);
+        const panelH = 58;
+        const panelX = (w - panelW) / 2;
+        const panelY = h - 76;
+        ctx.fillStyle = "rgba(5,5,20,0.84)";
+        ctx.beginPath(); ctx.roundRect(panelX, panelY, panelW, panelH, 10); ctx.fill();
+        ctx.strokeStyle = "rgba(168,85,247,0.65)"; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.roundRect(panelX, panelY, panelW, panelH, 10); ctx.stroke();
+        ctx.font = "10px monospace"; ctx.fillStyle = "#a855f7"; ctx.textAlign = "center";
+        ctx.fillText("▸ TYPE TO ACCELERATE", w / 2, panelY + 14);
+        ctx.font = "bold 20px 'Courier New', monospace";
+        const chars = cw.split("");
+        let cx3 = w / 2 - totalWordW / 2;
+        ctx.textAlign = "left";
+        for (let ci = 0; ci < chars.length; ci++) {
+          const isTyped = ci < inp.length;
+          const correct = isTyped && inp[ci] === chars[ci];
+          ctx.fillStyle = isTyped ? (correct ? "#39FF14" : "#FF2079") : "#e2e8f0";
+          ctx.shadowBlur = correct ? 10 : 0; ctx.shadowColor = "#39FF14";
+          ctx.fillText(chars[ci], cx3, panelY + 42);
+          cx3 += ctx.measureText(chars[ci]).width;
+        }
+        ctx.shadowBlur = 0; ctx.textAlign = "center";
+      }
+      // ───────────────────────────────────────────────────────────────
 
       animationId = requestAnimationFrame(render);
     };
