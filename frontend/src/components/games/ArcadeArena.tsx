@@ -1,18 +1,19 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { RacingGame } from "./RacingGame";
-import { FighterGame } from "./FighterGame";
-import { ZombieGame } from "./ZombieGame";
-import { GalaxyGame } from "./GalaxyGame";
-import { MeteorGame } from "./MeteorGame";
-import { NeonRunnerGame } from "./NeonRunnerGame";
-import { SnakeTyperGame } from "./SnakeTyperGame";
-import { WordInvadersGame } from "./WordInvadersGame";
-import { CodeRainGame } from "./CodeRainGame";
-import { CyberHeistGame } from "./CyberHeistGame";
-import { ArenaBlitzGame } from "./ArenaBlitzGame";
-import { BubblePopGame } from "./BubblePopGame";
-import { FruitBlitzGame } from "./FruitBlitzGame";
+
+const RacingGame     = lazy(() => import("./RacingGame").then(m => ({ default: m.RacingGame })));
+const FighterGame    = lazy(() => import("./FighterGame").then(m => ({ default: m.FighterGame })));
+const ZombieGame     = lazy(() => import("./ZombieGame").then(m => ({ default: m.ZombieGame })));
+const GalaxyGame     = lazy(() => import("./GalaxyGame").then(m => ({ default: m.GalaxyGame })));
+const MeteorGame     = lazy(() => import("./MeteorGame").then(m => ({ default: m.MeteorGame })));
+const NeonRunnerGame = lazy(() => import("./NeonRunnerGame").then(m => ({ default: m.NeonRunnerGame })));
+const SnakeTyperGame = lazy(() => import("./SnakeTyperGame").then(m => ({ default: m.SnakeTyperGame })));
+const WordInvadersGame = lazy(() => import("./WordInvadersGame").then(m => ({ default: m.WordInvadersGame })));
+const CodeRainGame   = lazy(() => import("./CodeRainGame").then(m => ({ default: m.CodeRainGame })));
+const CyberHeistGame = lazy(() => import("./CyberHeistGame").then(m => ({ default: m.CyberHeistGame })));
+const ArenaBlitzGame = lazy(() => import("./ArenaBlitzGame").then(m => ({ default: m.ArenaBlitzGame })));
+const BubblePopGame  = lazy(() => import("./BubblePopGame").then(m => ({ default: m.BubblePopGame })));
+const FruitBlitzGame = lazy(() => import("./FruitBlitzGame").then(m => ({ default: m.FruitBlitzGame })));
 import { soundEffects } from "@/lib/audio";
 import { VirtualKeyboard } from "../VirtualKeyboard";
 
@@ -290,19 +291,28 @@ export function ArcadeArena({ words, gameId, levelNumber, targetWpm, strictMode,
         spellCheck={false}
         autoFocus
       />
-      {gameId === "turbo-race"    && <RacingGame      {...props} />}
-      {gameId === "word-fighter"  && <FighterGame     {...props} />}
-      {gameId === "zombie-hunt"   && <ZombieGame      {...props} />}
-      {gameId === "galaxy-blitz"  && <GalaxyGame      {...props} />}
-      {gameId === "meteor-storm"  && <MeteorGame      {...props} />}
-      {gameId === "neon-runner"   && <NeonRunnerGame  {...props} />}
-      {gameId === "snake-typer"   && <SnakeTyperGame  {...props} />}
-      {gameId === "word-invaders" && <WordInvadersGame {...props} />}
-      {gameId === "code-rain"     && <CodeRainGame    {...props} />}
-      {gameId === "cyber-heist"   && <CyberHeistGame  {...props} />}
-      {gameId === "arena-blitz"   && <ArenaBlitzGame  {...props} />}
-      {gameId === "bubble-pop"    && <BubblePopGame   {...props} />}
-      {gameId === "fruit-blitz"   && <FruitBlitzGame  {...props} />}
+      <Suspense fallback={
+        <div className="w-full flex items-center justify-center" style={{ height: 260 }}>
+          <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs font-mono text-primary/60 tracking-widest uppercase">Loading Arena</span>
+          </div>
+        </div>
+      }>
+        {gameId === "turbo-race"    && <RacingGame      {...props} />}
+        {gameId === "word-fighter"  && <FighterGame     {...props} />}
+        {gameId === "zombie-hunt"   && <ZombieGame      {...props} />}
+        {gameId === "galaxy-blitz"  && <GalaxyGame      {...props} />}
+        {gameId === "meteor-storm"  && <MeteorGame      {...props} />}
+        {gameId === "neon-runner"   && <NeonRunnerGame  {...props} />}
+        {gameId === "snake-typer"   && <SnakeTyperGame  {...props} />}
+        {gameId === "word-invaders" && <WordInvadersGame {...props} />}
+        {gameId === "code-rain"     && <CodeRainGame    {...props} />}
+        {gameId === "cyber-heist"   && <CyberHeistGame  {...props} />}
+        {gameId === "arena-blitz"   && <ArenaBlitzGame  {...props} />}
+        {gameId === "bubble-pop"    && <BubblePopGame   {...props} />}
+        {gameId === "fruit-blitz"   && <FruitBlitzGame  {...props} />}
+      </Suspense>
 
       {showKeyboard && (
         <div className="z-20 relative">

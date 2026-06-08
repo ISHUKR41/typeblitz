@@ -74,15 +74,37 @@ export default function Leaderboard() {
   ];
 
   return (
-    <div className="p-8 max-w-4xl mx-auto space-y-8">
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl bg-yellow-400/15 border border-yellow-400/30 flex items-center justify-center shadow-[0_0_12px_rgba(255,184,0,0.2)]">
-            <Trophy className="w-5 h-5 text-yellow-400" />
-          </div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Global Leaderboard</h1>
+    <div className="p-5 md:p-8 max-w-4xl mx-auto space-y-8">
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="relative overflow-hidden rounded-2xl border border-yellow-400/20 bg-card/60 p-6 md:p-8">
+        {/* Ambient glows */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/3 w-72 h-36 bg-yellow-400/8 rounded-full blur-[60px]" />
+          <div className="absolute bottom-0 right-1/4 w-56 h-28 bg-amber-500/6 rounded-full blur-[50px]" />
         </div>
-        <p className="text-muted-foreground">The fastest typists on TypeBlitz. Are you on the list?</p>
+        <div className="absolute inset-0 neon-grid opacity-30 pointer-events-none" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-11 h-11 rounded-xl bg-yellow-400/15 border border-yellow-400/30 flex items-center justify-center shadow-[0_0_14px_rgba(255,184,0,0.25)]">
+              <Trophy className="w-5 h-5 text-yellow-400" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-extrabold tracking-tight">Global Leaderboard</h1>
+              <p className="text-sm text-muted-foreground mt-0.5">The fastest typists on TypeBlitz. Sign in to appear here.</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-3 mt-3">
+            {[
+              { label: "Top WPM", value: "∞", color: "text-yellow-400" },
+              { label: "Global Ranking", value: "Live", color: "text-primary" },
+              { label: "Games Tracked", value: "20", color: "text-chart-3" },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="flex items-baseline gap-1.5">
+                <span className={`text-xl font-extrabold font-mono ${color}`}>{value}</span>
+                <span className="text-xs text-muted-foreground">{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </motion.div>
 
       <div className="flex flex-wrap gap-2">

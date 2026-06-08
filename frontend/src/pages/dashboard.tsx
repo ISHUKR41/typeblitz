@@ -257,15 +257,28 @@ export default function Dashboard() {
   const chartData = progress ?? [];
 
   return (
-    <div className="p-8 space-y-8 max-w-6xl mx-auto">
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground mt-1">Your complete performance overview, {user.username}.</p>
+    <div className="p-5 md:p-8 space-y-8 max-w-6xl mx-auto">
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="relative overflow-hidden rounded-2xl border border-chart-2/20 bg-card/60 p-6 md:p-8">
+        {/* Ambient glows */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-1/3 w-72 h-36 bg-primary/7 rounded-full blur-[65px]" />
+          <div className="absolute bottom-0 left-1/4 w-56 h-28 bg-yellow-500/5 rounded-full blur-[55px]" />
         </div>
-        <Link href="/games">
-          <Button className="gap-2">Play Now <ArrowRight className="w-4 h-4" /></Button>
-        </Link>
+        <div className="absolute inset-0 neon-grid opacity-25 pointer-events-none" />
+        <div className="relative z-10 flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-9 h-9 rounded-xl bg-chart-2/15 border border-chart-2/30 flex items-center justify-center">
+                <BarChart2 className="w-4 h-4 text-chart-2" />
+              </div>
+              <h1 className="text-3xl font-extrabold tracking-tight">Dashboard</h1>
+            </div>
+            <p className="text-muted-foreground text-sm">Your complete performance overview, <span className="text-foreground font-semibold">{user.username}</span>.</p>
+          </div>
+          <Link href="/games">
+            <Button className="gap-2 shadow-lg shadow-primary/15">Play Now <ArrowRight className="w-4 h-4" /></Button>
+          </Link>
+        </div>
       </motion.div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">

@@ -103,7 +103,7 @@ const FEATURES = [
 
 const HOW_IT_WORKS = [
   { icon: Play,      step: "01", title: "Pick a Game",      desc: "20 unique typing games — Zombie Hunt, Cyber Heist, Turbo Race, Galaxy Blitz, and 16 more. Each builds a different typing skill.", color: "text-primary",    bg: "bg-primary/10",    border: "border-primary/30" },
-  { icon: Zap,       step: "02", title: "Level Up",         desc: "5 progressively harder levels per game. You need both target WPM AND 90%+ accuracy to advance. Wrong words contribute zero.", color: "text-chart-2",   bg: "bg-chart-2/10",   border: "border-chart-2/30" },
+  { icon: Zap,       step: "02", title: "Level Up",         desc: "8 progressively harder levels per game. You need both target WPM AND 90%+ accuracy to advance. Wrong words contribute zero.", color: "text-chart-2",   bg: "bg-chart-2/10",   border: "border-chart-2/30" },
   { icon: BarChart2, step: "03", title: "See Your DNA",     desc: "Your dashboard shows WPM trends over time, per-letter heatmap, 12 achievement badges, streak counter, and full session history.",  color: "text-yellow-400",bg: "bg-yellow-400/10",border: "border-yellow-400/30" },
 ];
 
@@ -304,7 +304,7 @@ function HeroTypingWidget() {
 
 const STATS = [
   { value: 20,  suffix: "",      unit: "Games",    label: "Unique Arcade Modes",     icon: Gamepad2, color: "text-primary"     },
-  { value: 100, suffix: "",      unit: "Levels",   label: "Progressive Challenges",  icon: TrendingUp, color: "text-chart-2"   },
+  { value: 160, suffix: "",      unit: "Levels",   label: "Progressive Challenges",  icon: TrendingUp, color: "text-chart-2"   },
   { value: 500, suffix: "+",     unit: "Words",    label: "Govt Exam Vocabulary",    icon: Shield,   color: "text-blue-400"   },
   { value: 12,  suffix: "",      unit: "Lessons",  label: "Touch-Type Lessons",      icon: BookOpen, color: "text-yellow-400" },
 ];
@@ -399,7 +399,7 @@ export default function Home() {
             className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2"
           >
             <Link href="/games">
-              <Button size="lg" className="h-14 px-10 text-base font-bold gap-2.5 w-full sm:w-auto shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all">
+              <Button size="lg" className="h-14 px-10 text-base font-bold gap-2.5 w-full sm:w-auto shadow-xl shadow-primary/25 hover:shadow-primary/40 transition-all cta-glow">
                 <Gamepad2 className="w-5 h-5" />
                 Start Playing Free
                 <ArrowRight className="w-4 h-4 ml-1" />
@@ -661,7 +661,7 @@ export default function Home() {
                 Organized by difficulty, timed to your target, with progress tracking.
               </p>
               <div className="flex flex-wrap gap-2 mb-6">
-                {["500+ Authentic Words", "5 Difficulty Levels", "Per-Exam Vocabulary", "Real Passages"].map(tag => (
+                {["500+ Authentic Words", "8 Difficulty Levels", "Per-Exam Vocabulary", "Real Passages"].map(tag => (
                   <span key={tag} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-full text-xs font-semibold">
                     <Check className="w-3 h-3" /> {tag}
                   </span>
@@ -841,7 +841,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link href={user ? "/games" : "/login"}>
-                <Button size="lg" className="h-14 px-12 text-base font-bold gap-2.5 shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-all">
+                <Button size="lg" className="h-14 px-12 text-base font-bold gap-2.5 shadow-2xl shadow-primary/30 hover:shadow-primary/50 transition-all cta-glow">
                   <Zap className="w-5 h-5" />
                   {user ? "Play Now" : "Create Free Account"}
                   <ArrowRight className="w-4 h-4" />

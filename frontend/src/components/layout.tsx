@@ -96,10 +96,10 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
             <div className="flex items-center gap-3 px-1">
               {/* Avatar with tier color */}
               <div className={`w-9 h-9 rounded-full border flex items-center justify-center font-bold text-sm flex-shrink-0 ${
-                (user.bestWpm ?? 0) >= 100 ? "bg-yellow-400/20 border-yellow-400/40 text-yellow-400" :
-                (user.bestWpm ?? 0) >= 80  ? "bg-red-400/20    border-red-400/40    text-red-400"    :
-                (user.bestWpm ?? 0) >= 60  ? "bg-chart-2/20   border-chart-2/40   text-chart-2"    :
-                (user.bestWpm ?? 0) >= 40  ? "bg-primary/20   border-primary/30   text-primary"    :
+                (user.bestWpm ?? 0) >= 100 ? "bg-yellow-400/20 border-yellow-400/40 text-yellow-400 shadow-[0_0_10px_rgba(234,179,8,0.25)]" :
+                (user.bestWpm ?? 0) >= 80  ? "bg-red-400/20    border-red-400/40    text-red-400    shadow-[0_0_10px_rgba(248,113,113,0.25)]" :
+                (user.bestWpm ?? 0) >= 60  ? "bg-chart-2/20   border-chart-2/40   text-chart-2   shadow-[0_0_10px_rgba(153,51,255,0.25)]" :
+                (user.bestWpm ?? 0) >= 40  ? "bg-primary/20   border-primary/30   text-primary   shadow-[0_0_10px_rgba(0,245,255,0.2)]" :
                                              "bg-muted        border-border        text-muted-foreground"
               }`}>
                 {user.username.charAt(0).toUpperCase()}
@@ -109,15 +109,15 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <Zap className="w-3 h-3 text-primary flex-shrink-0" />
                   <p className="text-xs text-muted-foreground">
-                    <span className="text-primary font-bold">{user.bestWpm ?? 0}</span> WPM best ·{" "}
+                    <span className="text-primary font-bold">{user.bestWpm ?? 0}</span> WPM ·{" "}
                     <span className={`font-semibold ${
                       (user.bestWpm ?? 0) >= 100 ? "text-yellow-400" :
                       (user.bestWpm ?? 0) >= 80  ? "text-red-400"    :
                       (user.bestWpm ?? 0) >= 60  ? "text-chart-2"    :
                       (user.bestWpm ?? 0) >= 40  ? "text-primary"    : "text-muted-foreground"
                     }`}>
-                      {(user.bestWpm ?? 0) >= 100 ? "Elite" :
-                       (user.bestWpm ?? 0) >= 80  ? "Expert" :
+                      {(user.bestWpm ?? 0) >= 100 ? "Elite 🔥" :
+                       (user.bestWpm ?? 0) >= 80  ? "Expert ⚡" :
                        (user.bestWpm ?? 0) >= 60  ? "Advanced" :
                        (user.bestWpm ?? 0) >= 40  ? "Intermediate" : "Beginner"}
                     </span>
@@ -125,6 +125,29 @@ function Sidebar({ onClose }: { onClose?: () => void }) {
                 </div>
               </div>
             </div>
+            {/* Tier progress bar */}
+            {(() => {
+              const wpm = user.bestWpm ?? 0;
+              const [from, to, color] =
+                wpm >= 100 ? [100, 140, "#FFB800"] :
+                wpm >= 80  ? [80,  100, "#FF2079"] :
+                wpm >= 60  ? [60,  80,  "#9933FF"] :
+                wpm >= 40  ? [40,  60,  "#00F5FF"] :
+                             [0,   40,  "#00F5FF"];
+              const pct = Math.min(100, Math.round(((wpm - from) / (to - from)) * 100));
+              const label = wpm >= 100 ? "Grand Master" : wpm >= 80 ? "→ Elite 100" : wpm >= 60 ? "→ Expert 80" : wpm >= 40 ? "→ Advanced 60" : "→ Intermediate 40";
+              return (
+                <div className="px-1">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-[10px] text-muted-foreground font-mono">{label}</span>
+                    <span className="text-[10px] font-bold font-mono" style={{ color }}>{pct}%</span>
+                  </div>
+                  <div className="h-1 bg-muted/60 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: color, boxShadow: `0 0 6px ${color}80` }} />
+                  </div>
+                </div>
+              );
+            })()}
             <Button
               variant="outline"
               size="sm"

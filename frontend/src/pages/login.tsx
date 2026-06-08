@@ -37,21 +37,28 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-full flex items-center justify-center p-4">
+    <div className="min-h-full flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background ambient */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-primary/5 rounded-full blur-[100px]" />
+      </div>
       <motion.div 
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md bg-card border border-border p-8 rounded-2xl shadow-xl"
+        initial={{ opacity: 0, scale: 0.95, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className="w-full max-w-md bg-card/90 backdrop-blur border border-primary/15 p-8 rounded-2xl shadow-2xl shadow-primary/5 relative"
+        style={{ boxShadow: "0 0 0 1px rgba(0,245,255,0.06), 0 25px 60px rgba(0,0,0,0.4), 0 0 60px rgba(0,245,255,0.04)" }}
       >
         <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center text-primary mb-4">
+          <div className="w-16 h-16 rounded-2xl bg-primary/15 border border-primary/25 flex items-center justify-center text-primary mb-4"
+            style={{ boxShadow: "0 0 24px rgba(0,245,255,0.2)" }}>
             <Keyboard className="w-8 h-8" />
           </div>
-          <h2 className="text-3xl font-bold font-mono tracking-tight">
-            {isLogin ? "System Login" : "Initialize User"}
+          <h2 className="text-3xl font-extrabold font-mono tracking-tight">
+            {isLogin ? "Welcome Back" : "Create Account"}
           </h2>
-          <p className="text-muted-foreground mt-2">
-            {isLogin ? "Enter your credentials to continue" : "Create an account to track your WPM"}
+          <p className="text-muted-foreground mt-2 text-sm text-center">
+            {isLogin ? "Sign in to track your WPM progress and compete globally" : "Join TypeBlitz — track speed, accuracy, and unlock achievements"}
           </p>
         </div>
 
@@ -66,6 +73,7 @@ export default function Login() {
               className="bg-background font-mono"
               required
               minLength={3}
+              autoComplete="username"
             />
           </div>
           <div className="space-y-2">
@@ -78,6 +86,7 @@ export default function Login() {
               className="bg-background font-mono"
               required
               minLength={6}
+              autoComplete={isLogin ? "current-password" : "new-password"}
             />
           </div>
           

@@ -390,32 +390,40 @@ export default function ChallengePage() {
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
+        className="relative overflow-hidden rounded-2xl border border-primary/20 bg-card/60 p-6 md:p-8"
       >
-        <div>
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary">
-            <CalendarDays className="h-3.5 w-3.5" />
-            Daily Challenge
-          </div>
-          <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">
-            {challenge.title}
-          </h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground md:text-base">
-            One ranked passage per day for exam, code, and professional typing discipline.
-          </p>
+        {/* Ambient glows */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/3 w-80 h-40 bg-primary/8 rounded-full blur-[70px]" />
+          <div className="absolute bottom-0 right-1/4 w-56 h-28 bg-yellow-500/5 rounded-full blur-[55px]" />
         </div>
-        <div className="grid grid-cols-3 gap-2 text-center">
-          <div className="rounded-xl border border-border bg-card px-3 py-2">
-            <div className="font-mono text-lg font-bold text-primary">{challenge.targetWpm}</div>
-            <div className="text-[11px] text-muted-foreground">Target</div>
+        <div className="absolute inset-0 neon-grid opacity-25 pointer-events-none" />
+        <div className="relative z-10 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary">
+              <CalendarDays className="h-3.5 w-3.5" />
+              Daily Challenge
+            </div>
+            <h1 className="text-3xl font-extrabold tracking-tight md:text-4xl">
+              {challenge.title}
+            </h1>
+            <p className="mt-1.5 max-w-2xl text-sm text-muted-foreground">
+              One ranked passage per day for exam, code, and professional typing discipline.
+            </p>
           </div>
-          <div className="rounded-xl border border-border bg-card px-3 py-2">
-            <div className="font-mono text-lg font-bold text-yellow-400">{streak}</div>
-            <div className="text-[11px] text-muted-foreground">Streak</div>
-          </div>
-          <div className="rounded-xl border border-border bg-card px-3 py-2">
-            <div className="font-mono text-lg font-bold text-chart-2">{personalBest?.wpm ?? 0}</div>
-            <div className="text-[11px] text-muted-foreground">Best</div>
+          <div className="grid grid-cols-3 gap-3 text-center flex-shrink-0">
+            <div className="rounded-xl border border-primary/20 bg-primary/8 px-4 py-3">
+              <div className="font-mono text-2xl font-extrabold text-primary">{challenge.targetWpm}</div>
+              <div className="text-[11px] text-muted-foreground mt-0.5 font-mono">Target WPM</div>
+            </div>
+            <div className="rounded-xl border border-yellow-400/20 bg-yellow-400/8 px-4 py-3">
+              <div className="font-mono text-2xl font-extrabold text-yellow-400">{streak}</div>
+              <div className="text-[11px] text-muted-foreground mt-0.5 font-mono">Day Streak</div>
+            </div>
+            <div className="rounded-xl border border-chart-3/20 bg-chart-3/8 px-4 py-3">
+              <div className="font-mono text-2xl font-extrabold text-chart-3">{personalBest?.wpm ?? 0}</div>
+              <div className="text-[11px] text-muted-foreground mt-0.5 font-mono">Personal Best</div>
+            </div>
           </div>
         </div>
       </motion.div>

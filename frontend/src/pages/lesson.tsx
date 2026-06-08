@@ -112,24 +112,28 @@ export default function Lesson() {
   }
 
   return (
-    <div className="min-h-full flex flex-col p-8 max-w-3xl mx-auto space-y-8">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="sm" onClick={() => setLocation("/practice")} className="gap-1">
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
-        <div className="flex-1">
-          <div className="text-sm text-primary font-mono font-bold uppercase tracking-wider mb-1">{lesson.category.replace(/-/g, " ")}</div>
-          <h1 className="text-2xl font-bold">{lesson.title}</h1>
+    <div className="min-h-full flex flex-col p-5 md:p-8 max-w-3xl mx-auto space-y-6">
+      <div className="relative overflow-hidden rounded-2xl border border-primary/15 bg-card/60 p-5 md:p-6">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-1/3 w-60 h-28 bg-primary/6 rounded-full blur-[55px]" />
+        </div>
+        <div className="absolute inset-0 neon-grid opacity-20 pointer-events-none" />
+        <div className="relative z-10 flex items-center gap-4">
+          <Button variant="outline" size="sm" onClick={() => setLocation("/practice")} className="gap-1 flex-shrink-0">
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div className="flex-1 min-w-0">
+            <div className="text-xs text-primary font-mono font-bold uppercase tracking-wider mb-0.5">{lesson.category.replace(/-/g, " ")}</div>
+            <h1 className="text-xl md:text-2xl font-extrabold tracking-tight truncate">{lesson.title}</h1>
+          </div>
+          <div className="flex-shrink-0 text-right hidden sm:block">
+            <div className="text-xs text-muted-foreground">Line {lineIndex + 1}/{totalLines}</div>
+            <div className="text-sm font-bold font-mono text-primary">{Math.round((lineIndex / totalLines) * 100)}%</div>
+          </div>
         </div>
       </div>
 
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm text-muted-foreground">
-          <span>Line {lineIndex + 1} of {totalLines}</span>
-          <span>{Math.round((lineIndex / totalLines) * 100)}% complete</span>
-        </div>
-        <Progress value={(lineIndex / totalLines) * 100} className="h-2 bg-muted [&>div]:bg-primary" />
-      </div>
+      <Progress value={(lineIndex / totalLines) * 100} className="h-1.5 bg-muted [&>div]:bg-primary" />
 
       {lesson.targetKeys && lesson.targetKeys.length > 0 && (
         <div className="flex flex-wrap gap-2">

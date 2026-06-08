@@ -759,7 +759,7 @@ export default function Play() {
             </div>
 
             {/* Progress bar */}
-            <div className="relative h-1.5 bg-muted/40 rounded-full overflow-hidden">
+            <div className="relative h-1.5 bg-muted/40 rounded-full overflow-hidden progress-neon">
               <motion.div
                 className="absolute left-0 top-0 h-full typing-progress-bar rounded-full"
                 animate={{ width: `${progress}%` }}

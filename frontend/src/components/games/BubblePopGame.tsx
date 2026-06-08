@@ -95,7 +95,8 @@ export function BubblePopGame({
       canvas.height = Math.min(500, Math.max(360, window.innerHeight - 270));
     };
     resize();
-    window.addEventListener("resize", resize);
+    const _roB = new ResizeObserver(resize);
+    if (canvas.parentElement) _roB.observe(canvas.parentElement);
 
     const draw = (ts: number) => {
       const dt = Math.min(ts - (lastTRef.current || ts), 48);
@@ -215,7 +216,7 @@ export function BubblePopGame({
     };
 
     rafRef.current = requestAnimationFrame(draw);
-    return () => { cancelAnimationFrame(rafRef.current); window.removeEventListener("resize",resize); };
+    return () => { cancelAnimationFrame(rafRef.current); _roB.disconnect(); };
   }, [words, wordIndex, currentInput, wpm, accuracy, levelNumber, comboStreak]); // eslint-disable-line
 
   return <canvas ref={canvasRef} className="w-full rounded-2xl border border-violet-500/20 block" />;

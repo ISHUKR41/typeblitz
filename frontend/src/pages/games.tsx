@@ -133,7 +133,7 @@ function GameCard({ game, index }: { game: any; index: number }) {
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-2.5">
           <Star className="w-3 h-3" /> Choose Level
         </div>
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           {levels.map((level: any) => {
             const unlocked = isLevelUnlocked(game.id, level.number);
             const passed = Boolean(progress.levels[level.number]?.passed);
@@ -225,15 +225,47 @@ export default function Games() {
     <div className="p-5 md:p-8 max-w-7xl mx-auto space-y-8">
 
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/22 text-primary text-xs font-bold mb-3 font-mono">
-          <Gamepad2 className="w-3.5 h-3.5" />
-          20 Games · 160 Levels
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="relative overflow-hidden rounded-2xl border border-primary/15 bg-card/60 p-6 md:p-8">
+        {/* Subtle background glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-80 h-40 bg-primary/8 rounded-full blur-[60px]" />
+          <div className="absolute bottom-0 right-1/4 w-60 h-32 bg-chart-2/6 rounded-full blur-[50px]" />
         </div>
-        <h1 className="display-md mt-1">Game Modes</h1>
-        <p className="text-muted-foreground mt-2 text-sm md:text-base">
-          13 canvas arcade games + 7 skill trainers · Govt Exam, Coding &amp; Classic
-        </p>
+        {/* Grid overlay */}
+        <div className="absolute inset-0 neon-grid opacity-40 pointer-events-none" />
+        <div className="relative z-10">
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/22 text-primary text-xs font-bold font-mono">
+              <Gamepad2 className="w-3.5 h-3.5" />
+              20 Games · 160 Levels
+            </div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-400/10 border border-blue-400/20 text-blue-400 text-xs font-bold font-mono">
+              <Shield className="w-3.5 h-3.5" />
+              Govt Exam Ready
+            </div>
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-chart-3/10 border border-chart-3/20 text-chart-3 text-xs font-bold font-mono">
+              <Terminal className="w-3.5 h-3.5" />
+              Code Vocab
+            </div>
+          </div>
+          <h1 className="display-md">Game Modes</h1>
+          <p className="text-muted-foreground mt-2 text-sm md:text-base max-w-2xl">
+            13 canvas arcade games + 7 skill trainers. Master government exam vocabulary, coding terminology, and raw typing speed — all in one platform.
+          </p>
+          <div className="flex flex-wrap gap-4 mt-4">
+            {[
+              { label: "Arcade Canvas Games", value: "13", color: "text-primary" },
+              { label: "Skill Trainers", value: "7", color: "text-chart-3" },
+              { label: "Levels per Game", value: "8", color: "text-yellow-400" },
+              { label: "Vocab Words", value: "500+", color: "text-blue-400" },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="flex items-baseline gap-1.5">
+                <span className={`text-2xl font-extrabold font-mono ${color}`}>{value}</span>
+                <span className="text-xs text-muted-foreground">{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </motion.div>
 
       <Link href="/challenge">
@@ -241,7 +273,7 @@ export default function Games() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           whileHover={{ y: -2 }}
-          className="flex flex-col gap-4 rounded-2xl border border-primary/30 bg-primary/10 p-5 shadow-lg shadow-primary/10 md:flex-row md:items-center md:justify-between"
+          className="flex flex-col gap-4 rounded-2xl border border-primary/30 bg-primary/10 p-5 shadow-lg shadow-primary/10 md:flex-row md:items-center md:justify-between neon-border-animated"
         >
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-primary/30 bg-primary/15 text-primary">

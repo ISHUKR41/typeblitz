@@ -62,18 +62,30 @@ export function CodeRainGame({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const W = canvas.width, H = canvas.height;
-    const numCols = Math.floor(W / CHAR_W);
-    const numRows = Math.floor(H / CHAR_H);
-    const s = stateRef.current;
-    s.cols = Array.from({ length: numCols }, (_, i) => ({
-      x: i * CHAR_W,
-      chars: Array.from({ length: numRows }, () => rndChar()),
-      head: Math.floor(Math.random() * numRows),
-      speed: 0.3 + Math.random() * 0.7,
-      burst: 0,
-    }));
-    s.spawnInterval = Math.max(50, 90 - Math.floor(progress / 20) * 10);
+    const parent = canvas.parentElement;
+    if (!parent) return;
+
+    const initCols = () => {
+      const cw = parent.clientWidth;
+      if (cw > 0) canvas.width = cw;
+      const W = canvas.width, H = canvas.height;
+      const numCols = Math.floor(W / CHAR_W);
+      const numRows = Math.floor(H / CHAR_H);
+      const s = stateRef.current;
+      s.cols = Array.from({ length: numCols }, (_, i) => ({
+        x: i * CHAR_W,
+        chars: Array.from({ length: numRows }, () => rndChar()),
+        head: Math.floor(Math.random() * numRows),
+        speed: 0.3 + Math.random() * 0.7,
+        burst: 0,
+      }));
+      s.spawnInterval = Math.max(50, 90 - Math.floor(progress / 20) * 10);
+    };
+
+    initCols();
+    const ro = new ResizeObserver(initCols);
+    ro.observe(parent);
+    return () => ro.disconnect();
   }, []);
 
   useEffect(() => {
@@ -266,7 +278,6 @@ export function CodeRainGame({
   return (
     <canvas
       ref={canvasRef}
-      width={760}
       height={480}
       className="w-full rounded-xl border border-green-900/50"
       style={{ background: "#010401" }}

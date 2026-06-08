@@ -96,7 +96,8 @@ export function FruitBlitzGame({
       canvas.height = Math.min(500, Math.max(360, window.innerHeight-270));
     };
     resize();
-    window.addEventListener("resize", resize);
+    const _roF = new ResizeObserver(resize);
+    if (canvas.parentElement) _roF.observe(canvas.parentElement);
 
     function drawFruitShape(cx:number,cy:number,r:number,fi:number,alpha=1) {
       const ft = FRUITS[fi];
@@ -243,7 +244,7 @@ export function FruitBlitzGame({
     };
 
     rafRef.current=requestAnimationFrame(draw);
-    return () => { cancelAnimationFrame(rafRef.current); window.removeEventListener("resize",resize); };
+    return () => { cancelAnimationFrame(rafRef.current); _roF.disconnect(); };
   }, [words, wordIndex, currentInput, wpm, accuracy, levelNumber, comboStreak]); // eslint-disable-line
 
   return <canvas ref={canvasRef} className="w-full rounded-2xl border border-orange-500/20 block" />;

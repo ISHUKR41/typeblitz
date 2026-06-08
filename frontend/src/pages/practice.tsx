@@ -150,11 +150,12 @@ function calculateAccuracy(expected: string, typed: string): number {
 
 function TypingDisplay({ text, input }: { text: string; input: string }) {
   return (
-    <div className="bg-card border border-border rounded-2xl p-5 font-mono text-base md:text-lg leading-relaxed select-none">
+    <div className="bg-card border border-border rounded-2xl p-5 font-mono text-base md:text-lg leading-loose select-none">
       {text.split("").map((char, i) => {
-        let cls = "text-muted-foreground/60";
-        if (i < input.length)      cls = input[i] === char ? "text-foreground" : "text-destructive bg-destructive/15 rounded-sm";
-        else if (i === input.length) cls = "bg-primary/20 border-b-2 border-primary text-foreground";
+        let cls: string;
+        if (i < input.length)       cls = input[i] === char ? "char-correct" : (char === " " ? "char-wrong-space" : "char-wrong");
+        else if (i === input.length) cls = "char-cursor";
+        else                         cls = "char-untyped";
         return <span key={i} className={cls}>{char}</span>;
       })}
     </div>
@@ -207,14 +208,16 @@ function BlindMode() {
 
   return (
     <div className="space-y-5">
-      <div className="bg-background/60 border border-border rounded-xl p-4 text-sm text-muted-foreground leading-relaxed tracking-wide font-mono select-none">
+      <div className="bg-background/60 border border-border rounded-xl p-4 font-mono text-sm leading-loose select-none">
         {text.split("").map((c, i) => {
-          if (!started || i >= input.length) return <span key={i} className={i === input.length ? "border-b-2 border-primary" : ""}>{c}</span>;
-          return <span key={i} className={input[i] === c ? "text-emerald-400" : "text-destructive bg-destructive/15 rounded-sm"}>{c}</span>;
+          let cls: string;
+          if (!started || i >= input.length) cls = i === input.length ? "char-cursor" : "char-untyped";
+          else cls = input[i] === c ? "char-correct" : (c === " " ? "char-wrong-space" : "char-wrong");
+          return <span key={i} className={cls}>{c}</span>;
         })}
       </div>
 
-      <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+      <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden progress-neon">
         <motion.div className="h-full bg-gradient-to-r from-primary to-chart-4 rounded-full"
           animate={{ width: `${progress}%` }} transition={{ duration: 0.15 }} />
       </div>
@@ -1040,15 +1043,16 @@ function CodePractice() {
           </div>
           <Button variant="ghost" size="sm" onClick={() => setSnippet(null)}>← Back</Button>
         </div>
-        <div className="bg-background/60 border border-border rounded-xl p-4 font-mono text-sm leading-relaxed select-none whitespace-pre-wrap">
+        <div className="bg-background/60 border border-border rounded-xl p-4 font-mono text-sm leading-loose select-none whitespace-pre-wrap">
           {snippet.code.split("").map((char, i) => {
-            let cls = "text-muted-foreground/60";
-            if (i < input.length) cls = input[i] === char ? "text-emerald-400" : "text-red-400 bg-red-500/15 rounded-sm";
-            else if (i === input.length) cls = "bg-primary/20 border-b-2 border-primary text-foreground";
+            let cls: string;
+            if (i < input.length)        cls = input[i] === char ? "char-correct" : (char === " " ? "char-wrong-space" : "char-wrong");
+            else if (i === input.length)  cls = "char-cursor";
+            else                          cls = "char-untyped";
             return <span key={i} className={cls}>{char}</span>;
           })}
         </div>
-        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+        <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden progress-neon">
           <motion.div className="h-full bg-gradient-to-r from-primary to-chart-4 rounded-full" animate={{ width: `${progress}%` }} transition={{ duration: 0.15 }} />
         </div>
         <textarea
@@ -1112,11 +1116,37 @@ export default function Practice() {
 
   return (
     <div className="p-5 md:p-8 max-w-5xl mx-auto space-y-7">
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="text-3xl font-extrabold tracking-tight">Professional Practice</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Structured training for serious typists — lessons, govt exam passages, custom text, and timed tests.
-        </p>
+      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="relative overflow-hidden rounded-2xl border border-primary/20 bg-card/60 p-6 md:p-8">
+        {/* Ambient glows */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-80 h-40 bg-primary/7 rounded-full blur-[70px]" />
+          <div className="absolute bottom-0 right-1/3 w-60 h-32 bg-chart-3/5 rounded-full blur-[55px]" />
+        </div>
+        <div className="absolute inset-0 neon-grid opacity-25 pointer-events-none" />
+        <div className="relative z-10">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-9 h-9 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center">
+                  <GraduationCap className="w-4 h-4 text-primary" />
+                </div>
+                <h1 className="text-3xl font-extrabold tracking-tight">Professional Practice</h1>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Structured training for serious typists — lessons, govt exam passages, custom text, and timed tests.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { label: "6 Modes", color: "text-primary border-primary/30 bg-primary/10" },
+                { label: "Govt Exam Ready", color: "text-blue-400 border-blue-400/30 bg-blue-400/10" },
+                { label: "Code Typing", color: "text-chart-3 border-chart-3/30 bg-chart-3/10" },
+              ].map(({ label, color }) => (
+                <span key={label} className={`text-[11px] font-bold px-3 py-1 rounded-full border font-mono ${color}`}>{label}</span>
+              ))}
+            </div>
+          </div>
+        </div>
       </motion.div>
 
       <Tabs defaultValue="lessons" className="space-y-6">
