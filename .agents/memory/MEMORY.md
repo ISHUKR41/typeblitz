@@ -2,3 +2,5 @@
 - [TypeBlitz query options pattern](typeblitz-query-options.md) — every useGet* hook needs explicit `queryKey` in the query options or TS error TS2741 fires
 - [TypeBlitz logout void workaround](typeblitz-logout-void.md) — `logoutMutation.mutate({})` fails type check; use `undefined as unknown as void`
 - [TypeBlitz MongoDB graceful fallback](typeblitz-mongodb-fallback.md) — server starts fine without MONGODB_URI; warns in log and returns empty arrays from DB routes
+- [TypeBlitz backend ports and auth](typeblitz-backend-ports.md) — backend PORT=8080, frontend PORT=3000; uses HMAC Bearer tokens (not JWT); challenge route added at /api/challenge with 28 challenges
+- [TypeBlitz project structure](typeblitz-project-structure.md) — non-standard monorepo: frontend/ + backend/ + lib/ (not artifacts/); no createArtifact needed; backend build via esbuild build.mjs → dist/index.mjs

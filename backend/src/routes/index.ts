@@ -6,6 +6,7 @@ import gamesRouter from "./games.js";
 import sessionsRouter from "./sessions.js";
 import lessonsRouter from "./lessons.js";
 import leaderboardRouter from "./leaderboard.js";
+import challengeRouter from "./challenge.js";
 
 const router: IRouter = Router();
 
@@ -16,6 +17,7 @@ router.use("/games", gamesRouter);
 router.use("/sessions", sessionsRouter);
 router.use("/lessons", lessonsRouter);
 router.use("/leaderboard", leaderboardRouter);
+router.use("/challenge", challengeRouter);
 router.use("/practice", sessionsRouter);
 
 export default router;

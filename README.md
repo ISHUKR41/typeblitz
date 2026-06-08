@@ -4,12 +4,13 @@
 
 **The most addictive typing platform ever built.**
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
-[![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Express](https://img.shields.io/badge/Express-4-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-7-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Express](https://img.shields.io/badge/Express-5-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![Tailwind](https://img.shields.io/badge/Tailwind-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![pnpm](https://img.shields.io/badge/pnpm-workspaces-F69220?style=for-the-badge&logo=pnpm&logoColor=white)](https://pnpm.io/)
 
 <br/>
 
@@ -143,8 +144,8 @@ Unlike boring typing tutors, TypeBlitz delivers **20 canvas-rendered arcade game
 
 ### Frontend
 ```
-React 18 + TypeScript 5        Component architecture with strict types
-Vite 5                          Dev server, HMR, lazy-loaded bundle splitting
+React 19 + TypeScript 5.8      Component architecture with strict types
+Vite 7                          Dev server, HMR, lazy-loaded bundle splitting
 Tailwind CSS v4                 Utility-first styling with CSS custom properties
 Framer Motion                   Page transitions, UI animations, spring physics
 HTML5 Canvas API                All 13 arcade game engines at 60fps
@@ -157,27 +158,27 @@ Web Audio API                   Sound effects engine (click, slash, impact, bell
 
 ### Backend
 ```
-Express 4 + TypeScript          REST API server with typed request/response
+Express 5 + TypeScript          REST API server with typed request/response
 Mongoose 8                      MongoDB ODM with schema validation
-JWT (jsonwebtoken)              Stateless auth tokens — no session storage
-bcrypt                          Password hashing (12 salt rounds)
-CORS + Helmet                   Security middleware
-Morgan                          HTTP request logging
+scrypt (native)                 Password hashing via Node.js crypto module
+HMAC Bearer tokens              Stateless auth — no session storage needed
+pino + pino-http                Structured JSON logging with pretty-print
 Graceful Fallback               Server starts without MONGODB_URI — returns empty arrays
 ```
 
 ### Database
 ```
 MongoDB Atlas                   Cloud-hosted NoSQL (or local MongoDB)
-Collections: users, gameSessions, leaderboard, dailyChallenges
+Collections: users, sessions, letterStats
 Indexes: userId, gameId, createdAt, wpm (leaderboard sorted queries)
 ```
 
 ### Monorepo (pnpm workspaces)
 ```
-packages/api-spec               OpenAPI 3.0 spec — single source of truth
-packages/api-client             Framework-agnostic REST client (fetch-based)
-packages/api-client-react       TanStack Query hooks auto-generated from spec
+lib/api-spec/                   OpenAPI 3.0 spec — single source of truth
+lib/api-client-react/           TanStack Query hooks auto-generated from spec
+lib/api-zod/                    Zod validation schemas generated from spec
+lib/db/                         Shared database utilities
 ```
 
 ---
@@ -186,70 +187,76 @@ packages/api-client-react       TanStack Query hooks auto-generated from spec
 
 ```
 typeblitz/
-├── frontend/                           React + Vite SPA
+├── frontend/                           React 19 + Vite 7 SPA
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── games/                  All 20 game canvas components
-│   │   │   │   ├── ArcadeArena.tsx     Core game controller (WPM/accuracy engine)
-│   │   │   │   ├── RacingGame.tsx      3D road physics + AI opponent
-│   │   │   │   ├── FighterGame.tsx     Cyberpunk combat arena + particle system
-│   │   │   │   ├── ZombieGame.tsx      Zombie wave survival with pressure logic
-│   │   │   │   ├── GalaxyGame.tsx      Space invaders + starfield parallax
-│   │   │   │   ├── MeteorGame.tsx      Meteor defense with orbital physics
-│   │   │   │   ├── NeonRunnerGame.tsx  Infinite runner with gravity + jump physics
-│   │   │   │   ├── SnakeTyperGame.tsx  Snake + body collision + respawn
-│   │   │   │   ├── WordInvadersGame.tsx Alien invaders + color-split display
-│   │   │   │   ├── CodeRainGame.tsx    Matrix rain + vertical char coloring
-│   │   │   │   ├── CyberHeistGame.tsx  Heist puzzle with security timers
-│   │   │   │   ├── ArenaBlitzGame.tsx  Arena combat with tray system
-│   │   │   │   ├── BubblePopGame.tsx   Bubble physics + float trajectories
-│   │   │   │   └── FruitBlitzGame.tsx  Fruit ninja with slice animations
-│   │   │   ├── ui/                     shadcn/ui primitives
-│   │   │   ├── layout.tsx              App shell + sidebar navigation
-│   │   │   └── VirtualKeyboard.tsx     Animated live key highlighting
+│   │   │   ├── games/                  All 13 arcade canvas game engines
+│   │   │   │   ├── ArcadeArena.tsx     Central controller — WPM/accuracy/combo engine
+│   │   │   │   ├── RacingGame.tsx      Pseudo-3D road + rain + ghost AI opponent
+│   │   │   │   ├── FighterGame.tsx     Cyberpunk fighter + particle combat system
+│   │   │   │   ├── ZombieGame.tsx      Zombie waves + HP system + pressure logic
+│   │   │   │   ├── GalaxyGame.tsx      Space invaders + starfield parallax + shields
+│   │   │   │   ├── MeteorGame.tsx      Meteor defense + orbital physics + explosions
+│   │   │   │   ├── NeonRunnerGame.tsx  Infinite runner + gravity + jump/duck physics
+│   │   │   │   ├── SnakeTyperGame.tsx  Snake + body-collision death + respawn
+│   │   │   │   ├── WordInvadersGame.tsx Alien formation + descent threat + color split
+│   │   │   │   ├── CodeRainGame.tsx    Matrix rain + vertical char decrypt coloring
+│   │   │   │   ├── CyberHeistGame.tsx  Node breach + timer bombs + glitch overlay
+│   │   │   │   ├── ArenaBlitzGame.tsx  Top-down turret + enemy spiral + bullet trails
+│   │   │   │   ├── BubblePopGame.tsx   Bubble physics + drift + pop particle burst
+│   │   │   │   └── FruitBlitzGame.tsx  Falling fruit + slice animation + juice splat
+│   │   │   ├── ui/                     shadcn/ui accessible component primitives
+│   │   │   ├── layout.tsx              App shell + responsive sidebar navigation
+│   │   │   └── VirtualKeyboard.tsx     Live key-highlight keyboard guide
 │   │   ├── pages/
-│   │   │   ├── home.tsx                Landing page (782 lines, animated hero)
-│   │   │   ├── games.tsx               Game catalog with category filters
-│   │   │   ├── play.tsx                Game session controller (817 lines)
-│   │   │   ├── dashboard.tsx           Analytics dashboard
-│   │   │   ├── practice.tsx            Practice modes (1254 lines)
-│   │   │   ├── leaderboard.tsx         Global rankings with filters
-│   │   │   ├── challenge.tsx           Daily challenge with streak tracking
-│   │   │   └── lesson.tsx              Touch-type lesson engine
-│   │   ├── context/AuthContext.tsx     JWT auth state + token refresh
+│   │   │   ├── home.tsx                Landing page — hero, typing demo, WPM tiers
+│   │   │   ├── games.tsx               Game catalog — 20 games × 5 levels each
+│   │   │   ├── play.tsx                Session controller — arcade + standard modes
+│   │   │   ├── dashboard.tsx           Analytics — WPM chart, letter heatmap, badges
+│   │   │   ├── practice.tsx            Practice modes — timed, passage, blind typing
+│   │   │   ├── leaderboard.tsx         Global rankings with WPM + accuracy filters
+│   │   │   ├── challenge.tsx           Daily challenge — streak tracking + score saving
+│   │   │   └── lesson.tsx              12-lesson touch-type curriculum engine
+│   │   ├── context/AuthContext.tsx     HMAC Bearer token auth state management
 │   │   └── lib/
-│   │       ├── audio.ts                Web Audio API sound effects engine
-│   │       └── utils.ts                Shared utility functions
-│   └── vite.config.ts
+│   │       ├── audio.ts                Web Audio API — 5 sound themes, 4 effect types
+│   │       ├── progress.ts             Local level progress + unlock logic
+│   │       └── utils.ts                Shared utilities
+│   └── vite.config.ts                  PORT env, /api proxy → backend:8080
 │
-├── backend/                            Express + Mongoose REST API
+├── backend/                            Express 5 + Mongoose REST API (PORT=8080)
 │   ├── src/
 │   │   ├── routes/
-│   │   │   ├── auth.ts                 POST /login, /register · GET /me
-│   │   │   ├── sessions.ts             POST /sessions · GET /sessions/:userId
-│   │   │   ├── leaderboard.ts          GET /leaderboard
-│   │   │   ├── games.ts                GET /games · GET /games/:id
-│   │   │   ├── words.ts                GET /words?level=&category=
+│   │   │   ├── auth.ts                 POST /register, /login · GET /me · POST /logout
+│   │   │   ├── sessions.ts             POST /sessions · POST /sessions/analyze
+│   │   │   ├── users.ts                GET /users/:id/stats, /progress, /letter-accuracy
+│   │   │   ├── games.ts                GET /games · GET /games/:id/levels/:lvl/words
+│   │   │   ├── leaderboard.ts          GET /leaderboard?gameId=&limit=
 │   │   │   ├── lessons.ts              GET /lessons
-│   │   │   └── challenge.ts            GET /challenge/today
+│   │   │   └── health.ts               GET /health — uptime check
 │   │   ├── models/
-│   │   │   ├── User.ts                 User schema (bcrypt password, stats)
-│   │   │   ├── GameSession.ts          Session schema (wpm, accuracy, duration)
-│   │   │   └── DailyChallenge.ts       Challenge schema with expiry
+│   │   │   ├── User.ts                 User schema — scrypt hash, stats, streak
+│   │   │   ├── Session.ts              Game session — wpm, accuracy, level, letterErrors
+│   │   │   └── LetterStat.ts           Per-key accuracy aggregation
 │   │   ├── data/
-│   │   │   ├── words.ts                500+ curated vocabulary words
-│   │   │   └── games.ts                20 game definitions × 5 levels each
-│   │   └── middleware/auth.ts          JWT verification middleware
-│   └── package.json
+│   │   │   ├── words.ts                800+ curated vocabulary words across all games
+│   │   │   └── games.ts                20 game definitions × 5 levels, targetWpm/accuracy
+│   │   ├── lib/
+│   │   │   ├── db.ts                   Mongoose connection + graceful no-DB fallback
+│   │   │   └── logger.ts               pino structured logging
+│   │   └── middleware/
+│   │       └── auth.ts                 HMAC Bearer token verification middleware
+│   └── build.mjs                       esbuild bundle script → dist/index.mjs
 │
-├── packages/
-│   ├── api-spec/                       OpenAPI 3.0 specification
-│   ├── api-client/                     Framework-agnostic REST client
-│   └── api-client-react/               TanStack Query hooks
+├── lib/                                Shared workspace packages
+│   ├── api-spec/                       OpenAPI 3.0 spec — single source of truth
+│   ├── api-client-react/               TanStack Query hooks (Orval-generated)
+│   ├── api-zod/                        Zod validation schemas (generated from spec)
+│   └── db/                             Shared DB utilities
 │
-├── DESIGN.md                           Design system specification
+├── DESIGN.md                           Full design system specification
 ├── README.md                           This file
-└── pnpm-workspace.yaml
+└── pnpm-workspace.yaml                 Workspace package paths
 ```
 
 ---
@@ -282,24 +289,30 @@ cp backend/.env.example backend/.env
 ### Development
 
 ```bash
-# Terminal 1 — Frontend (React + Vite)
-pnpm --filter @workspace/typeblitz run dev
+# Terminal 1 — Backend API (Express + Mongoose, port 8080)
+PORT=8080 pnpm --filter @workspace/api-server run dev
 
-# Terminal 2 — Backend (Express + Mongoose)
-pnpm --filter @workspace/api-server run dev
+# Terminal 2 — Frontend (React + Vite, port 3000)
+PORT=3000 pnpm --filter @workspace/typeblitz run dev
 ```
+
+The frontend proxies all `/api/*` requests to the backend at `http://127.0.0.1:8080` via Vite's proxy config.
 
 ### Environment Variables
 
 ```env
-# backend/.env
+# Required
+PORT=8080                       # Backend API port (frontend Vite proxy expects this)
+
+# Optional — app works without these (graceful fallback mode)
 MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/typeblitz
-JWT_SECRET=your-secret-key-minimum-32-characters
-PORT=3001
+SESSION_SECRET=your-secret-minimum-32-characters   # For HMAC auth tokens
 NODE_ENV=development
 ```
 
-> **Note:** The backend starts successfully without `MONGODB_URI` — it logs a warning and returns empty arrays from database routes. This lets you run and develop the frontend without a MongoDB connection.
+> **Note:** The backend starts successfully without `MONGODB_URI` — it logs a warning and returns empty arrays from database routes, and disables auth. This lets you run and develop the frontend entirely without a MongoDB connection.
+
+> **Auth tokens:** TypeBlitz uses HMAC Bearer tokens signed with `SESSION_SECRET`. If not set, auth is disabled and login/register routes return errors. Games and content routes always work without auth.
 
 ---
 
@@ -376,30 +389,45 @@ Accuracy:    totalK = 27, errorK = 1 (wrong char at position 14)
 
 ## 🌐 API Reference
 
-All API routes are prefixed with `/api/`.
+All API routes are prefixed with `/api/`. The backend runs on port **8080** in development.
 
 ### Authentication
 ```http
-POST   /api/auth/register    Body: { username, email, password }
-POST   /api/auth/login       Body: { email, password } → { token, user }
-GET    /api/auth/me          Headers: Authorization: Bearer <token>
+POST   /api/auth/register              Body: { username, email, password }
+POST   /api/auth/login                 Body: { email, password } → { token, user }
+GET    /api/auth/me                    Headers: Authorization: Bearer <token>
+POST   /api/auth/logout               Invalidates token (server-side)
 ```
 
 ### Game Data
 ```http
 GET    /api/games                      All 20 game definitions with metadata
-GET    /api/games/:id                  Single game + all 5 level configurations
-GET    /api/words?level=1&category=govt Word list for a specific game session
-GET    /api/lessons                    Touch-type lesson catalog (12 lessons)
-GET    /api/challenge/today            Today's daily challenge word set
+GET    /api/games/:id                  Single game definition
+GET    /api/games/:id/levels/:lvl/words  Word list for a specific game + level
+GET    /api/lessons                    Touch-type lesson catalog
+```
+
+### Daily Challenge
+```http
+GET    /api/challenge/today            Today's challenge (rotates daily by day-of-year)
+GET    /api/challenge                  All challenges (paginated: ?page=1&limit=10&category=)
+GET    /api/challenge/:id              Single challenge by ID
+POST   /api/challenge/:id/scores       Save a challenge score (requires auth)
 ```
 
 ### Sessions & Analytics
 ```http
-POST   /api/sessions                   Save completed game session result
-GET    /api/sessions/:userId           User's full session history
-GET    /api/sessions/:userId/stats     Aggregated stats: avg WPM, accuracy, heatmap data
-GET    /api/leaderboard?limit=50       Global leaderboard sorted by WPM
+POST   /api/sessions                   Save a completed game session result
+POST   /api/sessions/analyze           Analyze keystroke pattern → weak keys report
+GET    /api/users/:id/stats            Aggregated stats: avg WPM, accuracy, best game
+GET    /api/users/:id/progress         Per-game level unlock progress
+GET    /api/users/:id/letter-accuracy  Per-letter accuracy heatmap data
+GET    /api/leaderboard?gameId=&limit= Global leaderboard sorted by WPM
+```
+
+### System
+```http
+GET    /api/health                     { status: "ok", uptime, db: "connected" | "disconnected" }
 ```
 
 ---
@@ -431,7 +459,7 @@ The user dashboard tracks every dimension of typing performance:
 - [x] Keystroke-based accuracy tracking
 - [x] Real-time neon color-split typing display (green/red/dim)
 - [x] MongoDB Atlas backend with graceful no-DB fallback
-- [x] JWT authentication (register, login, protected routes)
+- [x] HMAC Bearer token authentication (register, login, protected routes)
 - [x] Government exam vocabulary — 500+ words (SSC, UPSC, IBPS, RRB, Police)
 - [x] Coding vocabulary — 300+ terms (TypeScript, Python, Go, SQL, DevOps, Git)
 - [x] Virtual keyboard guide with live key highlighting
